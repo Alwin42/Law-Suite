@@ -1,0 +1,4 @@
+backend/api/migrations
+backend/core/__pycache__
+backend/venv
+backend/core/__init__.py
