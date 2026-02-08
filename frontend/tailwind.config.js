@@ -6,13 +6,13 @@ export default {
   ],
   theme: {
     extend: {
+      colors: {
+        background: "#F9FAFB", // Light Grey
+        primary: "#1A1A1A",    // Charcoal Black (This makes your button visible)
+        accent: "#64748B",     // Slate Grey
+      },
       fontFamily: {
         sans: ['Inter', 'sans-serif'],
-      },
-      colors: {
-        background: "#F9FAFB", // Off-white/Light Grey
-        primary: "#1A1A1A",    // Charcoal/Near-black
-        accent: "#64748B",     // Muted Slate
       },
     },
   },

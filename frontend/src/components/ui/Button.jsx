@@ -3,7 +3,7 @@ import { forwardRef } from "react";
 
 const Button = forwardRef(({ className, variant = "default", size = "default", ...props }, ref) => {
   const variants = {
-    default: "bg-primary text-white hover:bg-primary/90",
+    default: "bg-gray-700 text-white hover:bg-primary/90",
     outline: "border border-input bg-background hover:bg-accent/10 hover:text-accent-foreground",
     ghost: "hover:bg-accent/10 hover:text-primary",
     link: "text-primary underline-offset-4 hover:underline",
