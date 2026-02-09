@@ -1,6 +1,6 @@
 import { Button } from "./ui/Button";
 import { Link } from "react-router-dom";
-import { ArrowRight, CheckCircle2, ShieldCheck, TrendingUp } from "lucide-react";
+import { ArrowRight, CheckCircle2, ShieldCheck, TrendingUp , CalendarPlus} from "lucide-react";
 import { motion, useScroll, useTransform } from "framer-motion";
 
 const LandingPage = () => {
@@ -35,18 +35,25 @@ const LandingPage = () => {
             className="max-w-xl"
           >
             <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-primary uppercase mb-6 leading-tight">
-              Law <br/> Suite
+              Law  Suite
             </h1>
             <h2 className="text-xl md:text-2xl text-accent font-normal leading-relaxed mb-10 border-l-4 border-primary/20 pl-6">
               Streamlining Legal Workflows Through <br className="hidden md:block"/> Unbiased Digital Automation
             </h2>
-            <div className="flex gap-4">
+            <div className="flex gap-9">
+              <Link to="/login">
+                <Button variant="ghost" className="group text-lg px-0 hover:bg-transparent pl-0">
+                  Book Appointment
+                  <CalendarPlus className="ml-2 w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
+                </Button>
+              </Link>
               <Link to="/login">
                 <Button variant="ghost" className="group text-lg px-0 hover:bg-transparent pl-0">
                   Login
                   <ArrowRight className="ml-2 w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
                 </Button>
               </Link>
+              
             </div>
           </motion.div>
 
