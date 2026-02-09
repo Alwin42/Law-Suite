@@ -1,10 +1,12 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+// SAFE IMPORTS: Using your manual components
 import { Button } from "./ui/Button"; 
 import { Input } from "./ui/Input"; 
 import { motion, AnimatePresence } from "framer-motion";
-import { Scale, Mail, Lock, User, ArrowRight, Check, Phone } from "lucide-react";
-import { loginUser, registerUser } from "../api"; // Import the API functions
+import { Scale, Mail, Lock, User, ArrowRight, Check, Phone, Briefcase } from "lucide-react";
+// FIX: Imported registerAdvocate instead of registerUser
+import { loginUser, registerAdvocate } from "../api"; 
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -14,10 +16,10 @@ const AuthPage = () => {
 
   const toggleMode = () => {
     setIsLogin(!isLogin);
-    setError(""); // Clear errors when switching
+    setError("");
   };
 
-  // --- LOGIN LOGIC ---
+  // --- LOGIN LOGIC (Advocates/Admins) ---
   const handleLogin = async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -28,12 +30,20 @@ const AuthPage = () => {
 
     try {
       const response = await loginUser(data);
-      // Save Tokens
+      
+      // Store Token & Role
       localStorage.setItem('access_token', response.data.access);
       localStorage.setItem('refresh_token', response.data.refresh);
-      
-      // Navigate to Dashboard
-      navigate('/dashboard'); 
+      localStorage.setItem('user_role', response.data.role);
+      localStorage.setItem('user_name', response.data.full_name);
+
+      // Redirect based on role
+      if (response.data.role === 'CLIENT') {
+          navigate('/client-dashboard');
+      } else {
+          navigate('/dashboard'); 
+      }
+
     } catch (err) {
       console.error("Login Error:", err);
       setError("Invalid username or password.");
@@ -42,7 +52,7 @@ const AuthPage = () => {
     }
   };
 
-  // --- REGISTER LOGIC ---
+  // --- REGISTER LOGIC (Advocates Only) ---
   const handleRegister = async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -51,61 +61,51 @@ const AuthPage = () => {
     const formData = new FormData(e.target);
     const rawData = Object.fromEntries(formData);
 
-    // FIX: Combine names for backend compatibility
     const payload = {
         username: rawData.username,
         email: rawData.email,
         password: rawData.password,
         contact_number: rawData.contact_number,
         full_name: `${rawData.first_name} ${rawData.last_name}`.trim(),
-        role: 'ADVOCATE' // Defaulting to Advocate for this workspace
     };
 
     try {
-      await registerUser(payload);
-      alert("Registration Successful! Please login.");
+      // FIX: Using registerAdvocate
+      await registerAdvocate(payload);
+      alert("Advocate Account Created! Please login.");
       toggleMode(); // Switch to login screen
     } catch (err) {
       console.error("Registration Error:", err.response?.data);
-      // specific error message from backend or generic one
-      setError(err.response?.data?.username ? "Username already exists." : "Registration failed. Check your data.");
+      setError("Registration failed. Username or Email might be taken.");
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen w-full bg-background flex items-center justify-center p-6 relative overflow-hidden">
+    <div className="min-h-screen w-full bg-slate-50 flex items-center justify-center p-6 relative">
       
-      {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-[0.03] pointer-events-none">
-        <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <path d="M0 50 Q 25 60, 50 50 T 100 50" stroke="currentColor" strokeWidth="0.5" fill="none" />
-            <path d="M0 60 Q 25 70, 50 60 T 100 60" stroke="currentColor" strokeWidth="0.5" fill="none" />
-        </svg>
-      </div>
-
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md bg-white border border-gray-100 shadow-2xl rounded-2xl overflow-hidden z-10 relative"
+        className="w-full max-w-lg bg-white border border-slate-200 shadow-xl rounded-2xl overflow-hidden z-10 relative"
       >
-        <div className="h-2 w-full bg-primary" />
+        <div className="h-2 w-full bg-slate-900" />
 
         <div className="p-8">
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/5 text-primary mb-4">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-slate-100 text-slate-900 mb-4">
               <Scale size={24} />
             </div>
-            <h2 className="text-2xl font-bold text-primary tracking-tight uppercase">
-              {isLogin ? "Welcome Back" : "Create Account"}
+            <h2 className="text-2xl font-bold text-slate-900 tracking-tight uppercase">
+              {isLogin ? "Advocate Login" : "Advocate Registration"}
             </h2>
-            <p className="text-accent text-sm mt-2">
-              {isLogin ? "Enter your credentials." : "Join the digital workspace."}
+            <p className="text-slate-500 text-sm mt-2">
+              {isLogin ? "Secure access for legal professionals." : "Join the digital workspace."}
             </p>
           </div>
 
-          {/* Error Message Display */}
+          {/* Error Message */}
           {error && (
             <div className="mb-4 p-3 text-xs text-red-500 bg-red-50 rounded-md border border-red-100 text-center">
                 {error}
@@ -115,22 +115,32 @@ const AuthPage = () => {
           <div className="space-y-4">
             <AnimatePresence mode="wait">
               {isLogin ? (
+                // --- LOGIN FORM ---
                 <LoginForm key="login" onSubmit={handleLogin} isLoading={isLoading} />
               ) : (
-                <RegisterForm key="register" onSubmit={handleRegister} isLoading={isLoading} />
+                // --- REGISTER FORM ---
+                <AdvocateRegisterForm key="register" onSubmit={handleRegister} isLoading={isLoading} />
               )}
             </AnimatePresence>
 
+            {/* Toggle Login/Register */}
             <div className="mt-6 text-center">
-              <p className="text-sm text-accent">
-                {isLogin ? "Don't have an account? " : "Already have an account? "}
+              <p className="text-sm text-slate-500">
+                {isLogin ? "New Advocate? " : "Already have an account? "}
                 <button 
                   onClick={toggleMode}
-                  className="font-medium text-primary hover:underline"
+                  className="font-medium text-slate-900 hover:underline"
                 >
-                  {isLogin ? "Register now" : "Sign in"}
+                  {isLogin ? "Register here" : "Sign in"}
                 </button>
               </p>
+            </div>
+
+            {/* Link to Client Login */}
+            <div className="mt-4 pt-4 border-t border-slate-100 text-center">
+                <Link to="/client-login" className="text-xs font-medium text-emerald-600 hover:text-emerald-700 hover:underline flex items-center justify-center gap-1">
+                    Are you a Client? Login with OTP <ArrowRight size={12}/>
+                </Link>
             </div>
           </div>
         </div>
@@ -152,29 +162,19 @@ const LoginForm = ({ onSubmit, isLoading }) => (
     <InputGroup icon={Mail} name="username" type="text" placeholder="Username" required />
     <InputGroup icon={Lock} name="password" type="password" placeholder="Password" required />
     
-    <div className="flex items-center justify-between text-xs">
-      <label className="flex items-center space-x-2 cursor-pointer text-accent hover:text-primary">
-        <div className="w-4 h-4 border border-gray-300 rounded flex items-center justify-center">
-            <Check size={10} className="text-primary opacity-0 hover:opacity-100" />
-        </div>
-        <span>Remember me</span>
-      </label>
-      <a href="#" className="text-primary font-medium hover:underline">Forgot password?</a>
-    </div>
-
-    <Button disabled={isLoading} className="w-full mt-2 group bg-slate-900 text-white hover:bg-slate-800">
+    <Button disabled={isLoading} className="w-full mt-2 bg-slate-900 text-white hover:bg-slate-800">
       {isLoading ? "Signing in..." : "Sign In"}
-      {!isLoading && <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />}
+      {!isLoading && <ArrowRight className="ml-2 w-4 h-4" />}
     </Button>
   </motion.form>
 );
 
-const RegisterForm = ({ onSubmit, isLoading }) => (
-  <motion.form
+const AdvocateRegisterForm = ({ onSubmit, isLoading }) => (
+  <motion.form 
     initial={{ opacity: 0, x: 20 }}
     animate={{ opacity: 1, x: 0 }}
     exit={{ opacity: 0, x: -20 }}
-    onSubmit={onSubmit}
+    onSubmit={onSubmit} 
     className="space-y-4"
   >
     <div className="grid grid-cols-2 gap-4">
@@ -187,16 +187,16 @@ const RegisterForm = ({ onSubmit, isLoading }) => (
     <InputGroup icon={Phone} name="contact_number" type="tel" placeholder="Contact Number" required />
     <InputGroup icon={Lock} name="password" type="password" placeholder="Create Password" required />
 
-    <Button disabled={isLoading} className="w-full mt-2 group bg-slate-900 text-white hover:bg-slate-800">
+    <Button disabled={isLoading} className="w-full mt-2 bg-slate-900 text-white hover:bg-slate-800">
        {isLoading ? "Creating Account..." : "Create Account"}
-       {!isLoading && <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />}
+       {!isLoading && <ArrowRight className="ml-2 w-4 h-4" />}
     </Button>
   </motion.form>
 );
 
 const InputGroup = ({ icon: Icon, ...props }) => (
   <div className="relative group">
-    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-primary transition-colors z-10">
+    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-slate-900 transition-colors z-10">
       <Icon size={16} />
     </div>
     <Input className="pl-10" {...props} />

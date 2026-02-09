@@ -1,6 +1,6 @@
 import { Button } from "./ui/Button";
 import { Link } from "react-router-dom";
-import { ArrowRight, CheckCircle2, ShieldCheck, TrendingUp , CalendarPlus} from "lucide-react";
+import { ArrowRight, CheckCircle2,  TrendingUp , CalendarPlus} from "lucide-react";
 import { motion, useScroll, useTransform } from "framer-motion";
 
 const LandingPage = () => {

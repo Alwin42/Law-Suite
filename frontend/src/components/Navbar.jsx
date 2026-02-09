@@ -13,14 +13,14 @@ const Navbar = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const navLinks = ["Home", "Clients", "Cases", "Dashboard"];
+  const navLinks = ["Home", "Clients", "Cases", "Dashboard", "Login"];
 
   return (
     <motion.nav
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className={`fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-4 transition-all duration-300 ease-in-out ${
+      className={`fixed top-0 mb-9 left-0 right-0 z-50 flex items-center justify-between px-8 py-4 transition-all duration-300 ease-in-out ${
         scrolled ? "bg-background/95 backdrop-blur-sm shadow-sm py-3" : "bg-transparent"
       }`}
     >
@@ -34,7 +34,7 @@ const Navbar = () => {
         {navLinks.map((link) => (
           <a
             key={link}
-            href={`#${link.toLowerCase()}`}
+            href={`${link.toLowerCase()}`}
             className="group relative text-md font-medium text-primary/80 hover:text-primary transition-colors"
           >
             {link}
