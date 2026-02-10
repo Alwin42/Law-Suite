@@ -4,11 +4,12 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model
 import random
+from django.conf import settings
 
-# Import models
+# --- MISSING IMPORT ADDED HERE ---
+from django.core.mail import send_mail  
+
 from .models import LoginOTP
-
-# Import ALL serializers
 from .serializers import (
     AdvocateRegistrationSerializer, 
     ClientRegistrationSerializer,
@@ -20,19 +21,19 @@ from .serializers import (
 
 User = get_user_model()
 
-# --- 1. ADVOCATE REGISTRATION VIEW ---
+# --- 1. ADVOCATE REGISTRATION ---
 class AdvocateRegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     permission_classes = (permissions.AllowAny,)
     serializer_class = AdvocateRegistrationSerializer
 
-# --- 2. CLIENT REGISTRATION VIEW ---
+# --- 2. CLIENT REGISTRATION ---
 class ClientRegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     permission_classes = (permissions.AllowAny,)
     serializer_class = ClientRegistrationSerializer
 
-# --- 3. CUSTOM LOGIN VIEW (Password) ---
+# --- 3. PASSWORD LOGIN ---
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
@@ -44,17 +45,35 @@ class RequestOTPView(views.APIView):
         serializer = EmailSerializer(data=request.data)
         if serializer.is_valid():
             email = serializer.validated_data['email']
+            
+            # CHECK: Only existing users can request OTP for login
             try:
-                user = User.objects.get(email=email, role='CLIENT')
+                user = User.objects.get(email=email)
             except User.DoesNotExist:
-                return Response({"error": "Client with this email not found."}, status=404)
+                return Response(
+                    {"error": "No account found with this email. Please register first."}, 
+                    status=status.HTTP_404_NOT_FOUND
+                )
 
+            # Generate OTP
             otp_code = str(random.randint(100000, 999999))
             LoginOTP.objects.create(email=email, otp=otp_code)
 
-            print(f"\n [OTP SERVICE] Code for {email}: {otp_code} \n")
-            return Response({"message": "OTP sent."})
-        return Response(serializer.errors, status=400)
+            # --- SEND EMAIL (With Error Handling) ---
+            subject = 'Your Login OTP - Law Suite'
+            message = f'Your One-Time Password (OTP) is: {otp_code}'
+            email_from = settings.EMAIL_HOST_USER
+            recipient_list = [email]
+            
+            try:
+                send_mail(subject, message, email_from, recipient_list, fail_silently=False)
+                return Response({"message": "OTP sent successfully."})
+            except Exception as e:
+                # If email fails, print error to console but don't crash app
+                print(f"Error sending email: {e}")
+                return Response({"error": "Failed to send email. Please try again later."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class VerifyOTPView(views.APIView):
     permission_classes = (permissions.AllowAny,)
@@ -65,16 +84,20 @@ class VerifyOTPView(views.APIView):
             email = serializer.validated_data['email']
             otp = serializer.validated_data['otp']
 
+            # Check OTP
             try:
                 otp_record = LoginOTP.objects.filter(email=email).latest('created_at')
             except LoginOTP.DoesNotExist:
-                return Response({"error": "Invalid OTP."}, status=400)
+                return Response({"error": "No OTP found."}, status=status.HTTP_400_BAD_REQUEST)
 
             if otp_record.otp != otp or not otp_record.is_valid():
-                return Response({"error": "Invalid/Expired OTP."}, status=400)
+                return Response({"error": "Invalid or expired OTP."}, status=status.HTTP_400_BAD_REQUEST)
 
+            # Login Success - Generate Token
             user = User.objects.get(email=email)
             refresh = RefreshToken.for_user(user)
+            
+            # Clean up used OTPs
             LoginOTP.objects.filter(email=email).delete()
 
             return Response({
@@ -83,12 +106,13 @@ class VerifyOTPView(views.APIView):
                 'role': user.role,
                 'full_name': user.full_name
             })
-        return Response(serializer.errors, status=400)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 # --- 5. DATA VIEWS ---
 class ActiveAdvocateListView(generics.ListAPIView):
     serializer_class = UserSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    # Changed to AllowAny so clients can see advocates before logging in
+    permission_classes = [permissions.AllowAny] 
 
     def get_queryset(self):
         return User.objects.filter(role='ADVOCATE', is_active=True)

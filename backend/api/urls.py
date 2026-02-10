@@ -16,6 +16,8 @@ urlpatterns = [
     
     # Auth - Client
     path('register/client/', ClientRegisterView.as_view(), name='register_client'),
+    
+    # OTP - THESE MUST MATCH your frontend API calls
     path('auth/otp/request/', RequestOTPView.as_view(), name='otp_request'),
     path('auth/otp/verify/', VerifyOTPView.as_view(), name='otp_verify'),
 
