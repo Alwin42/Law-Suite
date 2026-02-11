@@ -7,6 +7,9 @@ import random
 from django.conf import settings
 from rest_framework.permissions import IsAuthenticated
 from django.core.mail import send_mail  
+from django.core.mail import send_mail
+from django.template.loader import render_to_string # (Optional if using separate files, but we'll use inline HTML for simplicity)
+from django.utils.html import strip_tags
 
 from .models import LoginOTP
 from .serializers import (
@@ -45,7 +48,7 @@ class RequestOTPView(views.APIView):
         if serializer.is_valid():
             email = serializer.validated_data['email']
             
-            # CHECK: Only existing users can request OTP for login
+            # 1. Check if user exists
             try:
                 user = User.objects.get(email=email)
             except User.DoesNotExist:
@@ -54,23 +57,73 @@ class RequestOTPView(views.APIView):
                     status=status.HTTP_404_NOT_FOUND
                 )
 
-            # Generate OTP
+            # 2. Generate OTP
             otp_code = str(random.randint(100000, 999999))
             LoginOTP.objects.create(email=email, otp=otp_code)
 
-            # --- SEND EMAIL (With Error Handling) ---
-            subject = 'Your Login OTP - Law Suite'
-            message = f'Your One-Time Password (OTP) is: {otp_code}'
+            # 3. Create Professional HTML Email
+            subject = 'Login Verification - Legal Suite'
+            
+            # Minimalist HTML Template
+            html_message = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <style>
+                    body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc; margin: 0; padding: 0; }}
+                    .container {{ max-width: 480px; margin: 40px auto; background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); overflow: hidden; border: 1px solid #e2e8f0; }}
+                    .header {{ background-color: #0f172a; padding: 24px; text-align: center; }}
+                    .header h1 {{ color: #ffffff; margin: 0; font-size: 20px; letter-spacing: 2px; font-weight: 600; }}
+                    .content {{ padding: 40px 32px; text-align: center; }}
+                    .otp-box {{ background-color: #f1f5f9; padding: 24px; border-radius: 8px; margin: 24px 0; border: 1px dashed #cbd5e1; }}
+                    .otp-code {{ font-size: 36px; font-weight: 700; color: #0f172a; letter-spacing: 6px; font-family: 'Courier New', monospace; display: block; }}
+                    .footer {{ padding: 24px; background-color: #f8fafc; text-align: center; color: #94a3b8; font-size: 12px; border-top: 1px solid #e2e8f0; }}
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h1>LEGAL SUITE</h1>
+                    </div>
+                    <div class="content">
+                        <p style="color: #475569; font-size: 16px; margin-bottom: 24px;">Secure Login Verification</p>
+                        <p style="color: #64748b; font-size: 14px; margin: 0;">Use the code below to access your client portal.</p>
+                        
+                        <div class="otp-box">
+                            <span class="otp-code">{otp_code}</span>
+                        </div>
+
+                        <p style="color: #94a3b8; font-size: 13px;">This code is valid for <strong>10 minutes</strong>.<br>Do not share this code with anyone.</p>
+                    </div>
+                    <div class="footer">
+                        &copy; 2026 Legal Suite. All rights reserved.
+                    </div>
+                </div>
+            </body>
+            </html>
+            """
+            
+            # Plain text fallback for old email clients
+            plain_message = strip_tags(html_message)
             email_from = settings.EMAIL_HOST_USER
             recipient_list = [email]
             
             try:
-                send_mail(subject, message, email_from, recipient_list, fail_silently=False)
+                # Send HTML Email
+                send_mail(
+                    subject, 
+                    plain_message, 
+                    email_from, 
+                    recipient_list, 
+                    fail_silently=False, 
+                    html_message=html_message # <--- This enables the HTML design
+                )
                 return Response({"message": "OTP sent successfully."})
             except Exception as e:
-                # If email fails, print error to console but don't crash app
                 print(f"Error sending email: {e}")
                 return Response({"error": "Failed to send email. Please try again later."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
