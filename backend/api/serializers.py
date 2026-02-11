@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-
+from django.utils.crypto import get_random_string
 User = get_user_model()
 
 # --- 1. BASE REGISTRATION SERIALIZER ---
@@ -46,8 +46,12 @@ class ClientRegistrationSerializer(serializers.ModelSerializer):
         fields = ('username', 'email', 'full_name', 'contact_number', 'address', 'notes')
 
     def create(self, validated_data):
-        # Generate a random 16-char password for clients (since they use OTP)
-        random_password = User.objects.make_random_password()
+        # --- 2. CHANGE THIS LINE ---
+        # OLD (Broken): random_password = User.objects.make_random_password()
+        
+        # NEW (Fixed):
+        random_password = get_random_string(length=16) 
+        
         validated_data['password'] = random_password
         
         # Use a simplified creation logic for clients

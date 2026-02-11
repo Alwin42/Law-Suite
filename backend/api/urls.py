@@ -5,23 +5,34 @@ from .views import (
     RequestOTPView, 
     VerifyOTPView,
     CustomTokenObtainPairView,
-    ActiveAdvocateListView
+    ActiveAdvocateListView,
+    # --- IMPORT NEW VIEWS ---
+    UserProfileView,
+    ClientCaseListView,
+    ClientHearingListView,
+    ClientPaymentListView
 )
 from rest_framework_simplejwt.views import TokenRefreshView
 
 urlpatterns = [
-    # Auth - Advocate
+    # Auth
     path('register/advocate/', AdvocateRegisterView.as_view(), name='register_advocate'),
+    path('register/client/', ClientRegisterView.as_view(), name='register_client'),
     path('login/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     
-    # Auth - Client
-    path('register/client/', ClientRegisterView.as_view(), name='register_client'),
-    
-    # OTP - THESE MUST MATCH your frontend API calls
+    # OTP
     path('auth/otp/request/', RequestOTPView.as_view(), name='otp_request'),
     path('auth/otp/verify/', VerifyOTPView.as_view(), name='otp_verify'),
 
-    # Tokens & Data
+    # Tokens
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    
+    # Data - Public
     path('advocates/active/', ActiveAdvocateListView.as_view(), name='active_advocates'),
+
+    # --- NEW CLIENT DASHBOARD ENDPOINTS ---
+    path('user/profile/', UserProfileView.as_view(), name='user-profile'),     # <--- Fixes your 404
+    path('client/cases/', ClientCaseListView.as_view(), name='client-cases'),
+    path('client/hearings/', ClientHearingListView.as_view(), name='client-hearings'),
+    path('client/payments/', ClientPaymentListView.as_view(), name='client-payments'),
 ]

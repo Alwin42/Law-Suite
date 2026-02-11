@@ -5,8 +5,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model
 import random
 from django.conf import settings
-
-# --- MISSING IMPORT ADDED HERE ---
+from rest_framework.permissions import IsAuthenticated
 from django.core.mail import send_mail  
 
 from .models import LoginOTP
@@ -116,3 +115,33 @@ class ActiveAdvocateListView(generics.ListAPIView):
 
     def get_queryset(self):
         return User.objects.filter(role='ADVOCATE', is_active=True)
+    
+class UserProfileView(views.APIView):
+    permission_classes = [IsAuthenticated] # Only logged-in users can see this
+
+    def get(self, request):
+        # Uses the existing UserSerializer to return name, email, role, etc.
+        serializer = UserSerializer(request.user)
+        return Response(serializer.data)
+
+class ClientCaseListView(views.APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # TODO: Later, fetch real cases like: cases = Case.objects.filter(client=request.user)
+        # For now, return an empty list so the frontend doesn't crash
+        return Response([]) 
+
+class ClientHearingListView(views.APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # TODO: Add Hearing model logic here later
+        return Response([])
+
+class ClientPaymentListView(views.APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # TODO: Add Payment model logic here later
+        return Response([])
