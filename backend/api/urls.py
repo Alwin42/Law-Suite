@@ -1,6 +1,7 @@
 from django.urls import path
 from .views import (
-    AdvocateRegisterView, 
+    AdvocateRegisterView,
+    CaseListCreateView, 
     ClientRegisterView, 
     RequestOTPView, 
     VerifyOTPView,
@@ -31,9 +32,10 @@ urlpatterns = [
     path('advocates/active/', ActiveAdvocateListView.as_view(), name='active_advocates'),
 
     # --- NEW CLIENT DASHBOARD ENDPOINTS ---
-    path('user/profile/', UserProfileView.as_view(), name='user-profile'),     # <--- Fixes your 404
+    path('user/profile/', UserProfileView.as_view(), name='user-profile'),    
     path('client/cases/', ClientCaseListView.as_view(), name='client-cases'),
     path('client/hearings/', ClientHearingListView.as_view(), name='client-hearings'),
     path('client/payments/', ClientPaymentListView.as_view(), name='client-payments'),
     path('clients/', ClientListCreateView.as_view(), name='client-list-create'),
+    path('cases/', CaseListCreateView.as_view(), name='case-list-create'),
 ]

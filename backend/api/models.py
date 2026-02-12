@@ -46,3 +46,54 @@ class Client(models.Model):
 
     def __str__(self):
         return f"{self.full_name} ({self.email})"
+    
+class Client(models.Model):
+    # DFD: client_id is handled automatically by Django as 'id'
+    full_name = models.CharField(max_length=255)
+    contact_number = models.CharField(max_length=20)
+    email = models.EmailField()
+    address = models.TextField()
+    notes = models.TextField(blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    # DFD: created_by (FK)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='clients')
+
+    def __str__(self):
+        return f"{self.full_name} ({self.email})"
+
+class Case(models.Model):
+    # DFD Choices for specific fields
+    CASE_TYPES = [
+        ('Civil', 'Civil'),
+        ('Criminal', 'Criminal'),
+        ('Corporate', 'Corporate'),
+        ('Family', 'Family'),
+        ('Property', 'Property'),
+    ]
+    STATUS_CHOICES = [
+        ('Open', 'Open'),
+        ('Pending', 'Pending'),
+        ('Closed', 'Closed'),
+        ('Decree', 'Decree'),
+    ]
+
+    # DFD Attributes
+    case_number = models.CharField(max_length=50, unique=True)
+    case_title = models.CharField(max_length=255) # Changed from 'title'
+    case_type = models.CharField(max_length=50, choices=CASE_TYPES, default='Civil')
+    court_name = models.CharField(max_length=255) # New field from DFD
+    filing_date = models.DateField(null=True, blank=True) # New field from DFD
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Open')
+    
+    # DFD Foreign Keys
+    client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='cases') # client_id (FK)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='cases') # created_by (FK)
+
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True) # New field from DFD
+
+    def __str__(self):
+        return f"{self.case_number} - {self.case_title}"

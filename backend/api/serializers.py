@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.utils.crypto import get_random_string
 from rest_framework import serializers
-from .models import Client
+from .models import Case, Client
 
 User = get_user_model()
 
@@ -103,5 +103,26 @@ class OTPVerifySerializer(serializers.Serializer):
 class ClientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Client
-        fields = ['id', 'full_name', 'email', 'contact_number', 'address', 'notes', 'is_active', 'created_at']
+        fields = [
+            'id', 'full_name', 'contact_number', 'email', 
+            'address', 'notes', 'is_active', 'created_at', 'created_by'
+        ]
         read_only_fields = ['id', 'created_at', 'created_by']
+
+class CaseSerializer(serializers.ModelSerializer):
+    # Helper to show client name instead of just ID in the frontend list
+    client_name = serializers.CharField(source='client.full_name', read_only=True)
+    
+    # Write-only field to accept ID when creating a case
+    client_id = serializers.PrimaryKeyRelatedField(
+        queryset=Client.objects.all(), source='client', write_only=True
+    )
+
+    class Meta:
+        model = Case
+        fields = [
+            'id', 'case_number', 'case_title', 'case_type', 'court_name', 
+            'filing_date', 'status', 'client_id', 'client_name', 
+            'created_at', 'updated_at', 'created_by'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at', 'created_by']

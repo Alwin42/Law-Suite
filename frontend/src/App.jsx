@@ -7,6 +7,7 @@ import ClientAuthPage from "./components/ClientAuthPage";
 import BookAppointment from "./components/BookAppointment";
 import ClientDashboard from "./components/ClientDashboard";
 import ClientsPage from "./components/ClientsPage";
+import CasePage from "./components/CasePage";
 function App() {
   return (
     <Router>
@@ -21,7 +22,7 @@ function App() {
         <Route path="/client-dashboard" element={<ClientDashboard />} />
         <Route path="/clients" element={<ClientsPage />} />
         <Route path="/book-appointment" element={<BookAppointment />} />
-        
+        <Route path="/cases" element={<CasePage/>} />
       </Routes>
     </Router>
   );

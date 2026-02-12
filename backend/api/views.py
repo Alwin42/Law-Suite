@@ -7,16 +7,12 @@ import random
 from django.conf import settings
 from rest_framework.permissions import IsAuthenticated
 from django.core.mail import send_mail  
-from django.core.mail import send_mail
-from django.template.loader import render_to_string # (Optional if using separate files, but we'll use inline HTML for simplicity)
 from django.utils.html import strip_tags
-from .models import Client
-from .serializers import ClientSerializer
-from .models import LoginOTP
+from .models import Client , Case , LoginOTP
 from .serializers import (
     AdvocateRegistrationSerializer, 
     ClientRegistrationSerializer,
-    CustomTokenObtainPairSerializer,
+    CustomTokenObtainPairSerializer,CaseSerializer, ClientSerializer,
     UserSerializer,
     EmailSerializer,
     OTPVerifySerializer
@@ -199,6 +195,8 @@ class ClientPaymentListView(views.APIView):
     def get(self, request):
         # TODO: Add Payment model logic here later
         return Response([])
+    
+
 class ClientListCreateView(generics.ListCreateAPIView):
     serializer_class = ClientSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -209,4 +207,16 @@ class ClientListCreateView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         # Automatically set the 'created_by' field to the current user
+        serializer.save(created_by=self.request.user)
+
+class CaseListCreateView(generics.ListCreateAPIView):
+    serializer_class = CaseSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # Filter: Show only cases created by this user
+        return Case.objects.filter(created_by=self.request.user).order_by('-updated_at')
+
+    def perform_create(self, serializer):
+        # Auto-set created_by to current user
         serializer.save(created_by=self.request.user)
