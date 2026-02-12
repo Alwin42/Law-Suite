@@ -81,16 +81,15 @@ class Case(models.Model):
 
     # DFD Attributes
     case_number = models.CharField(max_length=50, unique=True)
-    case_title = models.CharField(max_length=255) # Changed from 'title'
+    case_title = models.CharField(max_length=255) 
     case_type = models.CharField(max_length=50, choices=CASE_TYPES, default='Civil')
-    court_name = models.CharField(max_length=255) # New field from DFD
-    filing_date = models.DateField(null=True, blank=True) # New field from DFD
+    court_name = models.CharField(max_length=255) 
+    filing_date = models.DateField(null=True, blank=True) 
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Open')
-    
+    next_hearing = models.DateField(null=True, blank=True)
     # DFD Foreign Keys
-    client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='cases') # client_id (FK)
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='cases') # created_by (FK)
-
+    client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='cases') 
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='cases') 
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True) # New field from DFD

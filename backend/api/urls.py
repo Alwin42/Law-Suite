@@ -2,7 +2,8 @@ from django.urls import path
 from .views import (
     AdvocateRegisterView,
     CaseListCreateView, 
-    ClientRegisterView, 
+    ClientRegisterView,
+    DashboardStatsView, 
     RequestOTPView, 
     VerifyOTPView,
     CustomTokenObtainPairView,
@@ -11,10 +12,12 @@ from .views import (
     UserProfileView,
     ClientCaseListView,
     ClientHearingListView,
-    ClientPaymentListView
+    ClientPaymentListView,
+    CaseDetailView,
 )
 from rest_framework_simplejwt.views import TokenRefreshView
-from .views import ClientListCreateView
+from .views import ClientListCreateView , DashboardStatsView
+
 urlpatterns = [
     # Auth
     path('register/advocate/', AdvocateRegisterView.as_view(), name='register_advocate'),
@@ -30,7 +33,7 @@ urlpatterns = [
     
     # Data - Public
     path('advocates/active/', ActiveAdvocateListView.as_view(), name='active_advocates'),
-
+    path('dashboard/', DashboardStatsView.as_view(), name='dashboard-stats'),
     # --- NEW CLIENT DASHBOARD ENDPOINTS ---
     path('user/profile/', UserProfileView.as_view(), name='user-profile'),    
     path('client/cases/', ClientCaseListView.as_view(), name='client-cases'),
@@ -38,4 +41,5 @@ urlpatterns = [
     path('client/payments/', ClientPaymentListView.as_view(), name='client-payments'),
     path('clients/', ClientListCreateView.as_view(), name='client-list-create'),
     path('cases/', CaseListCreateView.as_view(), name='case-list-create'),
+    path('cases/<int:pk>/', CaseDetailView.as_view(), name='case-detail'),
 ]

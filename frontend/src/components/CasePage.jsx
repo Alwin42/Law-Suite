@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import api from '../api'; 
+import api from '../api';
 import { 
-  Search, Plus, Briefcase, Calendar, 
-  User, FileText, Gavel, Loader, X, Landmark 
+  Search, Plus, Calendar, User, FileText, Gavel, Loader, X, Edit2, Clock 
 } from 'lucide-react';
 
 export default function CasePage() {
@@ -11,16 +10,16 @@ export default function CasePage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
-  
+  const [editingCase, setEditingCase] = useState(null);
+
   const [formData, setFormData] = useState({
-    case_title: '',   
+    case_title: '',
     case_number: '',
     client_id: '',
-    court_name: '',   
+    court_name: '',
     case_type: 'Civil',
     status: 'Open',
-    next_hearing: '', 
+    next_hearing: '',
     description: ''
   });
 
@@ -43,251 +42,230 @@ export default function CasePage() {
     }
   };
 
+  const resetForm = () => {
+    setFormData({
+      case_title: '', case_number: '', client_id: '', court_name: '',
+      case_type: 'Civil', status: 'Open', next_hearing: '', description: ''
+    });
+    setEditingCase(null);
+    setIsModalOpen(false);
+  };
+
+  const handleEditClick = (caseItem) => {
+    setEditingCase(caseItem);
+    setFormData({
+      case_title: caseItem.case_title,
+      case_number: caseItem.case_number,
+      client_id: caseItem.client, 
+      court_name: caseItem.court_name,
+      case_type: caseItem.case_type || 'Civil',
+      status: caseItem.status,
+      next_hearing: caseItem.next_hearing || '',
+      description: caseItem.description || ''
+    });
+    setIsModalOpen(true);
+  };
+
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleAddCase = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // VALIDATION: Ensure Client, Title, and Court are present
-    if (!formData.client_id) {
-      alert("Please select a client.");
-      return;
-    }
-    if (!formData.case_title || !formData.court_name) {
-      alert("Case Title and Court Name are required.");
-      return;
-    }
+    if (!formData.client_id) return alert("Please select a client.");
+    if (!formData.case_title || !formData.court_name) return alert("Title and Court are required.");
 
-    // CLEAN PAYLOAD: Convert empty date strings to NULL
     const payload = {
       ...formData,
       next_hearing: formData.next_hearing === '' ? null : formData.next_hearing
     };
 
     try {
-      const response = await api.post('/cases/', payload);
-      setCases([response.data, ...cases]);
-      setIsModalOpen(false);
-      
-     
-      setFormData({
-        case_title: '', 
-        case_number: '', 
-        client_id: '', 
-        court_name: '',
-        case_type: 'Civil', 
-        status: 'Open', 
-        next_hearing: '', 
-        description: ''
-      });
-    } catch (error) {
-      console.error("Failed to create case:", error);
-      if (error.response && error.response.data) {
-        // This will now show specifics like "case_title: This field is required"
-        const errorMsg = JSON.stringify(error.response.data, null, 2);
-        alert(`Failed to create case:\n${errorMsg}`);
+      let response;
+      if (editingCase) {
+        response = await api.put(`/cases/${editingCase.id}/`, payload);
+        setCases(cases.map(c => c.id === editingCase.id ? response.data : c));
       } else {
-        alert("Network error. Please check your connection.");
+        response = await api.post('/cases/', payload);
+        setCases([response.data, ...cases]);
       }
+      resetForm();
+    } catch (error) {
+      console.error("Operation failed:", error);
+      const msg = error.response?.data ? JSON.stringify(error.response.data, null, 2) : "Check connection.";
+      alert(`Failed to save case:\n${msg}`);
     }
   };
 
-  // Filter Logic (Updated to check case_title)
   const filteredCases = cases.filter(c => 
     (c.case_title && c.case_title.toLowerCase().includes(searchTerm.toLowerCase())) ||
     c.case_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (c.client_name && c.client_name.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <Loader className="animate-spin text-slate-900" size={32} />
-      </div>
-    );
-  }
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <Loader className="animate-spin text-slate-900" size={32} />
+    </div>
+  );
 
   return (
-    <div className="min-h-screen bg-gray-50 p-16 font-sans text-slate-800">
-      
-      {/* HEADER */}
-      <div className="max-w-7xl mx-auto mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="min-h-screen bg-gray-50 p-8 font-sans text-slate-800">
+      <div className="max-w-7xl mx-auto mb-8 flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Case Files</h1>
           <p className="text-slate-500 mt-1">Track legal proceedings and hearings.</p>
         </div>
         <button 
-          onClick={() => setIsModalOpen(true)}
-          className="bg-slate-900 hover:bg-slate-800 text-white px-6 py-3 rounded-lg flex items-center gap-2 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
+          onClick={() => { setEditingCase(null); setIsModalOpen(true); }}
+          className="bg-slate-900 hover:bg-slate-800 text-white px-6 py-3 rounded-lg flex items-center gap-2 shadow-lg transition-all"
         >
           <Plus size={20} />
           <span>New Case</span>
         </button>
       </div>
 
-      {/* TOOLBAR */}
       <div className="max-w-7xl mx-auto mb-8 bg-white p-4 rounded-xl shadow-sm border border-slate-200">
         <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
           <input 
             type="text" 
-            placeholder="Search by case title, number, or client..." 
-            className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 transition-all"
+            placeholder="Search by title, number, or client..." 
+            className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900/10"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
       </div>
 
-      {/* CASES GRID */}
-      {filteredCases.length === 0 ? (
-        <div className="text-center py-20 bg-white rounded-xl border border-dashed border-slate-300">
-          <Briefcase size={48} className="text-slate-300 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-slate-900">No active cases</h3>
-          <p className="text-slate-500">Create a new case file to get started.</p>
-        </div>
-      ) : (
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredCases.map((item) => (
-            <div key={item.id} className="group bg-white rounded-xl p-6 border border-slate-200 hover:border-slate-300 hover:shadow-md transition-all relative overflow-hidden flex flex-col h-full">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredCases.map((item) => (
+          <div key={item.id} className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col h-full">
+            <div className="flex justify-between items-start mb-4">
+               <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-100">
+                 <Gavel size={24} className="text-slate-700" />
+               </div>
+               <span className={`px-2.5 py-1 rounded text-xs font-bold uppercase tracking-wider ${
+                 item.status === 'Open' ? 'bg-blue-50 text-blue-700' : 
+                 item.status === 'Closed' ? 'bg-gray-100 text-gray-500' : 'bg-amber-50 text-amber-700'
+               }`}>
+                 {item.status}
+               </span>
+            </div>
+
+            <div className="flex-1">
+              <h3 className="text-lg font-bold text-slate-900 mb-1 line-clamp-1">{item.case_title}</h3>
+              <p className="text-sm text-slate-500 font-mono mb-4">#{item.case_number}</p>
               
-              <div className="flex justify-between items-start mb-4">
-                <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-100">
-                  <Gavel size={24} className="text-slate-700" />
-                </div>
-                <span className={`px-2.5 py-1 rounded text-xs font-bold uppercase tracking-wider ${
-                  item.status === 'Open' ? 'bg-blue-50 text-blue-700' : 
-                  item.status === 'Closed' ? 'bg-gray-100 text-gray-500' : 'bg-amber-50 text-amber-700'
-                }`}>
-                  {item.status}
-                </span>
-              </div>
-
-              <div className="flex-1">
-                {/* Fixed: using item.case_title instead of item.title */}
-                <h3 className="text-lg font-bold text-slate-900 mb-1 line-clamp-1">{item.case_title}</h3>
-                <p className="text-sm text-slate-500 font-mono mb-4">#{item.case_number}</p>
-                
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-sm text-slate-600">
-                    <User size={16} className="text-slate-400 shrink-0" />
-                    <span className="truncate font-medium">{item.client_name || "Unknown Client"}</span>
-                  </div>
-                  
-                  {/* Added Court Name Display */}
-                  <div className="flex items-center gap-2 text-sm text-slate-600">
-                    <Landmark size={16} className="text-slate-400 shrink-0" />
-                    <span className="truncate">{item.court_name || "Court not specified"}</span>
-                  </div>
-
-                  <div className="flex items-center gap-2 text-sm text-slate-600">
-                    <Calendar size={16} className="text-slate-400 shrink-0" />
-                    <span>Next Hearing: <span className="text-slate-900">{item.next_hearing || "Not Scheduled"}</span></span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-6 pt-4 border-t border-slate-100 flex justify-between items-center">
-                 <span className="text-xs text-slate-400 font-medium">{item.case_type}</span>
-                 <button className="text-sm font-semibold text-slate-900 hover:underline">View Details →</button>
+              <div className="space-y-3">
+                 <div className="flex items-center gap-2 text-sm text-slate-600">
+                    <User size={16} className="text-slate-400 shrink-0"/> 
+                    <span className="truncate font-medium">{item.client_name || "Unknown"}</span>
+                 </div>
+                 <div className="flex items-center gap-2 text-sm text-slate-600">
+                    <Calendar size={16} className="text-slate-400 shrink-0"/> 
+                    {item.next_hearing ? (
+                      <span>Next Hearing: <span className="text-red-600 font-medium">{item.next_hearing}</span></span>
+                    ) : (
+                      <span>No hearing scheduled</span>
+                    )}
+                 </div>
+                 <div className="flex items-start gap-2 text-sm text-slate-600">
+                    <FileText size={16} className="text-slate-400 mt-0.5 shrink-0"/> 
+                    <span className="line-clamp-2 text-xs">{item.description || "No description."}</span>
+                 </div>
               </div>
             </div>
-          ))}
-        </div>
-      )}
 
-      {/* ADD CASE MODAL */}
+            <div className="mt-6 pt-4 border-t border-slate-100 flex justify-between items-center gap-2">
+               <button 
+                 onClick={() => handleEditClick(item)}
+                 className="text-xs font-semibold text-blue-600 hover:bg-blue-50 px-2 py-1.5 rounded transition-colors flex items-center gap-1"
+               >
+                 <Clock size={14} /> Hearing
+               </button>
+               <button 
+                 onClick={() => handleEditClick(item)}
+                 className="text-xs font-semibold text-slate-700 hover:bg-slate-100 px-2 py-1.5 rounded transition-colors flex items-center gap-1"
+               >
+                 <Edit2 size={14} /> Edit
+               </button>
+               <button className="text-xs font-semibold text-slate-900 hover:underline">View →</button>
+            </div>
+          </div>
+        ))}
+      </div>
+
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg p-6 animate-in fade-in zoom-in-95 duration-200">
             <div className="flex justify-between items-center mb-6 border-b border-slate-100 pb-4">
-              <h2 className="text-xl font-bold text-slate-900">Open New Case File</h2>
-              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+              <h2 className="text-xl font-bold text-slate-900">
+                {editingCase ? 'Edit Case Details' : 'Open New Case File'}
+              </h2>
+              <button onClick={resetForm} className="text-slate-400 hover:text-slate-600">
                 <X size={24} />
               </button>
             </div>
             
-            <form onSubmit={handleAddCase} className="space-y-4">
-              
-              {/* ROW 1: Case Title (Renamed from Title) */}
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-500 uppercase">Case Title</label>
-                <input required name="case_title" value={formData.case_title} onChange={handleInputChange} placeholder="e.g. State vs. Doe" className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-slate-900/10 outline-none" />
+                <label className="text-xs font-bold text-slate-500 uppercase">Case Title</label>
+                <input required name="case_title" value={formData.case_title} onChange={handleInputChange} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-slate-900/10 outline-none" placeholder="e.g. State vs Doe"/>
               </div>
 
-              {/* ROW 2: Case Number & Court Name */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-500 uppercase">Case Number</label>
-                  <input required name="case_number" value={formData.case_number} onChange={handleInputChange} placeholder="e.g. CV-2026-001" className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-slate-900/10 outline-none" />
+                  <label className="text-xs font-bold text-slate-500 uppercase">Case Number</label>
+                  <input required name="case_number" value={formData.case_number} onChange={handleInputChange} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-slate-900/10 outline-none" placeholder="CV-2026-001"/>
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-500 uppercase">Court Name</label>
-                  <input required name="court_name" value={formData.court_name} onChange={handleInputChange} placeholder="e.g. High Court" className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-slate-900/10 outline-none" />
+                  <label className="text-xs font-bold text-slate-500 uppercase">Court Name</label>
+                  <input required name="court_name" value={formData.court_name} onChange={handleInputChange} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-slate-900/10 outline-none" placeholder="High Court"/>
                 </div>
               </div>
 
-              {/* ROW 3: Client Selection */}
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-500 uppercase">Select Client</label>
-                <select 
-                  required 
-                  name="client_id" 
-                  value={formData.client_id} 
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border rounded-lg bg-white focus:ring-2 focus:ring-slate-900/10 outline-none appearance-none"
-                >
-                  <option value="">-- Choose a Client --</option>
-                  {clients.length > 0 ? (
-                    clients.map(client => (
-                      <option key={client.id} value={client.id}>
-                        {client.full_name} ({client.email})
-                      </option>
-                    ))
-                  ) : (
-                    <option disabled>No clients found. Add a client first.</option>
-                  )}
+                <label className="text-xs font-bold text-slate-500 uppercase">Client</label>
+                <select required name="client_id" value={formData.client_id} onChange={handleInputChange} className="w-full px-3 py-2 border rounded-lg bg-white focus:ring-2 focus:ring-slate-900/10 outline-none appearance-none">
+                  <option value="">Select Client</option>
+                  {clients.map(c => (
+                    <option key={c.id} value={c.id}>{c.full_name} ({c.email})</option>
+                  ))}
                 </select>
               </div>
 
-              {/* ROW 4: Type & Status */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-500 uppercase">Case Type</label>
+                  <label className="text-xs font-bold text-slate-500 uppercase">Type</label>
                   <select name="case_type" value={formData.case_type} onChange={handleInputChange} className="w-full px-3 py-2 border rounded-lg bg-white">
-                    <option value="Civil">Civil</option>
-                    <option value="Criminal">Criminal</option>
-                    <option value="Corporate">Corporate</option>
-                    <option value="Family">Family</option>
+                    {['Civil', 'Criminal', 'Corporate', 'Family'].map(t => <option key={t} value={t}>{t}</option>)}
                   </select>
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-500 uppercase">Status</label>
+                  <label className="text-xs font-bold text-slate-500 uppercase">Status</label>
                   <select name="status" value={formData.status} onChange={handleInputChange} className="w-full px-3 py-2 border rounded-lg bg-white">
-                    <option value="Open">Open</option>
-                    <option value="Pending">Pending</option>
-                    <option value="Closed">Closed</option>
+                    {['Open', 'Pending', 'Closed'].map(s => <option key={s} value={s}>{s}</option>)}
                   </select>
                 </div>
               </div>
 
-              {/* ROW 5: Hearing Date */}
               <div className="space-y-1">
-                <label className="block text-xs font-semibold text-slate-500 uppercase">Next Hearing Date</label>
+                <label className="text-xs font-bold text-slate-500 uppercase">Next Hearing</label>
                 <input type="date" name="next_hearing" value={formData.next_hearing} onChange={handleInputChange} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-slate-900/10 outline-none" />
               </div>
 
-              {/* ROW 6: Description (Renamed to match Backend if needed, typically 'description' is fine) */}
               <div className="space-y-1">
-                 <label className="text-xs font-semibold text-slate-500 uppercase">Description</label>
-                 <textarea name="description" rows="3" value={formData.description} onChange={handleInputChange} placeholder="Case description / specifics..." className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-slate-900/10 outline-none" />
+                 <label className="text-xs font-bold text-slate-500 uppercase">Description</label>
+                 <textarea name="description" rows="3" value={formData.description} onChange={handleInputChange} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-slate-900/10 outline-none" placeholder="Details..." />
               </div>
 
               <div className="flex gap-3 pt-4">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-2 border border-slate-300 text-slate-700 rounded-lg font-medium hover:bg-slate-50">Cancel</button>
-                <button type="submit" className="flex-1 py-2 bg-slate-900 text-white rounded-lg font-medium hover:bg-slate-800 shadow-lg">Create Case</button>
+                <button type="button" onClick={resetForm} className="flex-1 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50">Cancel</button>
+                <button type="submit" className="flex-1 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 shadow-lg">
+                  {editingCase ? 'Update Case' : 'Create Case'}
+                </button>
               </div>
             </form>
           </div>
