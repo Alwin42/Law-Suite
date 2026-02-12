@@ -2,6 +2,9 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.utils.crypto import get_random_string
+from rest_framework import serializers
+from .models import Client
+
 User = get_user_model()
 
 # --- 1. BASE REGISTRATION SERIALIZER ---
@@ -96,3 +99,9 @@ class EmailSerializer(serializers.Serializer):
 class OTPVerifySerializer(serializers.Serializer):
     email = serializers.EmailField()
     otp = serializers.CharField(max_length=6)
+
+class ClientSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Client
+        fields = ['id', 'full_name', 'email', 'contact_number', 'address', 'notes', 'is_active', 'created_at']
+        read_only_fields = ['id', 'created_at', 'created_by']

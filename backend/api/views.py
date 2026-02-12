@@ -1,4 +1,4 @@
-from rest_framework import status, views, generics, permissions
+from rest_framework import status, views, generics, permissions ,generics, permissions
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -10,7 +10,8 @@ from django.core.mail import send_mail
 from django.core.mail import send_mail
 from django.template.loader import render_to_string # (Optional if using separate files, but we'll use inline HTML for simplicity)
 from django.utils.html import strip_tags
-
+from .models import Client
+from .serializers import ClientSerializer
 from .models import LoginOTP
 from .serializers import (
     AdvocateRegistrationSerializer, 
@@ -198,3 +199,14 @@ class ClientPaymentListView(views.APIView):
     def get(self, request):
         # TODO: Add Payment model logic here later
         return Response([])
+class ClientListCreateView(generics.ListCreateAPIView):
+    serializer_class = ClientSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # Only return clients created by the currently logged-in advocate
+        return Client.objects.filter(created_by=self.request.user).order_by('-created_at')
+
+    def perform_create(self, serializer):
+        # Automatically set the 'created_by' field to the current user
+        serializer.save(created_by=self.request.user)

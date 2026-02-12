@@ -1,6 +1,8 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .models import User
+from .models import Client
+
 
 class CustomUserAdmin(UserAdmin):
     # 1. Columns to display in the user list
@@ -25,3 +27,30 @@ class CustomUserAdmin(UserAdmin):
 
 # Register the model
 admin.site.register(User, CustomUserAdmin)
+
+@admin.register(Client)
+class ClientAdmin(admin.ModelAdmin):
+    # Columns to show in the list view
+    list_display = ('full_name', 'email', 'contact_number', 'is_active', 'created_by', 'created_at')
+    
+    # Enable search by name and email
+    search_fields = ('full_name', 'email', 'contact_number')
+    
+    # Add sidebar filters
+    list_filter = ('is_active', 'created_at', 'created_by')
+    
+    # Make these fields read-only (optional, but good for audit trails)
+    readonly_fields = ('created_at',)
+    
+    # Organize the "Add/Edit" form layout
+    fieldsets = (
+        ('Client Details', {
+            'fields': ('full_name', 'email', 'contact_number', 'address')
+        }),
+        ('Case Info', {
+            'fields': ('notes', 'is_active')
+        }),
+        ('Meta Data', {
+            'fields': ('created_by', 'created_at')
+        }),
+    )

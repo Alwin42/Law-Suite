@@ -13,7 +13,7 @@ from .views import (
     ClientPaymentListView
 )
 from rest_framework_simplejwt.views import TokenRefreshView
-
+from .views import ClientListCreateView
 urlpatterns = [
     # Auth
     path('register/advocate/', AdvocateRegisterView.as_view(), name='register_advocate'),
@@ -35,4 +35,5 @@ urlpatterns = [
     path('client/cases/', ClientCaseListView.as_view(), name='client-cases'),
     path('client/hearings/', ClientHearingListView.as_view(), name='client-hearings'),
     path('client/payments/', ClientPaymentListView.as_view(), name='client-payments'),
+    path('clients/', ClientListCreateView.as_view(), name='client-list-create'),
 ]
