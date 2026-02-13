@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../api';
 import { 
-  Search, Plus, Calendar, User, FileText, Gavel, Loader, X, Edit2, Clock 
+  Search, Plus, Calendar, User, Gavel, Loader, X, Edit2, Clock 
 } from 'lucide-react';
 
 export default function CasePage() {
@@ -12,16 +12,14 @@ export default function CasePage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCase, setEditingCase] = useState(null);
 
-  // FIXED: Reverted back to client_id to match your specific Django Serializer
   const [formData, setFormData] = useState({
     case_title: '',
     case_number: '',
-    client_id: '', 
+    client: '', // We will use 'client' as the master key
     court_name: '',
     case_type: 'Civil',
     status: 'Open',
-    next_hearing: '',
-    description: ''
+    next_hearing: ''
   });
 
   useEffect(() => {
@@ -45,11 +43,19 @@ export default function CasePage() {
 
   const resetForm = () => {
     setFormData({
-      case_title: '', case_number: '', client_id: '', court_name: '',
-      case_type: 'Civil', status: 'Open', next_hearing: '', description: ''
+      case_title: '', case_number: '', client: '', court_name: '',
+      case_type: 'Civil', status: 'Open', next_hearing: ''
     });
     setEditingCase(null);
     setIsModalOpen(false);
+  };
+
+  // --- THE FIX: Robust Client ID Extractor ---
+  // Safely gets the ID whether Django sends it as an integer or a nested object
+  const extractClientId = (caseData) => {
+    if (!caseData) return '';
+    if (typeof caseData.client === 'object' && caseData.client !== null) return caseData.client.id || '';
+    return caseData.client || caseData.client_id || '';
   };
 
   const handleEditClick = (caseItem) => {
@@ -57,13 +63,11 @@ export default function CasePage() {
     setFormData({
       case_title: caseItem.case_title || '',
       case_number: caseItem.case_number || '',
-      // Safely grab the ID whether the backend sent it as client_id or client
-      client_id: caseItem.client_id || caseItem.client || '', 
+      client: extractClientId(caseItem), // Safely assign the Client ID so the dropdown works!
       court_name: caseItem.court_name || '',
       case_type: caseItem.case_type || 'Civil',
       status: caseItem.status || 'Open',
-      next_hearing: caseItem.next_hearing || '',
-      description: caseItem.description || ''
+      next_hearing: caseItem.next_hearing || ''
     });
     setIsModalOpen(true);
   };
@@ -75,10 +79,13 @@ export default function CasePage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.client_id) return alert("Please select a client.");
+    if (!formData.client) return alert("Please select a client.");
     if (!formData.case_title || !formData.court_name) return alert("Title and Court are required.");
 
-    // FIXED: Ensure we send exactly what Django is asking for: 'client_id' as an Integer
+    // --- THE FIX: Clean Payload ---
+    // Force the client ID to be a pure integer and send it under BOTH keys to satisfy Django
+    const finalClientId = parseInt(formData.client, 10);
+    
     const payload = {
       case_title: formData.case_title,
       case_number: formData.case_number,
@@ -86,8 +93,8 @@ export default function CasePage() {
       case_type: formData.case_type,
       status: formData.status,
       next_hearing: formData.next_hearing === '' ? null : formData.next_hearing,
-      description: formData.description,
-      client_id: parseInt(formData.client_id, 10) // Forces the ID to be a number
+      client: finalClientId,     // Django usually wants this
+      client_id: finalClientId   // Just in case it wants this!
     };
 
     try {
@@ -171,7 +178,7 @@ export default function CasePage() {
               <div className="space-y-3">
                  <div className="flex items-center gap-2 text-sm text-slate-600">
                     <User size={16} className="text-slate-400 shrink-0"/> 
-                    <span className="truncate font-medium">{item.client_name || "Unknown"}</span>
+                    <span className="truncate font-medium">{item.client_name || "Unknown Client"}</span>
                  </div>
                  <div className="flex items-center gap-2 text-sm text-slate-600">
                     <Calendar size={16} className="text-slate-400 shrink-0"/> 
@@ -180,10 +187,6 @@ export default function CasePage() {
                     ) : (
                       <span>No hearing scheduled</span>
                     )}
-                 </div>
-                 <div className="flex items-start gap-2 text-sm text-slate-600">
-                    <FileText size={16} className="text-slate-400 mt-0.5 shrink-0"/> 
-                    <span className="line-clamp-2 text-xs">{item.description || "No description."}</span>
                  </div>
               </div>
             </div>
@@ -237,8 +240,7 @@ export default function CasePage() {
 
               <div className="space-y-1">
                 <label className="text-xs font-bold text-slate-500 uppercase">Client</label>
-                {/* FIXED: Form input name set to client_id */}
-                <select required name="client_id" value={formData.client_id} onChange={handleInputChange} className="w-full px-3 py-2 border rounded-lg bg-white focus:ring-2 focus:ring-slate-900/10 outline-none appearance-none">
+                <select required name="client" value={formData.client} onChange={handleInputChange} className="w-full px-3 py-2 border rounded-lg bg-white focus:ring-2 focus:ring-slate-900/10 outline-none appearance-none">
                   <option value="">Select Client</option>
                   {clients.map(c => (
                     <option key={c.id} value={c.id}>{c.full_name} ({c.email})</option>
@@ -264,11 +266,6 @@ export default function CasePage() {
               <div className="space-y-1">
                 <label className="text-xs font-bold text-slate-500 uppercase">Next Hearing</label>
                 <input type="date" name="next_hearing" value={formData.next_hearing} onChange={handleInputChange} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-slate-900/10 outline-none" />
-              </div>
-
-              <div className="space-y-1">
-                 <label className="text-xs font-bold text-slate-500 uppercase">Description</label>
-                 <textarea name="description" rows="3" value={formData.description} onChange={handleInputChange} className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-slate-900/10 outline-none" placeholder="Details..." />
               </div>
 
               <div className="flex gap-3 pt-4">
