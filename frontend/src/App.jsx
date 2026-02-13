@@ -8,7 +8,9 @@ import BookAppointment from "./components/BookAppointment";
 import ClientDashboard from "./components/ClientDashboard";
 import ClientsPage from "./components/ClientsPage";
 import CasePage from "./components/CasePage";
+import HomePage from "./components/HomePage";
 function App() {
+  
   return (
     <Router>
       
@@ -16,6 +18,7 @@ function App() {
 
       <Routes>
         <Route path="/" element={<LandingPage />} />
+        <Route path="/home" element={<HomePage />} />
         <Route path="/login" element={<AuthPage />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/client-login" element={<ClientAuthPage />} />

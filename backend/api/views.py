@@ -4,6 +4,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model
 import random
+from django.utils import timezone
 from django.conf import settings
 from rest_framework.permissions import IsAuthenticated
 from django.core.mail import send_mail  
@@ -17,6 +18,10 @@ from .serializers import (
     EmailSerializer,
     OTPVerifySerializer
 )
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import permissions
+from .models import Client, Case
 
 User = get_user_model()
 
@@ -220,3 +225,58 @@ class CaseListCreateView(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         # Auto-set created_by to current user
         serializer.save(created_by=self.request.user)
+
+class CaseDetailView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = CaseSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # Ensure users can only edit their own cases
+        return Case.objects.filter(created_by=self.request.user)
+    
+class DashboardStatsView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        today = timezone.now().date()
+
+        # 1. Fetch Counts
+        active_cases = Case.objects.filter(created_by=user, status='Open').count()
+        # Count hearings from today onwards
+        pending_hearings = Case.objects.filter(created_by=user, next_hearing__gte=today).count()
+        total_clients = Client.objects.filter(created_by=user).count()
+
+        # 2. Fetch Recent Cases (Limit 3)
+        recent_cases_qs = Case.objects.filter(created_by=user).order_by('-created_at')[:3]
+        recent_cases = [{
+            'id': c.id,
+            'case_title': c.case_title,
+            'case_number': c.case_number,
+            'case_type': c.case_type,
+            'status': c.status
+        } for c in recent_cases_qs]
+
+        # 3. Fetch Upcoming Hearings (Limit 3)
+        upcoming_hearings_qs = Case.objects.filter(created_by=user, next_hearing__gte=today).order_by('next_hearing')[:3]
+        upcoming_hearings = [{
+            'id': c.id,
+            'case_title': c.case_title,
+            'next_hearing': c.next_hearing,
+            'court_name': c.court_name
+        } for c in upcoming_hearings_qs]
+
+        return Response({
+            'stats': {
+                'active_cases': active_cases,
+                'pending_hearings': pending_hearings,
+                'total_clients': total_clients,
+            },
+            'recent_cases': recent_cases,
+            'upcoming_hearings': upcoming_hearings,
+            # Also send user details to ensure profile is accurate
+            'user_profile': {
+                'name': user.full_name if hasattr(user, 'full_name') else user.username,
+                'role': user.role if hasattr(user, 'role') else 'Advocate'
+            }
+        })
