@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Parallax, ParallaxLayer } from '@react-spring/parallax';
-import { motion } from 'framer-motion'; // Imported framer-motion
+import { motion } from 'framer-motion'; 
 import api from '../api';
 import { 
   ChevronDown, Calendar, Gavel, CheckCircle, 
@@ -15,7 +15,7 @@ const IMAGES = {
   locker: "locker.png"
 };
 
-// --- ANIMATION VARIANTS (Adapted from your snippet) ---
+// --- ANIMATION VARIANTS ---
 const fadeUpSpring = {
   hidden: { opacity: 0, y: 150 },
   visible: { 
@@ -42,7 +42,6 @@ const staggerContainer = {
   }
 };
 
-// Variant for sticky notes to maintain their rotation
 const cardSpring = {
   hidden: { opacity: 0, y: 100 },
   visible: { 
@@ -52,9 +51,11 @@ const cardSpring = {
   }
 };
 
-
 export default function HomePage() {
   const parallaxRef = useRef(null);
+  
+  // FIX: Moved the state variables INSIDE the component where they belong
+  const [advocateName, setAdvocateName] = useState("ADVOCATE"); 
   const [cases, setCases] = useState([]);
   const [reminders, setReminders] = useState([]);
   const [payments, setPayments] = useState([]);
@@ -66,7 +67,10 @@ export default function HomePage() {
       try {
         const casesRes = await api.get('/cases/');
         setCases(casesRes.data);
-
+        
+        const profileRes = await api.get('/dashboard/');
+        setAdvocateName(profileRes.data.user_profile.name || "ADVOCATE");
+        
         const today = new Date();
         const upcoming = casesRes.data
           .filter(c => c.next_hearing && new Date(c.next_hearing) >= today)
@@ -79,7 +83,7 @@ export default function HomePage() {
             priority: c.status === 'Open' ? 'High' : 'Medium'
           }));
         setReminders(upcoming);
-
+        
         setPayments([
           { id: 1, client: "John Doe", amount: 15000, status: "Paid", date: "2024-02-10" },
           { id: 2, client: "Sarah Smith", amount: 5000, status: "Pending", date: "2024-02-14" },
@@ -121,7 +125,7 @@ export default function HomePage() {
               Digital Legal Workspace
             </motion.div>
             <motion.h1 variants={fadeUpSpring} className="text-7xl md:text-9xl font-bold tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-400 drop-shadow-2xl mb-6">
-              ALWIN
+              Adv. {advocateName.toUpperCase()}
             </motion.h1>
             <motion.p variants={fadeUpSpring} className="text-xl md:text-2xl text-slate-300 font-light tracking-wide max-w-2xl mx-auto mb-12 border-l-2 border-amber-500 pl-6 text-left glass-panel">
               "Justice delayed is justice denied."<br/> 
