@@ -111,7 +111,7 @@ export default function CasePage() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8 font-sans text-slate-800">
+    <div className="min-h-screen bg-gray-50 p-16 font-sans text-slate-800">
       <div className="max-w-7xl mx-auto mb-8 flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Case Files</h1>

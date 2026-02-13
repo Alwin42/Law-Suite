@@ -7,6 +7,20 @@ import {
   Settings, LogOut, Bell, Search, Plus, Loader 
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
+const NavItem = ({ icon: Icon, label, to }) => (
+  <NavLink 
+    to={to}
+    className={({ isActive }) => `
+      w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors 
+      ${isActive 
+        ? "bg-slate-900 text-white shadow-sm" // Active styling
+        : "text-slate-500 hover:bg-slate-100 hover:text-slate-900"} // Inactive styling
+    `}
+  >
+    <Icon size={18} />
+    {label}
+  </NavLink>
+);
 const Dashboard = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -186,14 +200,7 @@ const Dashboard = () => {
   );
 };
 
-// Helpers
-const NavItem = ({ icon: Icon, label, isActive }) => (
-  <button className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-    isActive ? "bg-slate-900 text-white shadow-sm" : "text-slate-500 hover:bg-slate-100 hover:text-slate-900"
-  }`}>
-    <Icon size={18} /> {label}
-  </button>
-);
+
 
 const StatCard = ({ label, value, trend }) => (
   <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
