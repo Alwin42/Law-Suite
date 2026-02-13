@@ -12,10 +12,11 @@ export default function CasePage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCase, setEditingCase] = useState(null);
 
+  // FIXED: Reverted back to client_id to match your specific Django Serializer
   const [formData, setFormData] = useState({
     case_title: '',
     case_number: '',
-    client_id: '',
+    client_id: '', 
     court_name: '',
     case_type: 'Civil',
     status: 'Open',
@@ -54,12 +55,13 @@ export default function CasePage() {
   const handleEditClick = (caseItem) => {
     setEditingCase(caseItem);
     setFormData({
-      case_title: caseItem.case_title,
-      case_number: caseItem.case_number,
-      client_id: caseItem.client, 
-      court_name: caseItem.court_name,
+      case_title: caseItem.case_title || '',
+      case_number: caseItem.case_number || '',
+      // Safely grab the ID whether the backend sent it as client_id or client
+      client_id: caseItem.client_id || caseItem.client || '', 
+      court_name: caseItem.court_name || '',
       case_type: caseItem.case_type || 'Civil',
-      status: caseItem.status,
+      status: caseItem.status || 'Open',
       next_hearing: caseItem.next_hearing || '',
       description: caseItem.description || ''
     });
@@ -76,9 +78,16 @@ export default function CasePage() {
     if (!formData.client_id) return alert("Please select a client.");
     if (!formData.case_title || !formData.court_name) return alert("Title and Court are required.");
 
+    // FIXED: Ensure we send exactly what Django is asking for: 'client_id' as an Integer
     const payload = {
-      ...formData,
-      next_hearing: formData.next_hearing === '' ? null : formData.next_hearing
+      case_title: formData.case_title,
+      case_number: formData.case_number,
+      court_name: formData.court_name,
+      case_type: formData.case_type,
+      status: formData.status,
+      next_hearing: formData.next_hearing === '' ? null : formData.next_hearing,
+      description: formData.description,
+      client_id: parseInt(formData.client_id, 10) // Forces the ID to be a number
     };
 
     try {
@@ -100,7 +109,7 @@ export default function CasePage() {
 
   const filteredCases = cases.filter(c => 
     (c.case_title && c.case_title.toLowerCase().includes(searchTerm.toLowerCase())) ||
-    c.case_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (c.case_number && c.case_number.toLowerCase().includes(searchTerm.toLowerCase())) ||
     (c.client_name && c.client_name.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
@@ -142,6 +151,7 @@ export default function CasePage() {
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredCases.map((item) => (
           <div key={item.id} className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col h-full">
+            
             <div className="flex justify-between items-start mb-4">
                <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-100">
                  <Gavel size={24} className="text-slate-700" />
@@ -156,7 +166,7 @@ export default function CasePage() {
 
             <div className="flex-1">
               <h3 className="text-lg font-bold text-slate-900 mb-1 line-clamp-1">{item.case_title}</h3>
-              <p className="text-sm text-slate-500 font-mono mb-4">#{item.case_number}</p>
+              <p className="text-sm text-slate-500 font-mono mb-4">Case No: {item.case_number}</p>
               
               <div className="space-y-3">
                  <div className="flex items-center gap-2 text-sm text-slate-600">
@@ -178,20 +188,19 @@ export default function CasePage() {
               </div>
             </div>
 
-            <div className="mt-6 pt-4 border-t border-slate-100 flex justify-between items-center gap-2">
+            <div className="mt-6 pt-4 border-t border-slate-100 flex justify-end items-center gap-2">
                <button 
                  onClick={() => handleEditClick(item)}
-                 className="text-xs font-semibold text-blue-600 hover:bg-blue-50 px-2 py-1.5 rounded transition-colors flex items-center gap-1"
+                 className="text-xs font-semibold text-blue-600 hover:bg-blue-50 px-3 py-1.5 rounded transition-colors flex items-center gap-1"
                >
-                 <Clock size={14} /> Hearing
+                 <Clock size={14} /> Update
                </button>
                <button 
                  onClick={() => handleEditClick(item)}
-                 className="text-xs font-semibold text-slate-700 hover:bg-slate-100 px-2 py-1.5 rounded transition-colors flex items-center gap-1"
+                 className="text-xs font-semibold text-slate-700 hover:bg-slate-100 px-3 py-1.5 rounded transition-colors flex items-center gap-1"
                >
                  <Edit2 size={14} /> Edit
                </button>
-               <button className="text-xs font-semibold text-slate-900 hover:underline">View →</button>
             </div>
           </div>
         ))}
@@ -228,6 +237,7 @@ export default function CasePage() {
 
               <div className="space-y-1">
                 <label className="text-xs font-bold text-slate-500 uppercase">Client</label>
+                {/* FIXED: Form input name set to client_id */}
                 <select required name="client_id" value={formData.client_id} onChange={handleInputChange} className="w-full px-3 py-2 border rounded-lg bg-white focus:ring-2 focus:ring-slate-900/10 outline-none appearance-none">
                   <option value="">Select Client</option>
                   {clients.map(c => (
@@ -262,8 +272,8 @@ export default function CasePage() {
               </div>
 
               <div className="flex gap-3 pt-4">
-                <button type="button" onClick={resetForm} className="flex-1 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50">Cancel</button>
-                <button type="submit" className="flex-1 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 shadow-lg">
+                <button type="button" onClick={resetForm} className="flex-1 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors">Cancel</button>
+                <button type="submit" className="flex-1 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 shadow-lg transition-transform active:scale-95">
                   {editingCase ? 'Update Case' : 'Create Case'}
                 </button>
               </div>

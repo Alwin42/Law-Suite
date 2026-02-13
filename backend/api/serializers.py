@@ -120,9 +120,5 @@ class CaseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Case
-        fields = [
-            'id', 'case_number', 'case_title', 'case_type', 'court_name', 
-            'filing_date', 'status', 'client_id', 'client_name', 
-            'created_at', 'updated_at', 'created_by'
-        ]
+        fields = '__all__'
         read_only_fields = ['id', 'created_at', 'updated_at', 'created_by']

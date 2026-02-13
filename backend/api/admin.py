@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .models import User
-from .models import Client
+from .models import Client , Case
 
 
 class CustomUserAdmin(UserAdmin):
@@ -52,5 +52,32 @@ class ClientAdmin(admin.ModelAdmin):
         }),
         ('Meta Data', {
             'fields': ('created_by', 'created_at')
+        }),
+    )
+
+@admin.register(Case)
+class CaseAdmin(admin.ModelAdmin):
+    # Columns to show in the case list view
+    list_display = ('case_title', 'case_number', 'client', 'status', 'next_hearing', 'created_by')
+    
+    # Enable searching by case title, number, or court name
+    search_fields = ('case_title', 'case_number', 'court_name')
+    
+    # Sidebar filters to quickly find open cases or cases with upcoming hearings
+    list_filter = ('status', 'case_type', 'next_hearing', 'created_by')
+    
+    # Protect timestamp fields from being manually edited
+    readonly_fields = ('created_at', 'updated_at')
+    
+    # Clean layout for adding/editing a case in the admin panel
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('client', 'case_title', 'case_number', 'case_type', 'status')
+        }),
+        ('Court & Hearing Details', {
+            'fields': ('court_name', 'next_hearing')
+        }),
+        ('Meta Data', {
+            'fields': ('created_by', 'created_at', 'updated_at')
         }),
     )

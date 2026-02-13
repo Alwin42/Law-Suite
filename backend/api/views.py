@@ -254,7 +254,9 @@ class DashboardStatsView(APIView):
             'case_title': c.case_title,
             'case_number': c.case_number,
             'case_type': c.case_type,
-            'status': c.status
+            'status': c.status,
+            'next_hearing': c.next_hearing, 
+            
         } for c in recent_cases_qs]
 
         # 3. Fetch Upcoming Hearings (Limit 3)

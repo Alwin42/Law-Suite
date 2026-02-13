@@ -174,7 +174,7 @@ const Dashboard = () => {
                     <div className="absolute left-[11px] top-2 bottom-2 w-[1px] bg-slate-200"></div>
                     {upcomingHearings.map((h) => (
                       <div key={h.id} className="relative pl-8">
-                        <span className="absolute left-[4px] top-1.5 w-3.5 h-3.5 rounded-full bg-slate-900 border-4 border-white shadow-sm z-10"></span>
+                        <span className="absolute left-[-3px] top-1.5 w-3.5 h-3.5 rounded-full bg-slate-900 border-4 border-white shadow-sm z-10"></span>
                         <p className="text-sm font-medium text-slate-900">{h.case_title}</p>
                         <p className="text-xs text-slate-500 mt-0.5">
                            {new Date(h.next_hearing).toLocaleDateString()}
