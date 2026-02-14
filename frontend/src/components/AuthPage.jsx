@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 // SAFE IMPORTS: Using your manual components
-import { Button } from "./ui/Button"; 
-import { Input } from "./ui/Input"; 
+import { Button } from "./ui/button"; 
+import { Input } from "./ui/input"; 
 import { motion, AnimatePresence } from "framer-motion";
 import { Scale, Mail, Lock, User, ArrowRight, Check, Phone, Briefcase } from "lucide-react";
 // FIX: Imported registerAdvocate instead of registerUser

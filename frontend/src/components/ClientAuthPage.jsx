@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "./ui/Button"; // Manual Button
-import { Input } from "./ui/Input";   // Manual Input
+import { Button } from "./ui/button"; // Manual Button
+import { Input } from "./ui/input";   // Manual Input
 import { motion, AnimatePresence } from "framer-motion";
 import { Mail, User, Phone, MapPin, FileText, ArrowRight, ShieldCheck } from "lucide-react";
 import { registerClient, requestOTP, verifyOTP } from "../api";

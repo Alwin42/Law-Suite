@@ -12,29 +12,29 @@ import { useNavigate } from "react-router-dom";
 import { getActiveAdvocates } from "../api"; 
 
 // --- UI COMPONENTS ---
-import { Button } from "./ui/Button";
+import { Button } from "./ui/button";
 import { Calendar } from "./ui/calendar";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "./ui/popover";
-import { Input } from "./ui/Input";
-import { Label } from "./ui/Label";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
 import {
     Card,
     CardContent,
     CardDescription,
     CardHeader,
     CardTitle,
-} from "./ui/Card";
+} from "./ui/ card";
 import {
     Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from "./ui/Select"; 
+} from "./ui/select"; 
 
 export default function BookAppointment() {
   const [date, setDate] = useState();

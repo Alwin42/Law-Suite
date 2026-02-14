@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api"; // Ensure this is your configured axios instance
-import { Button } from "../components/ui/Button"; 
+import { Button } from "./ui/button"; 
 import { 
   LayoutDashboard, Users, FileText, Gavel, Calendar, 
   Settings, LogOut, Bell, Search, Plus, Loader 

@@ -18,8 +18,8 @@ import { cn } from "@/lib/utils";
 import api from "../api"; // Import your axios instance
 
 // --- UI COMPONENTS ---
-import { Button } from "./ui/Button";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/Card";
+import { Button } from "./ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/ card";
 import { Badge } from "@/components/ui/badge"; 
 
 export default function ClientDashboard() {

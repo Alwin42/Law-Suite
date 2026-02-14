@@ -1,4 +1,4 @@
-import { Button } from "./ui/Button";
+import { Button } from "./ui/button";
 import { Link } from "react-router-dom";
 import { ArrowRight, CheckCircle2,  TrendingUp , CalendarPlus} from "lucide-react";
 import { motion, useScroll, useTransform } from "framer-motion";
