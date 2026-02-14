@@ -1,7 +1,6 @@
+backend/.env
+backend/api/__init__.py
+backend/api/__pycache__/
 backend/api/migrations/
-backend/core/__pycache__
-backend/venv
 backend/core/__init__.py
-frontend/node_modules
 backend/core/__pycache__/
-.env
