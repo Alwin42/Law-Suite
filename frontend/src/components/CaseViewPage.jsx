@@ -81,7 +81,7 @@ export default function CaseViewPage() {
         <div>
           <Button 
             variant="ghost" 
-            className="mb-4 text-slate-500 hover:text-slate-900 -ml-4"
+            className="mb-4 text-slate-800 hover:text-slate-900 -ml-4"
             onClick={() => navigate('/cases')}
           >
             <ArrowLeft className="mr-2 h-4 w-4" /> Back to Cases
@@ -90,35 +90,36 @@ export default function CaseViewPage() {
           <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
             <div>
               <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-3xl font-bold tracking-tight">{caseData.case_title}</h1>
-                <Badge variant={
-                  caseData.status === "Open" ? "default" : 
-                  caseData.status === "Closed" ? "secondary" : "outline"
-                }>
-                  {caseData.status}
-                </Badge>
+                <h1 className="text-3xl font-bold tracking-tight">Case Title - {caseData.case_title}</h1>
+                
               </div>
               <p className="text-slate-500 font-mono text-sm">Case No: {caseData.case_number}</p>
             </div>
-
+            
             {/* ACTION BUTTONS */}
             <div className="flex items-center gap-3">
               {caseData.status !== "Closed" && (
-                <Button variant="outline" onClick={handleCloseCase}>
+                <Button variant="outline" className="border border-red-500 text-red-500 hover:bg-red-50" onClick={handleCloseCase}>
                   <CheckCircle className="mr-2 h-4 w-4" /> Close Case
                 </Button>
               )}
-              {/* Note: In a real app, this would open your edit modal/page */}
-              <Button variant="outline" onClick={() => alert("Open Edit Modal")}>
-                <Edit2 className="mr-2 h-4 w-4" /> Edit
-              </Button>
-              <Button variant="destructive" onClick={handleDelete}>
+              
+              <Button variant="destructive" className="bg-red-500 hover:bg-red-600 text-white" onClick={handleDelete}>
                 <Trash2 className="mr-2 h-4 w-4" /> Delete
               </Button>
             </div>
           </div>
         </div>
-
+        <div className="flex items-center gap-1 text-md">
+                Status : 
+                <Badge className={
+                  caseData.status === "Open" ? "bg-green-100 text-green-800 hover:bg-green-200 border-transparent" :
+                  caseData.status === "Pending" ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-200 border-transparent" : 
+                  caseData.status === "Closed" ? "bg-red-100 text-red-800 hover:bg-red-200 border-transparent" : ""
+                  }>
+                  {caseData.status}
+                </Badge>
+        </div>
         <Separator />
 
         {/* =========================================
@@ -128,17 +129,17 @@ export default function CaseViewPage() {
           
           {/* Main Details (Takes up 2/3 of the space) */}
           <div className="md:col-span-2 space-y-6">
-            <Card className="shadow-sm">
+            <Card className="shadow-sm bg-white border-slate-200">
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <FileText className="h-5 w-5 text-slate-500" />
+                  <FileText className="h-5 w-5 text-gray-800" />
                   Case Details
                 </CardTitle>
               </CardHeader>
               <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-y-6 gap-x-8">
                 
                 <div className="space-y-1">
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Client</p>
+                  <p className="text-md font-semibold text-slate-500 uppercase tracking-wider">Client</p>
                   <div className="flex items-center gap-2 text-slate-900 font-medium">
                     <User className="h-4 w-4 text-slate-400" />
                     {caseData.client_name || `Client ID: ${caseData.client}`}
@@ -146,7 +147,7 @@ export default function CaseViewPage() {
                 </div>
 
                 <div className="space-y-1">
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Case Type</p>
+                  <p className="text-md font-semibold text-slate-500 uppercase tracking-wider">Case Type</p>
                   <div className="flex items-center gap-2 text-slate-900 font-medium">
                     <Scale className="h-4 w-4 text-slate-400" />
                     {caseData.case_type}
@@ -154,7 +155,7 @@ export default function CaseViewPage() {
                 </div>
 
                 <div className="space-y-1">
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Court Name</p>
+                  <p className="text-md font-semibold text-slate-500 uppercase tracking-wider">Court Name</p>
                   <div className="flex items-center gap-2 text-slate-900 font-medium">
                     <Building2 className="h-4 w-4 text-slate-400" />
                     {caseData.court_name}
@@ -162,7 +163,7 @@ export default function CaseViewPage() {
                 </div>
 
                 <div className="space-y-1">
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Filing / Hearing Date</p>
+                  <p className="text-md font-semibold text-slate-500 uppercase tracking-wider">Filing / Hearing Date</p>
                   <div className="flex items-center gap-2 text-slate-900 font-medium">
                     <Calendar className="h-4 w-4 text-slate-400" />
                     {/* Maps to filing_date or next_hearing depending on your model setup */}
@@ -176,16 +177,16 @@ export default function CaseViewPage() {
 
           {/* Meta Information Sidebar (Takes up 1/3 of the space) */}
           <div className="space-y-6">
-            <Card className="shadow-sm bg-slate-50 border-slate-200">
+            <Card className="shadow-sm bg-white  border-slate-200">
               <CardHeader>
-                <CardTitle className="text-sm font-bold text-slate-500 uppercase tracking-wider">
-                  System Metadata
+                <CardTitle className="text-md font-bold text-gray-900 uppercase tracking-wider">
+                  Case Database Details
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 
                 <div className="space-y-1">
-                  <p className="text-xs text-slate-500">Created At</p>
+                  <p className="text-sm text-slate-700">Created At</p>
                   <div className="flex items-center gap-2 text-sm text-slate-700 font-medium">
                     <Clock className="h-3.5 w-3.5 text-slate-400" />
                     {new Date(caseData.created_at).toLocaleDateString()}
@@ -193,7 +194,7 @@ export default function CaseViewPage() {
                 </div>
 
                 <div className="space-y-1">
-                  <p className="text-xs text-slate-500">Last Updated</p>
+                  <p className="text-sm text-slate-700">Last Updated</p>
                   <div className="flex items-center gap-2 text-sm text-slate-700 font-medium">
                     <Clock className="h-3.5 w-3.5 text-slate-400" />
                     {new Date(caseData.updated_at).toLocaleDateString()}
@@ -203,11 +204,11 @@ export default function CaseViewPage() {
                 <Separator className="my-2" />
 
                 <div className="space-y-1">
-                  <p className="text-xs text-slate-500">Created By</p>
+                  <p className="text-sm text-slate-700">Created By</p>
                   <div className="flex items-center gap-2 text-sm text-slate-700 font-medium">
                     <User className="h-3.5 w-3.5 text-slate-400" />
-                    {/* Assuming the backend sends created_by as an ID or nested object */}
-                    Advocate ID: {typeof caseData.created_by === 'object' ? caseData.created_by.id : caseData.created_by}
+                    Adv. {caseData.advocate_name || "Unknown Advocate"}
+                    
                   </div>
                 </div>
 

@@ -112,7 +112,7 @@ class ClientSerializer(serializers.ModelSerializer):
 class CaseSerializer(serializers.ModelSerializer):
     # Helper to show client name instead of just ID in the frontend list
     client_name = serializers.CharField(source='client.full_name', read_only=True)
-    
+    advocate_name = serializers.CharField(source='created_by.full_name', read_only=True)
     # Write-only field to accept ID when creating a case
     client_id = serializers.PrimaryKeyRelatedField(
         queryset=Client.objects.all(), source='client', write_only=True
