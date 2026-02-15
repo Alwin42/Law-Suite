@@ -282,3 +282,11 @@ class DashboardStatsView(APIView):
                 'role': user.role if hasattr(user, 'role') else 'Advocate'
             }
         })
+    
+class CaseDetailView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = CaseSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # SECURITY: Ensure advocates can only view/edit/delete their own cases
+        return Case.objects.filter(created_by=self.request.user)

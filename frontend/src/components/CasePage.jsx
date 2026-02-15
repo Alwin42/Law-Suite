@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom'; 
 import api from '../api';
 import { 
-  Search, Plus, MoreHorizontal, FileText, Edit2, FolderClosed, RefreshCcw, Loader2
+  Search, Plus, MoreHorizontal, FileText, Edit2, RefreshCcw, Loader2
 } from 'lucide-react';
 
 // Shadcn UI Components
@@ -22,6 +23,8 @@ import {
 } from "@/components/ui/select";
 
 export default function CasePage() {
+  const navigate = useNavigate(); 
+
   const [cases, setCases] = useState([]);
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -155,12 +158,16 @@ export default function CasePage() {
   });
 
   // Shadcn Badge styling logic based on status
-  const getStatusBadgeVariant = (status) => {
+  const getStatusColor = (status) => {
     switch (status) {
-      case 'Open': return 'default';
-      case 'Pending': return 'secondary';
-      case 'Closed': return 'outline';
-      default: return 'default';
+      case 'Open': 
+        return 'bg-green-500 hover:bg-green-600 text-white border-transparent';
+      case 'Pending': 
+        return 'bg-orange-500 hover:bg-orange-600 text-white border-transparent';
+      case 'Closed': 
+        return 'bg-red-500 hover:bg-red-600 text-white border-transparent';
+      default: 
+        return 'bg-slate-500 hover:bg-slate-600 text-white border-transparent';
     }
   };
 
@@ -171,7 +178,7 @@ export default function CasePage() {
   );
 
   return (
-    <div className="min-h-screen bg-background p-8 md:p-12 font-sans text-foreground">
+    <div className="min-h-screen bg-background p-9 md:p-16 font-sans text-foreground">
       <div className="max-w-7xl mx-auto">
         
         {/* =========================================
@@ -179,11 +186,11 @@ export default function CasePage() {
         ========================================= */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 pb-4 border-b">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Case Files</h1>
+            <h1 className="text-4xl font-bold tracking-tight">Case Files</h1>
             <p className="text-muted-foreground mt-1 text-sm">Manage active litigation, case history, and upcoming hearings.</p>
           </div>
           <div className="mt-4 md:mt-0 flex gap-3">
-            <Button onClick={() => { setEditingCase(null); setIsModalOpen(true); }}>
+            <Button className="bg-slate-900 hover:bg-slate-800 text-white shadow-sm transition-all" onClick={() => { setEditingCase(null); setIsModalOpen(true); }}>
               <Plus className="mr-2 h-4 w-4" /> New Case
             </Button>
           </div>
@@ -193,7 +200,7 @@ export default function CasePage() {
             2️⃣ FILTER ROW
         ========================================= */}
         <div className="flex flex-wrap items-center gap-4 mb-8">
-          <div className="relative w-full md:w-80">
+          <div className="relative w-full md:w-80 shadow-sm border border-slate-600 rounded-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input 
               placeholder="Search cases, clients..." 
@@ -204,11 +211,11 @@ export default function CasePage() {
           </div>
 
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-[140px]">
+            <SelectTrigger className="w-[140px] bg-white border-slate-600 shadow-sm">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="All">All Statuses</SelectItem>
+            <SelectContent className="bg-white border-slate-400 shadow-md">
+              <SelectItem value="All" >All Statuses</SelectItem>
               <SelectItem value="Open">Open</SelectItem>
               <SelectItem value="Pending">Pending</SelectItem>
               <SelectItem value="Closed">Closed</SelectItem>
@@ -216,10 +223,10 @@ export default function CasePage() {
           </Select>
 
           <Select value={typeFilter} onValueChange={setTypeFilter}>
-            <SelectTrigger className="w-[140px]">
+            <SelectTrigger className="w-[140px] bg-white border-slate-600 shadow-sm">
               <SelectValue placeholder="Case Type" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-white border-slate-400 shadow-md">
               <SelectItem value="All">All Types</SelectItem>
               <SelectItem value="Civil">Civil</SelectItem>
               <SelectItem value="Criminal">Criminal</SelectItem>
@@ -267,9 +274,9 @@ export default function CasePage() {
                     <TableCell>{item.client_name || "Unknown Client"}</TableCell>
                     <TableCell>{item.case_type}</TableCell>
                     <TableCell>
-                      <Badge variant={getStatusBadgeVariant(item.status)}>
-                        {item.status}
-                      </Badge>
+                        <Badge className={getStatusColor(item.status)}>
+                          {item.status}
+                        </Badge>
                     </TableCell>
                     <TableCell>
                       {item.next_hearing ? (
@@ -286,18 +293,16 @@ export default function CasePage() {
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
+                        
+                        <DropdownMenuContent align="end" className="bg-white border border-slate-200 shadow-md">
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem onClick={() => handleEditClick(item)}>
+                          <DropdownMenuItem onClick={() => navigate(`/cases/${item.id}`)}>
                             <FileText className="mr-2 h-4 w-4" /> View Details
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleEditClick(item)}>
                             <Edit2 className="mr-2 h-4 w-4" /> Edit Case
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem>
-                            <FolderClosed className="mr-2 h-4 w-4" /> Close Case
-                          </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
@@ -314,7 +319,7 @@ export default function CasePage() {
           ADD/EDIT CASE DIALOG
       ========================================= */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[600px] bg-white">
           <DialogHeader>
             <DialogTitle>{editingCase ? 'Edit Case Details' : 'Open New Case File'}</DialogTitle>
           </DialogHeader>
@@ -387,7 +392,7 @@ export default function CasePage() {
 
             <DialogFooter className="pt-4">
               <Button type="button" variant="outline" onClick={resetForm}>Cancel</Button>
-              <Button type="submit">{editingCase ? 'Update Case' : 'Create Case'}</Button>
+              <Button type="submit" className="bg-slate-900 hover:bg-slate-800 text-white shadow-sm transition-all">{editingCase ? 'Update Case' : 'Create Case'}</Button>
             </DialogFooter>
           </form>
         </DialogContent>

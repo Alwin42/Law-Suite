@@ -9,6 +9,8 @@ import ClientDashboard from "./components/ClientDashboard";
 import ClientsPage from "./components/ClientsPage";
 import CasePage from "./components/CasePage";
 import HomePage from "./components/HomePage";
+import CaseViewPage from './components/CaseViewPage';
+
 function App() {
   
   return (
@@ -26,6 +28,7 @@ function App() {
         <Route path="/clients" element={<ClientsPage />} />
         <Route path="/book-appointment" element={<BookAppointment />} />
         <Route path="/cases" element={<CasePage/>} />
+        <Route path="/cases/:id" element={<CaseViewPage />} />
         
         
       </Routes>
