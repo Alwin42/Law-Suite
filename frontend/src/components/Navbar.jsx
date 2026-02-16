@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-
+import { Link } from "react-router-dom";
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
 
@@ -25,9 +25,12 @@ const Navbar = () => {
       }`}
     >
       {/* Left: Logo */}
+      <Link to="/">
       <div className="text-xl font-bold tracking-[0.2em] text-primary uppercase">
         Law Suite
       </div>
+      </Link>
+      
 
       {/* Right: Navigation */}
       <div className="hidden md:flex items-center space-x-8">

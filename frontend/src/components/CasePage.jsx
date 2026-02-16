@@ -258,8 +258,9 @@ export default function CasePage() {
             <TableBody>
               {filteredCases.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                  <TableCell colSpan={6} className="h-24 text-center mb-4 text-muted-foreground">
                     No cases found.
+                    <p className="text-slate-800 mt-2 mb-8 max-w-md mx-auto">OR <br></br>Please log in again to access your case data.</p>
                   </TableCell>
                 </TableRow>
               ) : (

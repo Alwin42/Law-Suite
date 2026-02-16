@@ -41,7 +41,7 @@ const LandingPage = () => {
               Streamlining Legal Workflows Through <br className="hidden md:block"/> Unbiased Digital Automation
             </h2>
             <div className="flex gap-9">
-              <Link to="/login">
+              <Link to="/client-login">
                 <Button variant="ghost" className="group text-lg px-0 hover:bg-transparent pl-0">
                   Book Appointment
                   <CalendarPlus className="ml-2 w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />

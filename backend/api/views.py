@@ -1,4 +1,4 @@
-from rest_framework import status, views, generics, permissions ,generics, permissions
+from rest_framework import status, views, generics, permissions
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -9,19 +9,17 @@ from django.conf import settings
 from rest_framework.permissions import IsAuthenticated
 from django.core.mail import send_mail  
 from django.utils.html import strip_tags
-from .models import Client , Case , LoginOTP
+from .models import Client, Case, LoginOTP
 from .serializers import (
     AdvocateRegistrationSerializer, 
     ClientRegistrationSerializer,
-    CustomTokenObtainPairSerializer,CaseSerializer, ClientSerializer,
+    CustomTokenObtainPairSerializer,
+    CaseSerializer, 
+    ClientSerializer,
     UserSerializer,
     EmailSerializer,
     OTPVerifySerializer
 )
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import permissions
-from .models import Client, Case
 
 User = get_user_model()
 
@@ -44,18 +42,18 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 # --- 4. OTP VIEWS (For Client Login) ---
 class RequestOTPView(views.APIView):
     permission_classes = (permissions.AllowAny,)
-
+    authentication_classes = [] # Bypasses stale tokens
+    
     def post(self, request):
         serializer = EmailSerializer(data=request.data)
         if serializer.is_valid():
             email = serializer.validated_data['email']
             
-            # 1. Check if user exists
-            try:
-                user = User.objects.get(email=email)
-            except User.DoesNotExist:
+            # 1. Check if the email exists in the CLIENT table
+            client_exists = Client.objects.filter(email=email).exists()
+            if not client_exists:
                 return Response(
-                    {"error": "No account found with this email. Please register first."}, 
+                    {"error": "No client record found with this email. Please contact your advocate."}, 
                     status=status.HTTP_404_NOT_FOUND
                 )
 
@@ -118,7 +116,7 @@ class RequestOTPView(views.APIView):
                     email_from, 
                     recipient_list, 
                     fail_silently=False, 
-                    html_message=html_message # <--- This enables the HTML design
+                    html_message=html_message 
                 )
                 return Response({"message": "OTP sent successfully."})
             except Exception as e:
@@ -127,10 +125,10 @@ class RequestOTPView(views.APIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class VerifyOTPView(views.APIView):
     permission_classes = (permissions.AllowAny,)
+    authentication_classes = [] # Bypasses stale tokens
 
     def post(self, request):
         serializer = OTPVerifySerializer(data=request.data)
@@ -138,7 +136,7 @@ class VerifyOTPView(views.APIView):
             email = serializer.validated_data['email']
             otp = serializer.validated_data['otp']
 
-            # Check OTP
+            # 1. Check OTP validity
             try:
                 otp_record = LoginOTP.objects.filter(email=email).latest('created_at')
             except LoginOTP.DoesNotExist:
@@ -147,8 +145,25 @@ class VerifyOTPView(views.APIView):
             if otp_record.otp != otp or not otp_record.is_valid():
                 return Response({"error": "Invalid or expired OTP."}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Login Success - Generate Token
-            user = User.objects.get(email=email)
+            # 2. Fetch Client Data
+            client = Client.objects.filter(email=email).first()
+
+            # 3. Auto-provision the official User token account
+            user, created = User.objects.get_or_create(
+                email=email,
+                defaults={
+                    'username': email,
+                    'full_name': client.full_name if client else 'Client',
+                    'role': 'CLIENT',
+                }
+            )
+            
+            # If newly created, secure it by making password unusable (OTP only)
+            if created:
+                user.set_unusable_password() 
+                user.save()
+
+            # 4. Login Success - Generate JWT Tokens
             refresh = RefreshToken.for_user(user)
             
             # Clean up used OTPs
@@ -160,32 +175,34 @@ class VerifyOTPView(views.APIView):
                 'role': user.role,
                 'full_name': user.full_name
             })
+            
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 # --- 5. DATA VIEWS ---
 class ActiveAdvocateListView(generics.ListAPIView):
     serializer_class = UserSerializer
-    # Changed to AllowAny so clients can see advocates before logging in
     permission_classes = [permissions.AllowAny] 
 
     def get_queryset(self):
         return User.objects.filter(role='ADVOCATE', is_active=True)
     
+
 class UserProfileView(views.APIView):
-    permission_classes = [IsAuthenticated] # Only logged-in users can see this
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        # Uses the existing UserSerializer to return name, email, role, etc.
         serializer = UserSerializer(request.user)
         return Response(serializer.data)
+
 
 class ClientCaseListView(views.APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        # TODO: Later, fetch real cases like: cases = Case.objects.filter(client=request.user)
-        # For now, return an empty list so the frontend doesn't crash
+        # TODO: Later, fetch real cases
         return Response([]) 
+
 
 class ClientHearingListView(views.APIView):
     permission_classes = [IsAuthenticated]
@@ -193,6 +210,7 @@ class ClientHearingListView(views.APIView):
     def get(self, request):
         # TODO: Add Hearing model logic here later
         return Response([])
+
 
 class ClientPaymentListView(views.APIView):
     permission_classes = [IsAuthenticated]
@@ -207,34 +225,32 @@ class ClientListCreateView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        # Only return clients created by the currently logged-in advocate
         return Client.objects.filter(created_by=self.request.user).order_by('-created_at')
 
     def perform_create(self, serializer):
-        # Automatically set the 'created_by' field to the current user
         serializer.save(created_by=self.request.user)
+
 
 class CaseListCreateView(generics.ListCreateAPIView):
     serializer_class = CaseSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        # Filter: Show only cases created by this user
         return Case.objects.filter(created_by=self.request.user).order_by('-updated_at')
 
     def perform_create(self, serializer):
-        # Auto-set created_by to current user
         serializer.save(created_by=self.request.user)
+
 
 class CaseDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = CaseSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        # Ensure users can only edit their own cases
         return Case.objects.filter(created_by=self.request.user)
     
-class DashboardStatsView(APIView):
+
+class DashboardStatsView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
@@ -243,7 +259,6 @@ class DashboardStatsView(APIView):
 
         # 1. Fetch Counts
         active_cases = Case.objects.filter(created_by=user, status='Open').count()
-        # Count hearings from today onwards
         pending_hearings = Case.objects.filter(created_by=user, next_hearing__gte=today).count()
         total_clients = Client.objects.filter(created_by=user).count()
 
@@ -256,7 +271,6 @@ class DashboardStatsView(APIView):
             'case_type': c.case_type,
             'status': c.status,
             'next_hearing': c.next_hearing, 
-            
         } for c in recent_cases_qs]
 
         # 3. Fetch Upcoming Hearings (Limit 3)
@@ -276,17 +290,8 @@ class DashboardStatsView(APIView):
             },
             'recent_cases': recent_cases,
             'upcoming_hearings': upcoming_hearings,
-            # Also send user details to ensure profile is accurate
             'user_profile': {
                 'name': user.full_name if hasattr(user, 'full_name') else user.username,
                 'role': user.role if hasattr(user, 'role') else 'Advocate'
             }
         })
-    
-class CaseDetailView(generics.RetrieveUpdateDestroyAPIView):
-    serializer_class = CaseSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get_queryset(self):
-        # SECURITY: Ensure advocates can only view/edit/delete their own cases
-        return Case.objects.filter(created_by=self.request.user)

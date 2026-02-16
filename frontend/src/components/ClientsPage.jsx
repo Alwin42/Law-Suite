@@ -124,9 +124,10 @@ export default function ClientsPage() {
               <User size={40} className="text-slate-300" />
             </div>
             <h3 className="text-2xl font-bold text-slate-900 mb-2">No Clients Yet</h3>
-            <p className="text-slate-500 mb-8 max-w-md mx-auto">
+            <p className="text-slate-500 mb-3 max-w-md mx-auto">
               Your client list is empty. Add your first client to start managing cases and generating automated briefs.
             </p>
+            <p className="text-slate-500 mb-8 max-w-md mx-auto">OR <br></br>Please log in again to access your client data.</p>
             <button 
               onClick={() => setIsModalOpen(true)}
               className="bg-slate-900 text-white px-8 py-3 rounded-lg font-medium hover:bg-slate-800 transition-colors inline-flex items-center gap-2"
