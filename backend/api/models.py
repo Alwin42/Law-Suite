@@ -96,3 +96,23 @@ class Case(models.Model):
 
     def __str__(self):
         return f"{self.case_number} - {self.case_title}"
+    
+class Appointment(models.Model):
+    STATUS_CHOICES = [
+        ('Pending', 'Pending'),
+        ('Confirmed', 'Confirmed'),
+        ('Cancelled', 'Cancelled'),
+        ('Completed', 'Completed')
+    ]
+    # Foreign Keys
+    client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='appointments')
+    advocate = models.ForeignKey(User, on_delete=models.CASCADE, related_name='appointments')
+    appointment_date = models.DateField()
+    appointment_time = models.TimeField()
+    duration = models.CharField(max_length=50, default="30 Mins")
+    purpose = models.TextField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Appointment: {self.client.full_name} with {self.advocate.full_name} on {self.appointment_date}"

@@ -14,7 +14,7 @@ from .views import (
     ClientHearingListView,
     ClientPaymentListView,
     CaseDetailView,
-    ClientListCreateView 
+    ClientListCreateView , BookAppointmentView
 )
 
 urlpatterns = [
@@ -42,4 +42,5 @@ urlpatterns = [
     path('clients/', ClientListCreateView.as_view(), name='client-list-create'),
     path('cases/', CaseListCreateView.as_view(), name='case-list-create'),
     path('cases/<int:pk>/', CaseDetailView.as_view(), name='case-detail'),
+    path('appointments/book/', BookAppointmentView.as_view(), name='book-appointment'),
 ]

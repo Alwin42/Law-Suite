@@ -9,7 +9,7 @@ from django.conf import settings
 from rest_framework.permissions import IsAuthenticated
 from django.core.mail import send_mail  
 from django.utils.html import strip_tags
-from .models import Client, Case, LoginOTP
+from .models import Client, Case, LoginOTP , Appointment
 from .serializers import (
     AdvocateRegistrationSerializer, 
     ClientRegistrationSerializer,
@@ -18,7 +18,7 @@ from .serializers import (
     ClientSerializer,
     UserSerializer,
     EmailSerializer,
-    OTPVerifySerializer
+    OTPVerifySerializer, AppointmentSerializer
 )
 
 User = get_user_model()
@@ -295,3 +295,47 @@ class DashboardStatsView(views.APIView):
                 'role': user.role if hasattr(user, 'role') else 'Advocate'
             }
         })
+    
+# Appointment Booking 
+class BookAppointmentView(views.APIView):
+    # Allow any authenticated client to book
+    permission_classes = [permissions.IsAuthenticated] 
+
+    def post(self, request):
+        data = request.data
+        
+        # 1. Fetch the selected Advocate (user_id FK)
+        advocate_id = data.get('advocate_id')
+        advocate = User.objects.filter(id=advocate_id, role='ADVOCATE').first()
+        if not advocate:
+            return Response({"error": "Invalid Advocate selected."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 2. Find or Auto-Create the Client record (client_id FK)
+        # We use the logged-in user's email or the form email to link the records safely
+        email = data.get('client_email', request.user.email)
+        
+        client, _ = Client.objects.get_or_create(
+            email=email,
+            defaults={
+                'full_name': data.get('client_name', request.user.full_name),
+                'contact_number': data.get('client_contact', request.user.contact_number),
+                'address': data.get('client_address', ''),
+                'created_by': advocate # Link this client to the advocate
+            }
+        )
+
+        # 3. Create the Appointment record
+        appointment = Appointment.objects.create(
+            client=client,
+            advocate=advocate,
+            appointment_date=data.get('appointment_date'),
+            appointment_time=data.get('appointment_time'),
+            duration=data.get('duration'),
+            purpose=data.get('purpose'),
+            status='Pending'
+        )
+
+        return Response({
+            "message": "Appointment booked successfully!", 
+            "appointment_id": appointment.id
+        }, status=status.HTTP_201_CREATED)

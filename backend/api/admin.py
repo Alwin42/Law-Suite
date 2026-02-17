@@ -1,7 +1,8 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .models import User
-from .models import Client , Case
+# --- IMPORT APPOINTMENT HERE ---
+from .models import Client, Case, Appointment
 
 
 class CustomUserAdmin(UserAdmin):
@@ -79,5 +80,36 @@ class CaseAdmin(admin.ModelAdmin):
         }),
         ('Meta Data', {
             'fields': ('created_by', 'created_at', 'updated_at')
+        }),
+    )
+
+# --- NEW: APPOINTMENT ADMIN ---
+@admin.register(Appointment)
+class AppointmentAdmin(admin.ModelAdmin):
+    # Columns to show in the appointment list view
+    list_display = ('client', 'advocate', 'appointment_date', 'appointment_time', 'duration', 'status')
+    
+    # Enable searching across relationships (searching by client name or advocate name)
+    search_fields = ('client__full_name', 'advocate__full_name', 'purpose')
+    
+    # Sidebar filters to easily find pending or upcoming appointments
+    list_filter = ('status', 'appointment_date', 'advocate')
+    
+    # Protect timestamp fields
+    readonly_fields = ('created_at',)
+    
+    # Clean layout for adding/editing an appointment in the admin panel
+    fieldsets = (
+        ('Participants', {
+            'fields': ('client', 'advocate')
+        }),
+        ('Schedule', {
+            'fields': ('appointment_date', 'appointment_time', 'duration')
+        }),
+        ('Details', {
+            'fields': ('purpose', 'status')
+        }),
+        ('Meta Data', {
+            'fields': ('created_at',)
         }),
     )
