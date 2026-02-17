@@ -4,9 +4,10 @@ import api from "../api";
 import { Button } from "./ui/button"; 
 import { 
   LayoutDashboard, Users, FileText, Gavel, Calendar, 
-  Settings, LogOut, Bell, Search, ArrowRight, Loader 
+  Settings, LogOut, Bell, Search, ArrowRight, Loader, Clock 
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
+
 const NavItem = ({ icon: Icon, label, to }) => (
   <NavLink 
     to={to}
@@ -14,21 +15,23 @@ const NavItem = ({ icon: Icon, label, to }) => (
       w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors 
       ${isActive 
         ? "bg-slate-900 text-white shadow-sm" 
-        : "text-slate-500 hover:bg-slate-100 hover:text-slate-900"} // Inactive styling
+        : "text-slate-500 hover:bg-slate-100 hover:text-slate-900"} 
     `}
   >
     <Icon size={18} />
     {label}
   </NavLink>
 );
+
 const Dashboard = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   
   // State Real Data
-  const [stats, setStats] = useState({ active_cases: 0, pending_hearings: 0, total_clients: 0 , appointments_count: 0, });
+  const [stats, setStats] = useState({ active_cases: 0, pending_hearings: 0, total_clients: 0 , appointments_count: 0 });
   const [recentCases, setRecentCases] = useState([]);
   const [upcomingHearings, setUpcomingHearings] = useState([]);
+  const [recentAppointments, setRecentAppointments] = useState([]); // <-- NEW STATE
   const [user, setUser] = useState({ name: "Advocate", role: "Loading..." });
 
   // Fetch Dashboard Data on Load
@@ -41,11 +44,11 @@ const Dashboard = () => {
         setStats(response.data.stats);
         setRecentCases(response.data.recent_cases);
         setUpcomingHearings(response.data.upcoming_hearings);
+        setRecentAppointments(response.data.recent_appointments || []); // <-- ADDED THIS
         setUser(response.data.user_profile);
         
       } catch (error) {
         console.error("Failed to fetch dashboard data:", error);
-        // Optional: Redirect to login if unauthorized
         if (error.response && error.response.status === 401) {
           navigate("/login");
         }
@@ -62,6 +65,17 @@ const Dashboard = () => {
     navigate("/login");
   };
 
+  // Helper function for Appointment Badge Colors
+  const getApptStatusColor = (status) => {
+    switch (status) {
+      case 'Pending': return 'bg-yellow-50 text-yellow-700 border-yellow-100';
+      case 'Confirmed': return 'bg-blue-50 text-blue-700 border-blue-100';
+      case 'Completed': return 'bg-green-50 text-green-700 border-green-100';
+      case 'Cancelled': return 'bg-red-50 text-red-700 border-red-100';
+      default: return 'bg-slate-50 text-slate-700 border-slate-100';
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
@@ -76,14 +90,12 @@ const Dashboard = () => {
       {/* SIDEBAR */}
       <aside className="w-64 bg-white border-r border-slate-200 hidden md:flex flex-col fixed top-16 bottom-0 z-10 overflow-y-auto">
         <nav className="flex-1 p-4 space-y-1">
-          {/* Use the 'to' prop to define the route path */}
           <NavItem icon={LayoutDashboard} label="Overview" to="/dashboard" />
           <NavItem icon={Users} label="Clients" to="/clients" />
           <NavItem icon={FileText} label="Cases" to="/cases" />
           <NavItem icon={Gavel} label="Hearings" to="/hearings" />
           <NavItem icon={Calendar} label="Appointments" to="/advocate/appointments" />
           
-
           <div className="pt-4 mt-4 border-t border-slate-100">
             <NavItem icon={Settings} label="Settings" to="/settings" />
           </div>
@@ -126,7 +138,6 @@ const Dashboard = () => {
             <StatCard label="Pending Hearings" value={stats.pending_hearings} trend="Upcoming" />
             <StatCard label="Total Clients" value={stats.total_clients} trend="Total" />
             <StatCard label="Appointments" value={stats.appointments_count} trend="Total" />
-            
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -140,17 +151,17 @@ const Dashboard = () => {
                 </Button>
               </div>
               
-              <div className="space-y-4 overflow-y-auto">
+              <div className="space-y-4  overflow-y-auto">
                 {recentCases.length > 0 ? (
                   recentCases.map((c) => (
-                    <div key={c.id} className="flex items-center justify-between p-4 hover:bg-slate-50 rounded-lg border border-slate-100 transition-colors">
+                    <div key={c.id} className="flex items-center justify-between p-4 hover:bg-slate-50 rounded-lg border border-slate-300 shadow-md transition-colors">
                       <div className="flex items-center gap-4">
                         <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center text-slate-600">
                           <FileText size={20} />
                         </div>
                         <div>
                           <p className="font-medium text-sm text-slate-900">{c.case_title}</p>
-                          <p className="text-xs text-slate-500">#{c.case_number} • {c.case_type}</p>
+                          <p className="text-xs text-slate-500">{c.case_number} • {c.case_type}</p>
                         </div>
                       </div>
                       <span className="text-xs font-medium px-2.5 py-0.5 bg-emerald-50 text-emerald-700 rounded-full border border-emerald-100">
@@ -196,13 +207,51 @@ const Dashboard = () => {
             </div>
 
           </div>
+
+          {/* --- NEW: RECENT APPOINTMENTS CARD --- */}
+          <div className="grid grid-cols-1 gap-6">
+            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="font-semibold text-lg text-slate-900">Recent Appointments</h3>
+                <Button variant="ghost" size="sm" onClick={() => navigate('/advocate/appointments')} className="text-slate-500 hover:text-slate-900">
+                  Manage Schedule <ArrowRight size={16} className="ml-2"/>
+                </Button>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {recentAppointments.length > 0 ? (
+                  recentAppointments.map((appt) => (
+                    <div key={appt.id} className="p-4 rounded-lg border border-slate-100 bg-slate-50 flex flex-col justify-between hover:border-slate-300 transition-colors">
+                      <div>
+                        <div className="flex justify-between items-start mb-2">
+                          <p className="font-semibold text-sm text-slate-900 truncate">{appt.client_name}</p>
+                          <span className={`text-xs font-medium px-2 py-0.5 rounded-full border ${getApptStatusColor(appt.status)}`}>
+                            {appt.status}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 text-xs text-slate-500 mt-3">
+                          <Calendar size={14} /> {appt.appointment_date}
+                        </div>
+                        <div className="flex items-center gap-2 text-xs text-slate-500 mt-1">
+                          <Clock size={14} /> {appt.appointment_time}
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="col-span-3 flex flex-col items-center justify-center text-center p-6">
+                    <p className="text-slate-400 text-sm">No recent appointments.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
         </div>
       </main>
     </div>
   );
 };
-
-
 
 const StatCard = ({ label, value, trend }) => (
   <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">

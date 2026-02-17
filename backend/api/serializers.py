@@ -132,4 +132,4 @@ class AppointmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Appointment
         fields = '__all__'
-        read_only_fields = ['status', 'created_at']
+        read_only_fields = ['created_at']

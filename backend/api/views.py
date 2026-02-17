@@ -368,9 +368,6 @@ class DashboardStatsView(views.APIView):
         active_cases = Case.objects.filter(created_by=user, status='Open').count()
         pending_hearings = Case.objects.filter(created_by=user, next_hearing__gte=today).count()
         total_clients = Client.objects.filter(created_by=user).count()
-        
-        # --- NEW: Fetch Appointments Count ---
-        # 'Pending' and 'Confirmed' so the advocate only sees active tasks
         appointments_count = Appointment.objects.filter(
             advocate=user, 
             status__in=['Pending', 'Confirmed']
@@ -396,16 +393,27 @@ class DashboardStatsView(views.APIView):
             'court_name': c.court_name
         } for c in upcoming_hearings_qs]
 
+        # --- THE MISSING PART: Fetch Recent Appointments (Limit 3) ---
+        recent_appointments_qs = Appointment.objects.filter(advocate=user).order_by('-created_at')[:3]
+        recent_appointments = [{
+            'id': a.id,
+            'client_name': a.client.full_name if a.client else "Unknown",
+            'appointment_date': str(a.appointment_date), 
+            'appointment_time': str(a.appointment_time), 
+            'status': a.status
+        } for a in recent_appointments_qs]
+
+        # 4. Return everything to React
         return Response({
             'stats': {
                 'active_cases': active_cases,
                 'pending_hearings': pending_hearings,
                 'total_clients': total_clients,
-                'appointments_count': appointments_count, 
-                
+                'appointments_count': appointments_count,
             },
             'recent_cases': recent_cases,
             'upcoming_hearings': upcoming_hearings,
+            'recent_appointments': recent_appointments, 
             'user_profile': {
                 'name': user.full_name if hasattr(user, 'full_name') else user.username,
                 'role': user.role if hasattr(user, 'role') else 'Advocate'
