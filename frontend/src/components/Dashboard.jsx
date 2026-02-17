@@ -93,7 +93,7 @@ const Dashboard = () => {
           <NavItem icon={LayoutDashboard} label="Overview" to="/dashboard" />
           <NavItem icon={Users} label="Clients" to="/clients" />
           <NavItem icon={FileText} label="Cases" to="/cases" />
-          <NavItem icon={Gavel} label="Hearings" to="/hearings" />
+          <NavItem icon={Gavel} label="Hearings" to="/advocate/hearings" />
           <NavItem icon={Calendar} label="Appointments" to="/advocate/appointments" />
           
           <div className="pt-4 mt-4 border-t border-slate-100">

@@ -419,3 +419,15 @@ class DashboardStatsView(views.APIView):
                 'role': user.role if hasattr(user, 'role') else 'Advocate'
             }
         })
+
+class AdvocateHearingListView(generics.ListAPIView):
+    serializer_class = CaseSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # SECURITY: Only return cases for this advocate that actually have a hearing date
+        # order_by('next_hearing') puts the soonest dates at the top!
+        return Case.objects.filter(
+            created_by=self.request.user,
+            next_hearing__isnull=False
+        ).order_by('next_hearing')

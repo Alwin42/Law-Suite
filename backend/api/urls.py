@@ -1,6 +1,7 @@
 from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView
 from .views import (
+    AdvocateHearingListView,
     AdvocateRegisterView,
     CaseListCreateView, 
     ClientRegisterView,
@@ -37,6 +38,8 @@ urlpatterns = [
     #appointment endpoints
     path('advocate/appointments/', AdvocateAppointmentListView.as_view(), name='advocate-appointments'),
     path('appointments/<int:pk>/status/', UpdateAppointmentStatusView.as_view(), name='update-appointment-status'),
+    # Hearing 
+    path('advocate/hearings/', AdvocateHearingListView.as_view(), name='advocate-hearings'),
     # Client Dashboard Endpoints
     path('user/profile/', UserProfileView.as_view(), name='user-profile'),    
     path('client/cases/', ClientCaseListView.as_view(), name='client-cases'),

@@ -45,5 +45,6 @@ export const getClientPayments = () => api.get('client/payments/');
 export const getAdvocateAppointments = () => api.get('advocate/appointments/');
 export const bookAppointment = (data) => api.post('appointments/book/', data);
 export const updateAppointmentStatus = (id, data) => api.patch(`appointments/${id}/status/`, data);
-
+export const getAdvocateHearings = () => api.get('advocate/hearings/');
+export const updateCaseDetails = (id, data) => api.patch(`cases/${id}/`, data); 
 export default api;
