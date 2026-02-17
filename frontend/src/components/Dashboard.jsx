@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../api"; // Ensure this is your configured axios instance
+import api from "../api"; 
 import { Button } from "./ui/button"; 
 import { 
   LayoutDashboard, Users, FileText, Gavel, Calendar, 
@@ -13,7 +13,7 @@ const NavItem = ({ icon: Icon, label, to }) => (
     className={({ isActive }) => `
       w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors 
       ${isActive 
-        ? "bg-slate-900 text-white shadow-sm" // Active styling
+        ? "bg-slate-900 text-white shadow-sm" 
         : "text-slate-500 hover:bg-slate-100 hover:text-slate-900"} // Inactive styling
     `}
   >
@@ -81,8 +81,9 @@ const Dashboard = () => {
           <NavItem icon={Users} label="Clients" to="/clients" />
           <NavItem icon={FileText} label="Cases" to="/cases" />
           <NavItem icon={Gavel} label="Hearings" to="/hearings" />
-          <NavItem icon={Calendar} label="Calendar" to="/calendar" />
+          <NavItem icon={Calendar} label="Appointments" to="/advocate/appointments" />
           
+
           <div className="pt-4 mt-4 border-t border-slate-100">
             <NavItem icon={Settings} label="Settings" to="/settings" />
           </div>

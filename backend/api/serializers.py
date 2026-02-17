@@ -124,6 +124,11 @@ class CaseSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'created_at', 'updated_at', 'created_by']
 
 class AppointmentSerializer(serializers.ModelSerializer):
+    # Fetching related Client details to show "Full Details" to the Advocate
+    client_name = serializers.CharField(source='client.full_name', read_only=True)
+    client_email = serializers.CharField(source='client.email', read_only=True)
+    client_contact = serializers.CharField(source='client.contact_number', read_only=True)
+
     class Meta:
         model = Appointment
         fields = '__all__'

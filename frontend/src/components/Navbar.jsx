@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
+
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
 
@@ -26,24 +27,24 @@ const Navbar = () => {
     >
       {/* Left: Logo */}
       <Link to="/">
-      <div className="text-xl font-bold tracking-[0.2em] text-primary uppercase">
-        Law Suite
-      </div>
+        <div className="text-xl font-bold tracking-[0.2em] text-primary uppercase">
+          Law Suite
+        </div>
       </Link>
       
-
       {/* Right: Navigation */}
       <div className="hidden md:flex items-center space-x-8">
         {navLinks.map((link) => (
-          <a
+          <Link
             key={link}
-            href={`${link.toLowerCase()}`}
+            // THE FIX: "Home" goes to "/", everything else gets a leading "/"
+            to={link === "Home" ? "/" : `/${link.toLowerCase()}`}
             className="group relative text-md font-medium text-primary/80 hover:text-primary transition-colors"
           >
             {link}
             {/* Hover Underline Animation */}
             <span className="absolute -bottom-1 left-0 w-0 h-[2px] bg-primary transition-all duration-300 group-hover:w-full" />
-          </a>
+          </Link>
         ))}
       </div>
       

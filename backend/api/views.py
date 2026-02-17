@@ -17,7 +17,7 @@ from .serializers import (
     CaseSerializer, 
     ClientSerializer,
     UserSerializer,
-    EmailSerializer,
+    EmailSerializer, 
     OTPVerifySerializer, AppointmentSerializer
 )
 
@@ -339,3 +339,20 @@ class BookAppointmentView(views.APIView):
             "message": "Appointment booked successfully!", 
             "appointment_id": appointment.id
         }, status=status.HTTP_201_CREATED)
+    
+class AdvocateAppointmentListView(generics.ListAPIView):
+    serializer_class = AppointmentSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # SECURITY: Only return appointments booked for THIS specific advocate
+        # Ordered by the soonest appointment first
+        return Appointment.objects.filter(advocate=self.request.user).order_by('appointment_date', 'appointment_time')
+
+class UpdateAppointmentStatusView(generics.UpdateAPIView):
+    serializer_class = AppointmentSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # SECURITY: Ensure advocates can only update their own appointments
+        return Appointment.objects.filter(advocate=self.request.user)

@@ -5,7 +5,8 @@ from .views import (
     CaseListCreateView, 
     ClientRegisterView,
     DashboardStatsView, 
-    RequestOTPView, 
+    RequestOTPView,
+    UpdateAppointmentStatusView, 
     VerifyOTPView,
     CustomTokenObtainPairView,
     ActiveAdvocateListView,
@@ -13,7 +14,7 @@ from .views import (
     ClientCaseListView,
     ClientHearingListView,
     ClientPaymentListView,
-    CaseDetailView,
+    CaseDetailView,AdvocateAppointmentListView,
     ClientListCreateView , BookAppointmentView
 )
 
@@ -33,7 +34,9 @@ urlpatterns = [
     # Data - Public
     path('advocates/active/', ActiveAdvocateListView.as_view(), name='active_advocates'),
     path('dashboard/', DashboardStatsView.as_view(), name='dashboard-stats'),
-    
+    #appointment endpoints
+    path('advocate/appointments/', AdvocateAppointmentListView.as_view(), name='advocate-appointments'),
+    path('appointments/<int:pk>/status/', UpdateAppointmentStatusView.as_view(), name='update-appointment-status'),
     # Client Dashboard Endpoints
     path('user/profile/', UserProfileView.as_view(), name='user-profile'),    
     path('client/cases/', ClientCaseListView.as_view(), name='client-cases'),

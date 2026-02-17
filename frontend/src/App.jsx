@@ -10,6 +10,7 @@ import ClientsPage from "./components/ClientsPage";
 import CasePage from "./components/CasePage";
 import HomePage from "./components/HomePage";
 import CaseViewPage from './components/CaseViewPage';
+import AdvocateAppointments from "./components/AdvocateAppointments";
 
 function App() {
   
@@ -29,7 +30,7 @@ function App() {
         <Route path="/book-appointment" element={<BookAppointment />} />
         <Route path="/cases" element={<CasePage/>} />
         <Route path="/cases/:id" element={<CaseViewPage />} />
-        
+        <Route path="/advocate/appointments" element={<AdvocateAppointments />} />
         
       </Routes>
     </Router>
