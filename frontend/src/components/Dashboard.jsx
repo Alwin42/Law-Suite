@@ -4,7 +4,7 @@ import api from "../api";
 import { Button } from "./ui/button"; 
 import { 
   LayoutDashboard, Users, FileText, Gavel, Calendar, 
-  Settings, LogOut, Bell, Search, Plus, Loader 
+  Settings, LogOut, Bell, Search, ArrowRight, Loader 
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 const NavItem = ({ icon: Icon, label, to }) => (
@@ -25,8 +25,8 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   
-  // State for Real Data
-  const [stats, setStats] = useState({ active_cases: 0, pending_hearings: 0, total_clients: 0 });
+  // State Real Data
+  const [stats, setStats] = useState({ active_cases: 0, pending_hearings: 0, total_clients: 0 , appointments_count: 0, });
   const [recentCases, setRecentCases] = useState([]);
   const [upcomingHearings, setUpcomingHearings] = useState([]);
   const [user, setUser] = useState({ name: "Advocate", role: "Loading..." });
@@ -125,7 +125,8 @@ const Dashboard = () => {
             <StatCard label="Active Cases" value={stats.active_cases} trend="Current" />
             <StatCard label="Pending Hearings" value={stats.pending_hearings} trend="Upcoming" />
             <StatCard label="Total Clients" value={stats.total_clients} trend="Total" />
-            <StatCard label="Documents" value="0" trend="Files" />
+            <StatCard label="Appointments" value={stats.appointments_count} trend="Total" />
+            
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -135,7 +136,7 @@ const Dashboard = () => {
               <div className="flex items-center justify-between mb-6">
                 <h3 className="font-semibold text-lg text-slate-900">Recent Cases</h3>
                 <Button size="sm" onClick={() => navigate('/cases')} className="gap-2 text-xs">
-                  <Plus size={16} /> View All
+                   View All <ArrowRight size={16} />
                 </Button>
               </div>
               

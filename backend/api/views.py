@@ -356,3 +356,58 @@ class UpdateAppointmentStatusView(generics.UpdateAPIView):
     def get_queryset(self):
         # SECURITY: Ensure advocates can only update their own appointments
         return Appointment.objects.filter(advocate=self.request.user)
+    
+class DashboardStatsView(views.APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        today = timezone.now().date()
+
+        # 1. Fetch Counts
+        active_cases = Case.objects.filter(created_by=user, status='Open').count()
+        pending_hearings = Case.objects.filter(created_by=user, next_hearing__gte=today).count()
+        total_clients = Client.objects.filter(created_by=user).count()
+        
+        # --- NEW: Fetch Appointments Count ---
+        # 'Pending' and 'Confirmed' so the advocate only sees active tasks
+        appointments_count = Appointment.objects.filter(
+            advocate=user, 
+            status__in=['Pending', 'Confirmed']
+        ).count()
+
+        # 2. Fetch Recent Cases (Limit 3)
+        recent_cases_qs = Case.objects.filter(created_by=user).order_by('-created_at')[:3]
+        recent_cases = [{
+            'id': c.id,
+            'case_title': c.case_title,
+            'case_number': c.case_number,
+            'case_type': c.case_type,
+            'status': c.status,
+            'next_hearing': c.next_hearing, 
+        } for c in recent_cases_qs]
+
+        # 3. Fetch Upcoming Hearings (Limit 3)
+        upcoming_hearings_qs = Case.objects.filter(created_by=user, next_hearing__gte=today).order_by('next_hearing')[:3]
+        upcoming_hearings = [{
+            'id': c.id,
+            'case_title': c.case_title,
+            'next_hearing': c.next_hearing,
+            'court_name': c.court_name
+        } for c in upcoming_hearings_qs]
+
+        return Response({
+            'stats': {
+                'active_cases': active_cases,
+                'pending_hearings': pending_hearings,
+                'total_clients': total_clients,
+                'appointments_count': appointments_count, 
+                
+            },
+            'recent_cases': recent_cases,
+            'upcoming_hearings': upcoming_hearings,
+            'user_profile': {
+                'name': user.full_name if hasattr(user, 'full_name') else user.username,
+                'role': user.role if hasattr(user, 'role') else 'Advocate'
+            }
+        })
