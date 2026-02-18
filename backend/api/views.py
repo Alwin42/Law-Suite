@@ -9,7 +9,7 @@ from django.conf import settings
 from rest_framework.permissions import IsAuthenticated
 from django.core.mail import send_mail  
 from django.utils.html import strip_tags
-from .models import Client, Case, LoginOTP , Appointment
+from .models import Client, Case, LoginOTP , Appointment, Template
 from .serializers import (
     AdvocateRegistrationSerializer, 
     ClientRegistrationSerializer,
@@ -18,9 +18,9 @@ from .serializers import (
     ClientSerializer,
     UserSerializer,
     EmailSerializer, 
-    OTPVerifySerializer, AppointmentSerializer
+    OTPVerifySerializer, AppointmentSerializer, TemplateSerializer
 )
-
+from rest_framework.parsers import MultiPartParser, FormParser
 User = get_user_model()
 
 # --- 1. ADVOCATE REGISTRATION ---
@@ -431,3 +431,15 @@ class AdvocateHearingListView(generics.ListAPIView):
             created_by=self.request.user,
             next_hearing__isnull=False
         ).order_by('next_hearing')
+    
+class TemplateListCreateView(generics.ListCreateAPIView):
+    serializer_class = TemplateSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    parser_classes = (MultiPartParser, FormParser) # Allows handling file uploads
+
+    def get_queryset(self):
+        # Only show templates created by the logged-in advocate
+        return Template.objects.filter(created_by=self.request.user).order_by('-created_at')
+
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user)

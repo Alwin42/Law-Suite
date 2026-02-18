@@ -14,7 +14,7 @@ from .views import (
     UserProfileView,
     ClientCaseListView,
     ClientHearingListView,
-    ClientPaymentListView,
+    ClientPaymentListView,TemplateListCreateView,
     CaseDetailView,AdvocateAppointmentListView,
     ClientListCreateView , BookAppointmentView
 )
@@ -49,4 +49,7 @@ urlpatterns = [
     path('cases/', CaseListCreateView.as_view(), name='case-list-create'),
     path('cases/<int:pk>/', CaseDetailView.as_view(), name='case-detail'),
     path('appointments/book/', BookAppointmentView.as_view(), name='book-appointment'),
+
+    #Template
+    path('templates/', TemplateListCreateView.as_view(), name='templates-list-create'),
 ]

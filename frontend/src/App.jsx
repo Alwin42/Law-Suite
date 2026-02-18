@@ -12,6 +12,7 @@ import HomePage from "./components/HomePage";
 import CaseViewPage from './components/CaseViewPage';
 import AdvocateAppointments from "./components/AdvocateAppointments";
 import Hearings from "./components/Hearings";
+import CaseTemplates from "./components/CaseTemplates";
 function App() {
   
   return (
@@ -32,6 +33,7 @@ function App() {
         <Route path="/cases/:id" element={<CaseViewPage />} />
         <Route path="/advocate/appointments" element={<AdvocateAppointments />} />
         <Route path="/advocate/hearings" element={<Hearings />} /> 
+        <Route path="/templates" element={<CaseTemplates />} />
       </Routes>
     </Router>
   );

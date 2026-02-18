@@ -90,7 +90,7 @@ const Dashboard = () => {
       {/* SIDEBAR */}
       <aside className="w-64 bg-white border-r border-slate-200 hidden md:flex flex-col fixed top-16 bottom-0 z-10 overflow-y-auto">
         <nav className="flex-1 p-4 space-y-1">
-          <NavItem icon={LayoutDashboard} label="Overview" to="/dashboard" />
+          <NavItem icon={LayoutDashboard} label="Overview" />
           <NavItem icon={Users} label="Clients" to="/clients" />
           <NavItem icon={FileText} label="Cases" to="/cases" />
           <NavItem icon={Gavel} label="Hearings" to="/advocate/hearings" />

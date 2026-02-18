@@ -116,3 +116,17 @@ class Appointment(models.Model):
 
     def __str__(self):
         return f"Appointment: {self.client.full_name} with {self.advocate.full_name} on {self.appointment_date}"
+
+class Template(models.Model):
+    
+    # template_id is handled automatically as 'id'
+    template_name = models.CharField(max_length=255)
+    category = models.CharField(max_length=100) 
+    file_path = models.FileField(upload_to='case_templates/') # Stores the file path
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    # Foreign Key
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='templates')
+
+    def __str__(self):
+        return self.template_name

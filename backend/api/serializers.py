@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.utils.crypto import get_random_string
 from rest_framework import serializers
-from .models import Appointment, Case, Client
+from .models import Appointment, Case, Client , Template
 
 User = get_user_model()
 
@@ -133,3 +133,9 @@ class AppointmentSerializer(serializers.ModelSerializer):
         model = Appointment
         fields = '__all__'
         read_only_fields = ['created_at']
+
+class TemplateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Template
+        fields = '__all__'
+        read_only_fields = ['id', 'created_at', 'created_by']

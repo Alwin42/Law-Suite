@@ -26,7 +26,7 @@ const Navbar = () => {
       }`}
     >
       {/* Left: Logo */}
-      <Link to="/">
+      <Link to="/home">
         <div className="text-xl font-bold tracking-[0.2em] text-primary uppercase">
           Law Suite
         </div>

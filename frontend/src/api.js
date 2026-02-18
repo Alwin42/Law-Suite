@@ -47,4 +47,8 @@ export const bookAppointment = (data) => api.post('appointments/book/', data);
 export const updateAppointmentStatus = (id, data) => api.patch(`appointments/${id}/status/`, data);
 export const getAdvocateHearings = () => api.get('advocate/hearings/');
 export const updateCaseDetails = (id, data) => api.patch(`cases/${id}/`, data); 
+export const getTemplates = () => api.get('templates/');
+export const uploadTemplate = (formData) => api.post('templates/', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }, 
+});
 export default api;
