@@ -4,7 +4,7 @@ import api from "../api";
 import { Button } from "./ui/button"; 
 import { 
   LayoutDashboard, Users, FileText, Gavel, Calendar, FilePen,
-  Settings, LogOut, Bell, Search, ArrowRight, Loader, Clock 
+  Settings, LogOut, Bell, Search, ArrowRight, Loader, Clock , FileUser
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 
@@ -95,6 +95,7 @@ const Dashboard = () => {
           <NavItem icon={FileText} label="Cases" to="/cases" />
           <NavItem icon={Gavel} label="Hearings" to="/advocate/hearings" />
           <NavItem icon={Calendar} label="Appointments" to="/advocate/appointments" />
+          <NavItem icon={FileUser} label="Case Documents" to="/documents" />
           <NavItem icon={FilePen} label="Templates" to="/templates" />
           <div className="pt-4 mt-4 border-t border-slate-100">
             <NavItem icon={Settings} label="Settings" to="/settings" />

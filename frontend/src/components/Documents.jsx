@@ -38,9 +38,9 @@ export default function Documents() {
           </h1>
         </div>
 
-        <div className="rounded-xl text-sm border border-slate-600 bg-white shadow-sm overflow-hidden">
+        <div className="rounded-xl  border border-slate-600 bg-white shadow-lg overflow-hidden">
           <Table>
-            <TableHeader className="bg-slate-50">
+            <TableHeader className="bg-slate-50 text-lg">
               <TableRow>
                 <TableHead>Document Name</TableHead>
                 <TableHead>Case Title</TableHead>
@@ -52,7 +52,7 @@ export default function Documents() {
             <TableBody>
               {documents.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="h-32 text-center text-slate-500">No documents found.</TableCell>
+                  <TableCell colSpan={5} className="h-32 text-center text-md text-slate-500">No documents found.</TableCell>
                 </TableRow>
               ) : (
                 documents.map((doc) => (
