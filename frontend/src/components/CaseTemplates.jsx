@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { getTemplates, uploadTemplate } from '../api';
+import { getTemplates, uploadTemplate, deleteTemplate } from '../api'; // <-- Imported deleteTemplate
 import { 
-  FileText, Download, Plus, Search, Loader2, FolderOpen 
-} from 'lucide-react';
+  FileText, Download, Plus, Search, Loader2, FolderOpen, Trash2 
+} from 'lucide-react'; // <-- Imported Trash2 icon
 
 // Shadcn UI Components
 import { Button } from "@/components/ui/button";
@@ -40,8 +40,6 @@ export default function CaseTemplates() {
     setIsUploading(true);
     
     const formData = new FormData(e.target);
-    // DFD: We need template_name, category, file_path
-    // created_by and created_at are handled by backend
     
     try {
       await uploadTemplate(formData);
@@ -53,6 +51,22 @@ export default function CaseTemplates() {
       alert("Failed to upload template.");
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  // --- NEW: Handle Deletion ---
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this template? This cannot be undone.")) {
+      return;
+    }
+
+    try {
+      await deleteTemplate(id);
+      // Remove the deleted template from the UI instantly without reloading the page
+      setTemplates(templates.filter(template => template.id !== id));
+    } catch (error) {
+      console.error("Delete failed", error);
+      alert("Failed to delete the template. Please try again.");
     }
   };
 
@@ -137,9 +151,20 @@ export default function CaseTemplates() {
                   <div className="p-3 bg-slate-50 rounded-lg text-slate-600 group-hover:bg-slate-900 group-hover:text-white transition-colors">
                     <FileText size={24} />
                   </div>
-                  <Badge variant="outline" className="bg-slate-50 text-slate-600 border-slate-200">
-                    {template.category}
-                  </Badge>
+                  
+                  {/* --- NEW: Delete Button next to the Badge --- */}
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="bg-slate-50 text-slate-600 border-slate-200">
+                      {template.category}
+                    </Badge>
+                    <button 
+                      onClick={() => handleDelete(template.id)}
+                      className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                      title="Delete Template"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
                 </div>
                 
                 <div>

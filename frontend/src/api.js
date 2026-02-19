@@ -49,6 +49,7 @@ export const getAdvocateHearings = () => api.get('advocate/hearings/');
 export const updateCaseDetails = (id, data) => api.patch(`cases/${id}/`, data); 
 export const getTemplates = () => api.get('templates/');
 export const uploadTemplate = (formData) => api.post('templates/', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' }, 
-});
+         headers: { 'Content-Type': 'multipart/form-data' }
+        });
+export const deleteTemplate = (id) => api.delete(`templates/${id}/`);
 export default api;

@@ -1,7 +1,7 @@
 from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView
 from .views import (
-    AdvocateHearingListView,
+    AdvocateHearingListView,TemplateDetailView,
     AdvocateRegisterView,
     CaseListCreateView, 
     ClientRegisterView,
@@ -52,5 +52,7 @@ urlpatterns = [
 
     #Template
     path('templates/', TemplateListCreateView.as_view(), name='templates-list-create'),
+    path('templates/', TemplateListCreateView.as_view(), name='templates-list-create'),
+    path('templates/<int:pk>/', TemplateDetailView.as_view(), name='template-detail'),
 ]
 

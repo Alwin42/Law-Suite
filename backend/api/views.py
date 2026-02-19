@@ -443,3 +443,11 @@ class TemplateListCreateView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)
+
+class TemplateDetailView(generics.RetrieveDestroyAPIView):
+    serializer_class = TemplateSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # SECURITY: Ensure advocates can only delete their own templates
+        return Template.objects.filter(created_by=self.request.user)
