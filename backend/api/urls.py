@@ -53,3 +53,4 @@ urlpatterns = [
     #Template
     path('templates/', TemplateListCreateView.as_view(), name='templates-list-create'),
 ]
+
