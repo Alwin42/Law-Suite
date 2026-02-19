@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.utils.crypto import get_random_string
 from rest_framework import serializers
-from .models import Appointment, Case, Client , Template
+from .models import Appointment, Case, Client, Document , Template
 
 User = get_user_model()
 
@@ -139,3 +139,11 @@ class TemplateSerializer(serializers.ModelSerializer):
         model = Template
         fields = '__all__'
         read_only_fields = ['id', 'created_at', 'created_by']
+class DocumentSerializer(serializers.ModelSerializer):
+    # Helps display the case name in the global documents list
+    case_name = serializers.CharField(source='case.case_title', read_only=True)
+
+    class Meta:
+        model = Document
+        fields = '__all__'
+        read_only_fields = ['id', 'uploaded_at']

@@ -9,15 +9,10 @@ from django.conf import settings
 from rest_framework.permissions import IsAuthenticated
 from django.core.mail import send_mail  
 from django.utils.html import strip_tags
-from .models import Client, Case, LoginOTP , Appointment, Template
+from .models import Client, Case, LoginOTP , Appointment, Template ,Document
 from .serializers import (
-    AdvocateRegistrationSerializer, 
-    ClientRegistrationSerializer,
-    CustomTokenObtainPairSerializer,
-    CaseSerializer, 
-    ClientSerializer,
-    UserSerializer,
-    EmailSerializer, 
+    AdvocateRegistrationSerializer,  ClientRegistrationSerializer,CustomTokenObtainPairSerializer,
+    CaseSerializer,ClientSerializer,UserSerializer,DocumentSerializer,EmailSerializer, 
     OTPVerifySerializer, AppointmentSerializer, TemplateSerializer
 )
 from rest_framework.parsers import MultiPartParser, FormParser
@@ -451,3 +446,27 @@ class TemplateDetailView(generics.RetrieveDestroyAPIView):
     def get_queryset(self):
         # SECURITY: Ensure advocates can only delete their own templates
         return Template.objects.filter(created_by=self.request.user)
+    
+class DocumentListCreateView(generics.ListCreateAPIView):
+    serializer_class = DocumentSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    parser_classes = (MultiPartParser, FormParser)
+
+    def get_queryset(self):
+        # Fetch all documents belonging to cases managed by this advocate
+        return Document.objects.filter(case__created_by=self.request.user).order_by('-uploaded_at')
+
+    def perform_create(self, serializer):
+        serializer.save()
+
+class CaseDocumentListView(generics.ListAPIView):
+    serializer_class = DocumentSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # Fetch documents ONLY for the specific case ID requested
+        case_id = self.kwargs['case_id']
+        return Document.objects.filter(
+            case_id=case_id, 
+            case__created_by=self.request.user
+        ).order_by('-uploaded_at')

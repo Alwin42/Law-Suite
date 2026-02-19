@@ -46,10 +46,18 @@ export const getAdvocateAppointments = () => api.get('advocate/appointments/');
 export const bookAppointment = (data) => api.post('appointments/book/', data);
 export const updateAppointmentStatus = (id, data) => api.patch(`appointments/${id}/status/`, data);
 export const getAdvocateHearings = () => api.get('advocate/hearings/');
-export const updateCaseDetails = (id, data) => api.patch(`cases/${id}/`, data); 
+export const updateCaseDetails = (id, data) => api.patch(`cases/${id}/`, data);
+{/* Template APIs */} 
 export const getTemplates = () => api.get('templates/');
 export const uploadTemplate = (formData) => api.post('templates/', formData, {
          headers: { 'Content-Type': 'multipart/form-data' }
         });
 export const deleteTemplate = (id) => api.delete(`templates/${id}/`);
+
+{/* Document APIs */}
+export const getDocuments = () => api.get('documents/');
+export const getCaseDocuments = (caseId) => api.get(`cases/${caseId}/documents/`);
+export const uploadDocument = (formData) => api.post('documents/', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+});
 export default api;

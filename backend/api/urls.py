@@ -1,22 +1,10 @@
 from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView
 from .views import (
-    AdvocateHearingListView,TemplateDetailView,
-    AdvocateRegisterView,
-    CaseListCreateView, 
-    ClientRegisterView,
-    DashboardStatsView, 
-    RequestOTPView,
-    UpdateAppointmentStatusView, 
-    VerifyOTPView,
-    CustomTokenObtainPairView,
-    ActiveAdvocateListView,
-    UserProfileView,
-    ClientCaseListView,
-    ClientHearingListView,
-    ClientPaymentListView,TemplateListCreateView,
-    CaseDetailView,AdvocateAppointmentListView,
-    ClientListCreateView , BookAppointmentView
+    AdvocateHearingListView,TemplateDetailView, DocumentListCreateView, CaseDocumentListView, AdvocateRegisterView,CaseListCreateView,ClientRegisterView,
+    DashboardStatsView,RequestOTPView,UpdateAppointmentStatusView, VerifyOTPView, CustomTokenObtainPairView,
+    ActiveAdvocateListView,UserProfileView,ClientCaseListView,ClientHearingListView,ClientPaymentListView,TemplateListCreateView,
+    CaseDetailView,AdvocateAppointmentListView,ClientListCreateView , BookAppointmentView
 )
 
 urlpatterns = [
@@ -54,5 +42,9 @@ urlpatterns = [
     path('templates/', TemplateListCreateView.as_view(), name='templates-list-create'),
     path('templates/', TemplateListCreateView.as_view(), name='templates-list-create'),
     path('templates/<int:pk>/', TemplateDetailView.as_view(), name='template-detail'),
+
+    #Documents
+    path('documents/', DocumentListCreateView.as_view(), name='document-list-create'),
+    path('cases/<int:case_id>/documents/', CaseDocumentListView.as_view(), name='case-document-list'),
 ]
 
