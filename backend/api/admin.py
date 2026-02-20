@@ -1,8 +1,9 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .models import User
-# --- IMPORT APPOINTMENT HERE ---
-from .models import Client, Case, Appointment
+
+# --- IMPORT ALL MODELS HERE ---
+from .models import Client, Case, Appointment, Payment, Template, Document
 
 
 class CustomUserAdmin(UserAdmin):
@@ -13,7 +14,6 @@ class CustomUserAdmin(UserAdmin):
     list_filter = ('role', 'is_staff', 'is_active')
     
     # 3. Fields to display when editing an existing user
-    # We append your custom fields to the default 'Personal info' section
     fieldsets = UserAdmin.fieldsets + (
         ('Additional Info', {'fields': ('role', 'full_name', 'contact_number')}),
     )
@@ -29,21 +29,13 @@ class CustomUserAdmin(UserAdmin):
 # Register the model
 admin.site.register(User, CustomUserAdmin)
 
+
 @admin.register(Client)
 class ClientAdmin(admin.ModelAdmin):
-    # Columns to show in the list view
     list_display = ('full_name', 'email', 'contact_number', 'is_active', 'created_by', 'created_at')
-    
-    # Enable search by name and email
     search_fields = ('full_name', 'email', 'contact_number')
-    
-    # Add sidebar filters
     list_filter = ('is_active', 'created_at', 'created_by')
-    
-    # Make these fields read-only (optional, but good for audit trails)
     readonly_fields = ('created_at',)
-    
-    # Organize the "Add/Edit" form layout
     fieldsets = (
         ('Client Details', {
             'fields': ('full_name', 'email', 'contact_number', 'address')
@@ -56,21 +48,13 @@ class ClientAdmin(admin.ModelAdmin):
         }),
     )
 
+
 @admin.register(Case)
 class CaseAdmin(admin.ModelAdmin):
-    # Columns to show in the case list view
     list_display = ('case_title', 'case_number', 'client', 'status', 'next_hearing', 'created_by')
-    
-    # Enable searching by case title, number, or court name
     search_fields = ('case_title', 'case_number', 'court_name')
-    
-    # Sidebar filters to quickly find open cases or cases with upcoming hearings
     list_filter = ('status', 'case_type', 'next_hearing', 'created_by')
-    
-    # Protect timestamp fields from being manually edited
     readonly_fields = ('created_at', 'updated_at')
-    
-    # Clean layout for adding/editing a case in the admin panel
     fieldsets = (
         ('Basic Information', {
             'fields': ('client', 'case_title', 'case_number', 'case_type', 'status')
@@ -83,22 +67,13 @@ class CaseAdmin(admin.ModelAdmin):
         }),
     )
 
-# --- NEW: APPOINTMENT ADMIN ---
+
 @admin.register(Appointment)
 class AppointmentAdmin(admin.ModelAdmin):
-    # Columns to show in the appointment list view
     list_display = ('client', 'advocate', 'appointment_date', 'appointment_time', 'duration', 'status')
-    
-    # Enable searching across relationships (searching by client name or advocate name)
     search_fields = ('client__full_name', 'advocate__full_name', 'purpose')
-    
-    # Sidebar filters to easily find pending or upcoming appointments
     list_filter = ('status', 'appointment_date', 'advocate')
-    
-    # Protect timestamp fields
     readonly_fields = ('created_at',)
-    
-    # Clean layout for adding/editing an appointment in the admin panel
     fieldsets = (
         ('Participants', {
             'fields': ('client', 'advocate')
@@ -111,5 +86,62 @@ class AppointmentAdmin(admin.ModelAdmin):
         }),
         ('Meta Data', {
             'fields': ('created_at',)
+        }),
+    )
+
+
+@admin.register(Payment)
+class PaymentAdmin(admin.ModelAdmin):
+    list_display = ('client', 'amount', 'payment_date', 'payment_mode', 'status', 'receipt_number')
+    search_fields = ('client__full_name', 'receipt_number', 'case__case_title')
+    list_filter = ('status', 'payment_mode', 'payment_date')
+    readonly_fields = ('created_at',)
+    fieldsets = (
+        ('Linkage', {
+            'fields': ('client', 'case')
+        }),
+        ('Payment Details', {
+            'fields': ('amount', 'payment_date', 'payment_mode', 'receipt_number')
+        }),
+        ('Status & Notes', {
+            'fields': ('status', 'notes')
+        }),
+        ('Meta Data', {
+            'fields': ('created_at',)
+        }),
+    )
+
+
+# --- TEMPLATE ADMIN ---
+@admin.register(Template)
+class TemplateAdmin(admin.ModelAdmin):
+    list_display = ('template_name', 'category', 'created_by', 'created_at')
+    search_fields = ('template_name', 'category')
+    list_filter = ('category', 'created_at', 'created_by')
+    readonly_fields = ('created_at',)
+    fieldsets = (
+        ('Template Details', {
+            'fields': ('template_name', 'category', 'file_path')
+        }),
+        ('Meta Data', {
+            'fields': ('created_by', 'created_at')
+        }),
+    )
+
+
+# --- DOCUMENT ADMIN ---
+@admin.register(Document)
+class DocumentAdmin(admin.ModelAdmin):
+    list_display = ('document_name', 'case', 'file_type', 'uploaded_at')
+    # Search by document name or the linked case title
+    search_fields = ('document_name', 'case__case_title', 'file_type')
+    list_filter = ('file_type', 'uploaded_at')
+    readonly_fields = ('uploaded_at',)
+    fieldsets = (
+        ('Document Details', {
+            'fields': ('case', 'document_name', 'file_type', 'file_path')
+        }),
+        ('Meta Data', {
+            'fields': ('uploaded_at',)
         }),
     )
