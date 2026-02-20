@@ -82,7 +82,7 @@ export default function CaseTemplates() {
   );
 
   return (
-    <div className="min-h-screen bg-slate-50 p-9 md:p-23 font-sans text-slate-900 pt-20 md:ml-64">
+    <div className="min-h-screen bg-slate-50 p-9 md:p-23 font-sans text-slate-900 pt-20 ">
       <div className="max-w-7xl mx-auto">
         
         {/* HEADER */}
@@ -145,7 +145,7 @@ export default function CaseTemplates() {
             filteredTemplates.map((template) => (
               <div 
                 key={template.id} 
-                className="group bg-white rounded-xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between"
+                className="group bg-white rounded-xl border border-slate-300 p-6 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col justify-between"
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="p-3 bg-slate-50 rounded-lg text-slate-600 group-hover:bg-slate-900 group-hover:text-white transition-colors">
@@ -181,7 +181,7 @@ export default function CaseTemplates() {
                     href={template.file_path} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="flex items-center justify-center w-full py-2.5 text-sm font-medium text-slate-700 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors gap-2"
+                    className="flex items-center justify-center w-full py-2.5 text-sm font-medium text-slate-700 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors gap-2"
                   >
                     <Download size={16} /> Download File
                   </a>

@@ -269,7 +269,7 @@ export default function CasePage() {
                     <TableCell className="font-medium">
                       <div className="flex flex-col">
                         <span>{item.case_number}</span>
-                        <span className="text-xs text-muted-foreground truncate max-w-[200px]">{item.case_title}</span>
+                        <span className="text-md text-muted-foreground truncate max-w-[200px]">{item.case_title}</span>
                       </div>
                     </TableCell>
                     <TableCell>{item.client_name || "Unknown Client"}</TableCell>
