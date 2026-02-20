@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.utils.crypto import get_random_string
 from rest_framework import serializers
-from .models import Appointment, Case, Client, Document , Template
+from .models import Appointment, Case, Client, Document, Payment , Template
 
 User = get_user_model()
 
@@ -147,3 +147,11 @@ class DocumentSerializer(serializers.ModelSerializer):
         model = Document
         fields = '__all__'
         read_only_fields = ['id', 'uploaded_at']
+
+class PaymentSerializer(serializers.ModelSerializer):
+    case_title = serializers.CharField(source='case.case_title', read_only=True)
+
+    class Meta:
+        model = Payment
+        fields = '__all__'
+        read_only_fields = ['id', 'created_at', 'client']

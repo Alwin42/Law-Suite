@@ -9,10 +9,10 @@ from django.conf import settings
 from rest_framework.permissions import IsAuthenticated
 from django.core.mail import send_mail  
 from django.utils.html import strip_tags
-from .models import Client, Case, LoginOTP , Appointment, Template ,Document
+from .models import Client, Case, LoginOTP , Appointment, Payment, Template ,Document
 from .serializers import (
     AdvocateRegistrationSerializer,  ClientRegistrationSerializer,CustomTokenObtainPairSerializer,
-    CaseSerializer,ClientSerializer,UserSerializer,DocumentSerializer,EmailSerializer, 
+    CaseSerializer,ClientSerializer, PaymentSerializer,UserSerializer,DocumentSerializer,EmailSerializer, 
     OTPVerifySerializer, AppointmentSerializer, TemplateSerializer
 )
 from rest_framework.parsers import MultiPartParser, FormParser
@@ -546,3 +546,32 @@ class DashboardStatsView(views.APIView):
                 'role': user.role if hasattr(user, 'role') else 'Advocate'
             }
         })
+    
+class ClientDetailView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = ClientSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # SECURITY: Ensure advocate can only view their own clients
+        return Client.objects.filter(created_by=self.request.user)
+
+class AdvocateClientCasesView(generics.ListAPIView):
+    serializer_class = CaseSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        client_id = self.kwargs['client_id']
+        return Case.objects.filter(client_id=client_id, created_by=self.request.user).order_by('-updated_at')
+
+class ClientPaymentListCreateView(generics.ListCreateAPIView):
+    serializer_class = PaymentSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        client_id = self.kwargs['client_id']
+        return Payment.objects.filter(client_id=client_id, client__created_by=self.request.user).order_by('-payment_date')
+
+    def perform_create(self, serializer):
+        client_id = self.kwargs['client_id']
+        client = Client.objects.get(id=client_id, created_by=self.request.user)
+        serializer.save(client=client)

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import api from '../api'; // Assuming you have an axios instance configured here
+import api from '../api'; 
+import { Link } from 'react-router-dom'; // <-- NEW: Import Link
 import { 
   Search, Plus, MoreVertical, Phone, Mail, MapPin, 
   Calendar, User, Loader 
@@ -51,9 +52,9 @@ export default function ClientsPage() {
     e.preventDefault();
     try {
       const response = await api.post('/clients/', formData);
-      setClients([response.data, ...clients]); // Add new client to top of list
+      setClients([response.data, ...clients]); 
       setIsModalOpen(false);
-      setFormData({ full_name: '', email: '', contact_number: '', address: '', notes: '' }); // Reset form
+      setFormData({ full_name: '', email: '', contact_number: '', address: '', notes: '' }); 
     } catch (error) {
       console.error("Failed to create client:", error);
       alert("Failed to add client. Please check the details.");
@@ -86,7 +87,7 @@ export default function ClientsPage() {
         </button>
       </div>
 
-      {/* TOOLBAR (Only show if there are clients or user is searching) */}
+      {/* TOOLBAR */}
       {(clients.length > 0 || searchTerm) && (
         <div className="max-w-7xl mx-auto mb-8 bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col md:flex-row gap-4 items-center justify-between">
           <div className="relative w-full md:w-96">
@@ -117,7 +118,6 @@ export default function ClientsPage() {
 
       {/* CLIENT GRID */}
       {clients.length === 0 ? (
-        // EMPTY STATE
         <div className="max-w-2xl mx-auto text-center py-20">
           <div className="bg-white p-12 rounded-2xl border border-dashed border-slate-300 shadow-sm">
             <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -138,22 +138,26 @@ export default function ClientsPage() {
           </div>
         </div>
       ) : filteredClients.length === 0 ? (
-        // NO SEARCH RESULTS STATE
         <div className="text-center py-20">
            <p className="text-slate-500 text-lg">No clients match your search.</p>
         </div>
       ) : (
-        // CLIENT CARDS
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredClients.map((client) => (
-            <div key={client.id} className="group bg-white rounded-xl p-6 border border-slate-200 hover:border-slate-300 hover:shadow-md transition-all duration-300 relative overflow-hidden">
+            
+            // --- NEW: Wrapped entire card in a Link ---
+            <Link 
+                to={`/clients/${client.id}`} 
+                key={client.id} 
+                className="group bg-white rounded-xl p-6 border border-slate-200 hover:border-slate-300 hover:shadow-md transition-all duration-300 relative overflow-hidden block"
+            >
               <div className="flex justify-between items-start mb-4">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-bold border border-slate-200">
                     {client.full_name.charAt(0).toUpperCase()}
                   </div>
                   <div>
-                    <h3 className="font-bold text-slate-900">{client.full_name}</h3>
+                    <h3 className="font-bold text-slate-900 group-hover:text-blue-600 transition-colors">{client.full_name}</h3>
                     <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
                       client.is_active ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-slate-100 text-slate-500 border border-slate-200'
                     }`}>
@@ -161,7 +165,11 @@ export default function ClientsPage() {
                     </span>
                   </div>
                 </div>
-                <button className="text-slate-400 hover:text-slate-600">
+                {/* Prevent the Link from triggering when clicking the options button */}
+                <button 
+                    className="text-slate-400 hover:text-slate-600"
+                    onClick={(e) => e.preventDefault()}
+                >
                   <MoreVertical size={18} />
                 </button>
               </div>
@@ -186,14 +194,15 @@ export default function ClientsPage() {
                   <Calendar size={14} />
                   <span>{new Date(client.created_at).toLocaleDateString()}</span>
                 </div>
+                <span className="text-blue-600 font-medium opacity-0 group-hover:opacity-100 transition-opacity">View Details &rarr;</span>
               </div>
               <div className="absolute top-0 left-0 w-full h-1 bg-slate-900 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
-            </div>
+            </Link>
           ))}
         </div>
       )}
 
-      {/* MODAL (Same structure, updated inputs to match formData state) */}
+      {/* MODAL */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg p-6">

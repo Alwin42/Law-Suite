@@ -140,3 +140,33 @@ class Document(models.Model):
 
     def __str__(self):
         return self.document_name 
+
+class Payment(models.Model):
+    PAYMENT_MODE_CHOICES = [
+        ('Cash', 'Cash'),
+        ('UPI', 'UPI'),
+        ('Bank Transfer', 'Bank Transfer'),
+        ('Cheque', 'Cheque')
+    ]
+    
+    STATUS_CHOICES = [
+        ('Pending', 'Pending'),
+        ('Completed', 'Completed'),
+        ('Failed', 'Failed'),
+        ('Refunded', 'Refunded')
+    ]
+
+    # DFD Foreign Keys
+    client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='payments') # client_id (FK)
+    case = models.ForeignKey(Case, on_delete=models.SET_NULL, null=True, blank=True, related_name='payments') # case_id (FK)
+    
+    # DFD Attributes
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    payment_date = models.DateField()
+    payment_mode = models.CharField(max_length=50, choices=PAYMENT_MODE_CHOICES, default='UPI')
+    receipt_number = models.CharField(max_length=100, blank=True, null=True) 
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Completed')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.amount} - {self.client.full_name} ({self.status})"
