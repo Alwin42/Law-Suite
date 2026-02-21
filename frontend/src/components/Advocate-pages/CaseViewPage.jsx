@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import api, { getCaseDocuments, uploadDocument } from '../api';
+import api, { getCaseDocuments, uploadDocument } from '../../api';
 import { 
   ArrowLeft, Trash2, Calendar, Scale, User, Building2, 
   Clock, CheckCircle, FileText, Download, Plus, Loader2 

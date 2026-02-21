@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getTemplates, uploadTemplate, deleteTemplate } from '../api'; // <-- Imported deleteTemplate
+import { getTemplates, uploadTemplate, deleteTemplate } from '../../api'; // <-- Imported deleteTemplate
 import { 
   FileText, Download, Plus, Search, Loader2, FolderOpen, Trash2 
 } from 'lucide-react'; // <-- Imported Trash2 icon

@@ -9,16 +9,16 @@ import { cn } from "@/lib/utils";
 // --- API & HOOKS ---
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getActiveAdvocates, bookAppointment } from "../api"; // <-- Imported new API call
+import { getActiveAdvocates, bookAppointment } from "../../api"; // <-- Imported new API call
 
 // --- UI COMPONENTS ---
-import { Button } from "./ui/button";
-import { Calendar } from "./ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"; 
+import { Button } from "../ui/button";
+import { Calendar } from "../ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"; 
 
 export default function BookAppointment() {
   const [date, setDate] = useState();

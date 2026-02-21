@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom'; 
-import api from '../api';
+import api from '../../api';
 import { 
   Search, Plus, MoreHorizontal, FileText, Edit2, RefreshCcw, Loader2
 } from 'lucide-react';

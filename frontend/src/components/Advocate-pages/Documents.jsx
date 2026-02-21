@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getDocuments } from '../api';
+import { getDocuments } from '../../api';
 import { FileText, Download, Loader2, FolderOpen } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";

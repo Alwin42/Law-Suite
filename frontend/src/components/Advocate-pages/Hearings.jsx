@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getAdvocateHearings, updateCaseDetails } from '../api'; 
+import { getAdvocateHearings, updateCaseDetails } from '../../api'; 
 import { 
   Gavel, Calendar, MapPin, FileText, 
   Loader2, Edit, AlertCircle 

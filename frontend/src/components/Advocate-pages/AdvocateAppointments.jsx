@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getAdvocateAppointments, updateAppointmentStatus } from '../api'; // <-- Added new API import
+import { getAdvocateAppointments, updateAppointmentStatus } from '../../api'; // <-- Added new API import
 import { 
   Calendar, Clock, User, Phone, Mail, FileText, 
   CheckCircle, XCircle, Eye, Loader2, CheckSquare 

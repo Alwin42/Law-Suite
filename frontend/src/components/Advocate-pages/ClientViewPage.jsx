@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getClientDetails, getAdvocateClientCases, getClientPayments, addClientPayment } from '../api';
+import { getClientDetails, getAdvocateClientCases, getClientPayments, addClientPayment } from '../../api';
 import { 
   ArrowLeft, Phone, Mail, MapPin, 
   FileText, CreditCard, Plus, Loader2, Calendar, IndianRupee

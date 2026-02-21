@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Button } from "./ui/button"; 
-import { Input } from "./ui/input"; 
+import { Button } from "../ui/button"; 
+import { Input } from "../ui/input"; 
 import { motion, AnimatePresence } from "framer-motion";
 import { Scale, Mail, Lock, User, ArrowRight, Phone } from "lucide-react";
-import { loginUser, registerAdvocate } from "../api"; 
+import { loginUser, registerAdvocate } from "../../api"; 
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
