@@ -1,28 +1,30 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "./ui/button"; // Manual Button
-import { Input } from "./ui/input";   // Manual Input
+import { Button } from "./ui/button"; 
+import { Input } from "./ui/input";   
 import { motion, AnimatePresence } from "framer-motion";
-import { Mail, User, Phone, MapPin, FileText, ArrowRight, ShieldCheck } from "lucide-react";
+import { Mail, User, Phone, MapPin, FileText, ShieldCheck } from "lucide-react";
 import { registerClient, requestOTP, verifyOTP } from "../api";
 
 const ClientAuthPage = () => {
-  const [view, setView] = useState("LOGIN"); // "LOGIN" | "REGISTER"
-  const [step, setStep] = useState(1);       // 1 = Email, 2 = OTP (For Login)
+  const [view, setView] = useState("LOGIN"); 
+  const [step, setStep] = useState(1);       
   const [isLoading, setIsLoading] = useState(false);
-  const [email, setEmail] = useState("");
+  const [error, setError] = useState("");
+  
+  // Pull previous email from local storage if it exists
+  const [email, setEmail] = useState(() => localStorage.getItem("last_client_email") || "");
   const navigate = useNavigate();
 
-  // --- 1. HANDLE REGISTRATION (No Password) ---
   const handleRegister = async (e) => {
     e.preventDefault();
     setIsLoading(true);
+    setError("");
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData);
     
-    // Construct payload
     const payload = {
-        username: data.username, // Using email or specific username
+        username: data.username, 
         email: data.email,
         full_name: `${data.first_name} ${data.last_name}`,
         contact_number: data.contact_number,
@@ -35,45 +37,46 @@ const ClientAuthPage = () => {
         alert("Registration Successful! Please login with your email.");
         setView("LOGIN");
     } catch (err) {
-        alert("Registration failed. Email or Username might be taken.");
+        setError("Registration failed. Email or Username might be taken.");
     } finally {
         setIsLoading(false);
     }
   };
 
-  // --- 2. HANDLE LOGIN STEP 1 (Request OTP) ---
   const handleRequestOTP = async (e) => {
     e.preventDefault();
     setIsLoading(true);
+    setError("");
+    
     try {
         await requestOTP(email);
-        setStep(2); // Move to OTP input
-        alert(`OTP sent to ${email} (Check backend console)`);
+        // Save email for future visits
+        localStorage.setItem("last_client_email", email);
+        setStep(2); 
     } catch (err) {
-        alert("Client not found or error sending OTP.");
+        setError("Client not found or error sending OTP.");
     } finally {
         setIsLoading(false);
     }
   };
 
-  // --- 3. HANDLE LOGIN STEP 2 (Verify OTP) ---
   const handleVerifyOTP = async (e) => {
     e.preventDefault();
     setIsLoading(true);
+    setError("");
     const formData = new FormData(e.target);
     const otp = formData.get("otp");
 
     try {
         const response = await verifyOTP({ email, otp });
         
-        // Save tokens
         localStorage.setItem('access_token', response.data.access);
         localStorage.setItem('user_role', response.data.role);
         localStorage.setItem('user_name', response.data.full_name);
         
         navigate('/client-dashboard');
     } catch (err) {
-        alert("Invalid OTP.");
+        setError("Invalid or expired OTP.");
     } finally {
         setIsLoading(false);
     }
@@ -82,10 +85,10 @@ const ClientAuthPage = () => {
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
       <div className="w-full max-w-md bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden">
-        <div className="h-2 w-full bg-emerald-600" /> {/* Different color for Clients */}
+        <div className="h-2 w-full bg-emerald-600" /> 
         
         <div className="p-8">
-            <div className="text-center mb-8">
+            <div className="text-center mb-6">
                 <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-emerald-50 text-emerald-700 mb-4">
                   <ShieldCheck size={24} />
                 </div>
@@ -96,6 +99,12 @@ const ClientAuthPage = () => {
                     {view === "LOGIN" ? "Access your case files via OTP." : "Join Law Suite to manage your cases."}
                 </p>
             </div>
+
+            {error && (
+              <div className="mb-4 p-3 text-xs text-red-500 bg-red-50 rounded-md border border-red-100 text-center">
+                  {error}
+              </div>
+            )}
 
             <AnimatePresence mode="wait">
                 {view === "LOGIN" ? (
@@ -110,14 +119,14 @@ const ClientAuthPage = () => {
                                     onChange={(e) => setEmail(e.target.value)}
                                     required 
                                 />
-                                <Button disabled={isLoading} className="w-full bg-emerald-700 hover:bg-emerald-800 text-white">
+                                <Button disabled={isLoading} className="w-full bg-emerald-600 hover:bg-emerald-800 text-white">
                                     {isLoading ? "Sending OTP..." : "Get OTP Code"}
                                 </Button>
                             </form>
                         ) : (
                             <form onSubmit={handleVerifyOTP} className="space-y-4">
                                 <div className="text-center text-sm text-slate-500 mb-4">
-                                    Enter code sent to <strong>{email}</strong>
+                                    Enter code sent to <strong className="text-slate-900">{email}</strong>
                                 </div>
                                 <InputGroup icon={ShieldCheck} name="otp" placeholder="6-Digit OTP" required />
                                 <Button disabled={isLoading} className="w-full bg-emerald-700 hover:bg-emerald-800 text-white">
@@ -169,8 +178,8 @@ const ClientAuthPage = () => {
 };
 
 const InputGroup = ({ icon: Icon, ...props }) => (
-  <div className="relative">
-    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+  <div className="relative group">
+    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-emerald-700 transition-colors">
       <Icon size={16} />
     </div>
     <Input className="pl-10 border-slate-200 focus:ring-emerald-500" {...props} />

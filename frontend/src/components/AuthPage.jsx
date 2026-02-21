@@ -1,11 +1,9 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-// SAFE IMPORTS: Using your manual components
 import { Button } from "./ui/button"; 
 import { Input } from "./ui/input"; 
 import { motion, AnimatePresence } from "framer-motion";
-import { Scale, Mail, Lock, User, ArrowRight, Check, Phone, Briefcase } from "lucide-react";
-// FIX: Imported registerAdvocate instead of registerUser
+import { Scale, Mail, Lock, User, ArrowRight, Phone } from "lucide-react";
 import { loginUser, registerAdvocate } from "../api"; 
 
 const AuthPage = () => {
@@ -19,7 +17,6 @@ const AuthPage = () => {
     setError("");
   };
 
-  // --- LOGIN LOGIC (Advocates/Admins) ---
   const handleLogin = async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -31,19 +28,16 @@ const AuthPage = () => {
     try {
       const response = await loginUser(data);
       
-      // Store Token & Role
       localStorage.setItem('access_token', response.data.access);
       localStorage.setItem('refresh_token', response.data.refresh);
       localStorage.setItem('user_role', response.data.role);
       localStorage.setItem('user_name', response.data.full_name);
 
-      // Redirect based on role
       if (response.data.role === 'CLIENT') {
           navigate('/client-dashboard');
       } else {
           navigate('/dashboard'); 
       }
-
     } catch (err) {
       console.error("Login Error:", err);
       setError("Invalid username or password.");
@@ -52,7 +46,6 @@ const AuthPage = () => {
     }
   };
 
-  // --- REGISTER LOGIC (Advocates Only) ---
   const handleRegister = async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -70,10 +63,9 @@ const AuthPage = () => {
     };
 
     try {
-      // FIX: Using registerAdvocate
       await registerAdvocate(payload);
       alert("Advocate Account Created! Please login.");
-      toggleMode(); // Switch to login screen
+      toggleMode(); 
     } catch (err) {
       console.error("Registration Error:", err.response?.data);
       setError("Registration failed. Username or Email might be taken.");
@@ -84,7 +76,6 @@ const AuthPage = () => {
 
   return (
     <div className="min-h-screen w-full bg-slate-50 flex items-center justify-center p-6 relative">
-      
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -105,7 +96,6 @@ const AuthPage = () => {
             </p>
           </div>
 
-          {/* Error Message */}
           {error && (
             <div className="mb-4 p-3 text-xs text-red-500 bg-red-50 rounded-md border border-red-100 text-center">
                 {error}
@@ -115,30 +105,23 @@ const AuthPage = () => {
           <div className="space-y-4">
             <AnimatePresence mode="wait">
               {isLogin ? (
-                // --- LOGIN FORM ---
                 <LoginForm key="login" onSubmit={handleLogin} isLoading={isLoading} />
               ) : (
-                // --- REGISTER FORM ---
                 <AdvocateRegisterForm key="register" onSubmit={handleRegister} isLoading={isLoading} />
               )}
             </AnimatePresence>
 
-            {/* Toggle Login/Register */}
             <div className="mt-6 text-center">
               <p className="text-sm text-slate-500">
                 {isLogin ? "New Advocate? " : "Already have an account? "}
-                <button 
-                  onClick={toggleMode}
-                  className="font-medium text-slate-900 hover:underline"
-                >
+                <button onClick={toggleMode} className="font-medium text-slate-900 hover:underline">
                   {isLogin ? "Register here" : "Sign in"}
                 </button>
               </p>
             </div>
 
-            {/* Link to Client Login */}
             <div className="mt-4 pt-4 border-t border-slate-100 text-center">
-                <Link to="/client-login" className="text-xs font-medium text-emerald-600 hover:text-emerald-700 hover:underline flex items-center justify-center gap-1">
+                <Link to="/client-login" className="text-md font-medium text-emerald-600 hover:text-emerald-700 hover:underline flex items-center justify-center gap-1">
                     Are you a Client? Login with OTP <ArrowRight size={12}/>
                 </Link>
             </div>
@@ -148,8 +131,6 @@ const AuthPage = () => {
     </div>
   );
 };
-
-// --- SUB-COMPONENTS ---
 
 const LoginForm = ({ onSubmit, isLoading }) => (
   <motion.form
@@ -181,7 +162,6 @@ const AdvocateRegisterForm = ({ onSubmit, isLoading }) => (
       <InputGroup icon={User} name="first_name" type="text" placeholder="First Name" required />
       <InputGroup icon={User} name="last_name" type="text" placeholder="Last Name" required />
     </div>
-    
     <InputGroup icon={User} name="username" type="text" placeholder="Username" required />
     <InputGroup icon={Mail} name="email" type="email" placeholder="Email Address" required />
     <InputGroup icon={Phone} name="contact_number" type="tel" placeholder="Contact Number" required />
