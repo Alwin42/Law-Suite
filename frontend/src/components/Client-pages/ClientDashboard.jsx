@@ -1,56 +1,59 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
-  LayoutDashboard, 
-  Briefcase, 
-  Gavel, 
-  CreditCard, 
-  FileText, 
-  User, 
-  Plus, 
-  CalendarDays, 
-  Bell, 
-  LogOut,
-  ChevronRight,
-  Loader2
+  LayoutDashboard, Briefcase, Gavel, CreditCard, FileText, User, 
+  Plus, CalendarDays, Bell, LogOut, ChevronRight, Loader2, Sparkles, Clock
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import api from "../../api"; // Import your axios instance
+import { motion, AnimatePresence } from "framer-motion"; // <-- NEW: Animations
+import api from "../../api"; 
 
-// --- UI COMPONENTS ---
 import { Button } from "../ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/ card";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Badge } from "@/components/ui/badge"; 
+
+// --- ANIMATION VARIANTS ---
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1 }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
+};
 
 export default function ClientDashboard() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("dashboard");
 
-  // --- REAL DATA STATES ---
+  // Real Data States
   const [userData, setUserData] = useState({ name: "Client", email: "Loading..." });
   const [cases, setCases] = useState([]);
   const [hearings, setHearings] = useState([]);
   const [payments, setPayments] = useState([]);
-  const [notifications, setNotifications] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // --- FETCH DATA ON LOAD ---
+  // Dynamic Greeting
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+  const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
         setIsLoading(true);
-
-        // Fetch User Profile Data (You will need to create this endpoint in Django if it doesn't exist)
         const profileRes = await api.get('user/profile/'); 
         setUserData({ 
           name: profileRes.data.full_name || "Client", 
           email: profileRes.data.email 
         });
 
-        // Fetch Client-specific Data
-        // Promise.all runs these requests simultaneously for faster loading
         const [casesRes, hearingsRes, paymentsRes] = await Promise.all([
-            api.get('client/cases/').catch(() => ({ data: [] })),       // Catch prevents whole page crash if endpoint is missing
+            api.get('client/cases/').catch(() => ({ data: [] })),       
             api.get('client/hearings/').catch(() => ({ data: [] })),
             api.get('client/payments/').catch(() => ({ data: [] }))
         ]);
@@ -65,219 +68,253 @@ export default function ClientDashboard() {
         setIsLoading(false);
       }
     };
-
     fetchDashboardData();
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
+    localStorage.clear();
     navigate("/login");
+  };
+
+  const safeDate = (dateString, type) => {
+    if (!dateString) return "TBD";
+    const d = new Date(dateString);
+    if (isNaN(d.getTime())) return "TBD"; 
+    if (type === 'month') return d.toLocaleString('default', { month: 'short' });
+    if (type === 'day') return d.getDate();
+    return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
   };
 
   if (isLoading) {
     return (
-      <div className="h-screen w-full flex flex-col items-center justify-center bg-slate-50">
-        <Loader2 className="h-8 w-8 animate-spin text-slate-900 mb-4" />
-        <p className="text-slate-500 font-medium">Loading your dashboard...</p>
+      <div className="h-screen w-full flex flex-col items-center justify-center bg-[#FAFAFA]">
+        <motion.div 
+          animate={{ rotate: 360 }} 
+          transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+        >
+          <Loader2 className="h-8 w-8 text-emerald-600 mb-4" />
+        </motion.div>
+        <motion.p 
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
+          className="text-slate-400 font-medium tracking-wide"
+        >
+          Curating your secure workspace...
+        </motion.p>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen bg-slate-50 font-sans text-slate-900 pt-16">
+    <div className="flex min-h-screen bg-[#FAFAFA] font-sans text-slate-900 pt-16">
       
-      {/* --- SIDEBAR --- */}
-      <aside className="w-72 bg-white border-r border-slate-200 flex flex-col fixed left-0 top-16 h-[calc(100vh-4rem)] z-10 transition-all duration-300">
+      {/* --- SIDEBAR (Minimalist Floating Style) --- */}
+      <aside className="w-72 bg-white/80 backdrop-blur-xl border-r border-slate-100 flex flex-col fixed left-0 top-16 h-[calc(100vh-4rem)] z-10 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
         
-        {/* User Profile Section */}
-        <div className="p-6 border-b border-slate-100 flex items-center gap-4">
-          <div className="h-12 w-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-bold text-lg shrink-0 uppercase">
+        <div className="p-8 pb-4 flex items-center gap-4">
+          <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-700 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-emerald-500/20 uppercase shrink-0">
             {userData.name.charAt(0)}
           </div>
           <div className="overflow-hidden">
-            <h3 className="font-semibold text-slate-900 truncate">{userData.name}</h3>
-            <p className="text-xs text-slate-500 truncate" title={userData.email}>
+            <h3 className="font-bold text-slate-900 truncate tracking-tight">{userData.name}</h3>
+            <p className="text-xs text-slate-400 truncate" title={userData.email}>
               {userData.email}
             </p>
           </div>
         </div>
 
-        {/* Navigation Links */}
-        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+        <nav className="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto">
           <SidebarItem icon={LayoutDashboard} label="Overview" active={activeTab === "dashboard"} onClick={() => setActiveTab("dashboard")} />
           <SidebarItem icon={Briefcase} label="My Cases" active={activeTab === "cases"} onClick={() => setActiveTab("cases")} />
           <SidebarItem icon={Gavel} label="Hearings" active={activeTab === "hearings"} onClick={() => setActiveTab("hearings")} />
-          <SidebarItem icon={CreditCard} label="Payments" active={activeTab === "payments"} onClick={() => setActiveTab("payments")} />
+          <SidebarItem icon={CreditCard} label="Billing & Payments" active={activeTab === "payments"} onClick={() => setActiveTab("payments")} />
           <SidebarItem icon={FileText} label="Documents" active={activeTab === "notes"} onClick={() => setActiveTab("notes")} />
-          <SidebarItem icon={User} label="Profile Settings" active={activeTab === "profile"} onClick={() => setActiveTab("profile")} />
         </nav>
 
-        {/* Sign Out Button */}
-        <div className="p-4 border-t border-slate-100 bg-slate-50/50">
+        <div className="p-4 mb-4">
           <button 
             onClick={handleLogout}
-            className="flex items-center gap-3 w-full px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors group"
+            className="flex items-center justify-start gap-3 w-full px-4 py-3 text-sm font-medium text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all duration-300 group"
           >
-            <LogOut size={18} className="group-hover:stroke-red-700" />
-            <span className="group-hover:text-red-700">Sign Out</span>
+            <LogOut size={18} className="group-hover:scale-110 transition-transform" />
+            <span>Secure Sign Out</span>
           </button>
         </div>
       </aside>
 
       {/* --- MAIN CONTENT AREA --- */}
-      <main className="flex-1 ml-72 p-8 lg:p-12 overflow-y-auto">
+      <main className="flex-1 ml-72 p-8 lg:p-12 overflow-y-auto h-[calc(100vh-4rem)] relative">
         
-        {/* HEADER */}
-        <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
-          <div>
-            <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Dashboard</h1>
-            <p className="text-slate-500 mt-1">Manage your legal journey efficiently.</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <Button 
-                onClick={() => navigate("/book-appointment")} 
-                className="bg-slate-900 hover:bg-slate-800 text-white shadow-sm transition-all"
+        <div className="max-w-6xl mx-auto">
+            {/* HEADER (Engaging & Personalized) */}
+            <motion.header 
+                initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
+                className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12"
             >
-              <CalendarDays className="mr-2 h-4 w-4" /> Book Appointment
-            </Button>
-            <Button variant="outline" className="border-slate-200 hover:bg-slate-50 text-slate-700">
-              <Plus className="mr-2 h-4 w-4" /> New Request
-            </Button>
-          </div>
-        </header>
+            <div>
+                <p className="text-sm font-semibold text-emerald-600 tracking-wider uppercase mb-1 flex items-center gap-2">
+                    <Sparkles size={14} /> {today}
+                </p>
+                <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight">
+                    {greeting}, {userData.name.split(' ')[0]}
+                </h1>
+                <p className="text-slate-500 mt-2 text-lg">Here is the latest update on your legal matters.</p>
+            </div>
+            <div className="flex items-center gap-3">
+                <Button 
+                    onClick={() => navigate("/book-appointment")} 
+                    className="bg-slate-900 hover:bg-slate-800 text-white rounded-full px-6 shadow-md hover:shadow-xl transition-all hover:-translate-y-0.5"
+                >
+                <CalendarDays className="mr-2 h-4 w-4" /> Schedule Meeting
+                </Button>
+            </div>
+            </motion.header>
 
-        {/* WIDGET GRID */}
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-          
-          <DashboardCard title="Active Cases" icon={Briefcase}>
-            {cases.length > 0 ? (
-               <div className="space-y-3">
-                {cases.map((c) => (
-                  <div key={c.id} className="group flex items-center justify-between p-4 bg-white border border-slate-100 rounded-xl hover:border-slate-200 hover:shadow-sm transition-all cursor-pointer">
-                    <div>
-                      <p className="font-medium text-slate-900 group-hover:text-indigo-600 transition-colors">{c.title}</p>
-                      <p className="text-xs text-slate-500 mt-1">{c.lawyer_name || "Unassigned"}</p>
+            {/* WIDGET GRID (Staggered Animation) */}
+            <motion.div 
+                variants={containerVariants}
+                initial="hidden"
+                animate="show"
+                className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8"
+            >
+            
+            {/* CASES WIDGET */}
+            <motion.div variants={itemVariants} className="xl:col-span-2">
+                <DashboardCard title="Active Cases" icon={Briefcase}>
+                {cases.length > 0 ? (
+                    <div className="space-y-4">
+                    {cases.map((c, index) => (
+                        <motion.div 
+                            key={c.id} 
+                            whileHover={{ scale: 1.01, x: 4 }}
+                            className="group flex items-center justify-between p-5 bg-white border border-slate-100/50 rounded-2xl shadow-sm hover:shadow-md hover:border-emerald-100 transition-all cursor-pointer"
+                        >
+                        <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-emerald-50 transition-colors">
+                                <Briefcase size={18} className="text-slate-400 group-hover:text-emerald-600" />
+                            </div>
+                            <div>
+                                <p className="font-bold text-slate-900 text-base">{c.title}</p>
+                                <p className="text-xs font-medium text-slate-400 mt-0.5">{c.lawyer_name || "Unassigned"}</p>
+                            </div>
+                        </div>
+                        <Badge variant="secondary" className="bg-emerald-50/80 text-emerald-700 border-emerald-100/50 px-3 py-1 font-semibold tracking-wide">
+                            {c.status}
+                        </Badge>
+                        </motion.div>
+                    ))}
                     </div>
-                    <Badge variant="secondary" className="bg-green-50 text-green-700 hover:bg-green-100 border-green-100">
-                      {c.status}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-            ) : <EmptyState message="No active cases." />}
-          </DashboardCard>
+                ) : <EmptyState icon={Briefcase} message="No active cases at the moment." />}
+                </DashboardCard>
+            </motion.div>
 
-          <DashboardCard title="Upcoming Hearings" icon={Gavel}>
-             {hearings.length > 0 ? (
-               <div className="space-y-3">
-                 {hearings.map((h) => (
-                    <div key={h.id} className="p-4 bg-white border border-slate-100 rounded-xl flex items-center gap-4">
-                      <div className="text-center bg-slate-50 p-2 rounded-lg min-w-[60px] border border-slate-100">
-                         <p className="text-[10px] font-bold text-slate-500 uppercase">{new Date(h.date).toLocaleString('default', { month: 'short' })}</p>
-                         <p className="text-lg font-bold text-slate-900">{new Date(h.date).getDate()}</p>
-                      </div>
-                      <div>
-                         <p className="font-semibold text-slate-900 text-sm">{h.court_name}</p>
-                         <p className="text-xs text-slate-500 mt-0.5">{h.time}</p>
-                      </div>
-                    </div>
-                 ))}
-               </div>
-             ) : <EmptyState message="No hearings scheduled." />}
-          </DashboardCard>
+            {/* HEARINGS WIDGET */}
+            <motion.div variants={itemVariants}>
+                <DashboardCard title="Upcoming Hearings" icon={Gavel}>
+                {hearings.length > 0 ? (
+                    <div className="space-y-4">
+                    {hearings.map((h) => (
+                        <motion.div 
+                            key={h.id} 
+                            whileHover={{ y: -2 }}
+                            className="p-5 bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl flex items-center gap-5 shadow-lg shadow-slate-900/10 text-white relative overflow-hidden"
+                        >
+                        {/* Decorative background circle */}
+                        <div className="absolute -right-6 -top-6 w-24 h-24 bg-white/5 rounded-full blur-xl"></div>
 
-          <DashboardCard title="Recent Transactions" icon={CreditCard}>
-             {payments.length > 0 ? (
-              <div className="space-y-3">
-                {payments.map((p) => (
-                  <div key={p.id} className="flex items-center justify-between p-4 bg-white border border-slate-100 rounded-xl">
-                    <div className="flex flex-col">
-                      <span className="text-sm font-medium text-slate-900">{p.description}</span>
-                      <span className="text-xs text-slate-400 mt-0.5">{p.date}</span>
+                        <div className="text-center bg-white/10 backdrop-blur-sm p-3 rounded-xl min-w-[70px] border border-white/10">
+                            <p className="text-[11px] font-bold text-emerald-400 uppercase tracking-widest">{safeDate(h.date, 'month')}</p>
+                            <p className="text-2xl font-black leading-none mt-1">{safeDate(h.date, 'day')}</p>
+                        </div>
+                        <div className="relative z-10">
+                            <p className="font-bold text-white text-base leading-tight">{h.court_name}</p>
+                            <p className="text-xs text-slate-300 mt-1.5 flex items-center gap-1.5 font-medium">
+                                <Clock size={12} className="text-emerald-400"/> {h.time}
+                            </p>
+                        </div>
+                        </motion.div>
+                    ))}
                     </div>
-                    <span className="font-semibold text-slate-900">₹{p.amount}</span>
-                  </div>
-                ))}
-              </div>
-            ) : <EmptyState message="No payment history." />}
-          </DashboardCard>
+                ) : <EmptyState icon={Gavel} message="No upcoming hearings scheduled." />}
+                </DashboardCard>
+            </motion.div>
 
-          {/* Notifications */}
-          <Card className="col-span-1 md:col-span-2 xl:col-span-3 border border-slate-200 shadow-none bg-white rounded-xl">
-            <CardHeader className="pb-4 border-b border-slate-50">
-                <div className="flex items-center gap-3">
-                    <div className="p-2 bg-indigo-50 rounded-lg">
-                        <Bell className="h-5 w-5 text-indigo-600" />
+            {/* PAYMENTS WIDGET */}
+            <motion.div variants={itemVariants} className="xl:col-span-3">
+                <DashboardCard title="Recent Transactions" icon={CreditCard}>
+                {payments.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {payments.map((p) => (
+                        <div key={p.id} className="flex items-center justify-between p-5 bg-white border border-slate-100 rounded-2xl hover:shadow-sm transition-shadow">
+                        <div className="flex flex-col">
+                            <span className="text-sm font-bold text-slate-800 truncate max-w-[200px]" title={p.description}>{p.description}</span>
+                            <span className="text-xs font-medium text-slate-400 mt-1 flex items-center gap-1">
+                                <CalendarDays size={12}/> {safeDate(p.date, 'full')}
+                            </span>
+                        </div>
+                        <span className="font-extrabold text-slate-900 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
+                            ₹{p.amount}
+                        </span>
+                        </div>
+                    ))}
                     </div>
-                    <CardTitle className="text-lg font-semibold text-slate-900">Notifications</CardTitle>
-                </div>
-            </CardHeader>
-            <CardContent className="pt-6">
-               {notifications.length > 0 ? (
-                    <ul className="space-y-4">
-                        {notifications.map((n, i) => (
-                            <li key={i} className="text-sm text-slate-600 pb-4 border-b border-slate-50 last:border-0 last:pb-0">
-                                {n.message}
-                            </li>
-                        ))}
-                    </ul>
-                ) : (
-                    <div className="text-center py-8">
-                        <p className="text-slate-400 text-sm">You're all caught up!</p>
-                    </div>
-                )}
-            </CardContent>
-          </Card>
+                ) : <EmptyState icon={CreditCard} message="No recent transactions found." />}
+                </DashboardCard>
+            </motion.div>
 
+            </motion.div>
         </div>
       </main>
     </div>
   );
 }
 
-// --- SUB-COMPONENTS (Unchanged) ---
+// --- SUB-COMPONENTS ---
 function SidebarItem({ icon: Icon, label, active, onClick }) {
     return (
         <button 
             onClick={onClick}
             className={cn(
-                "group flex items-center justify-between w-full px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200",
+                "group flex items-center justify-between w-full px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 relative overflow-hidden",
                 active 
-                    ? "bg-slate-900 text-white shadow-md shadow-slate-900/10" 
+                    ? "text-emerald-700 bg-emerald-50/50" 
                     : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
             )}
         >
-            <div className="flex items-center gap-3">
-                <Icon size={18} className={cn("transition-colors", active ? "text-white" : "text-slate-400 group-hover:text-slate-900")} />
+            {active && (
+                <motion.div layoutId="activeTab" className="absolute left-0 top-0 bottom-0 w-1 bg-emerald-500 rounded-r-full" />
+            )}
+            <div className="flex items-center gap-3 relative z-10">
+                <Icon size={18} className={cn("transition-colors duration-300", active ? "text-emerald-600" : "text-slate-400 group-hover:text-slate-700")} />
                 {label}
             </div>
-            {active && <ChevronRight size={14} className="text-slate-400 opacity-50" />}
+            {active && <ChevronRight size={14} className="text-emerald-600/50" />}
         </button>
     )
 }
 
 function DashboardCard({ title, icon: Icon, children }) {
     return (
-        <Card className="border border-slate-200 shadow-none bg-white rounded-xl h-full flex flex-col">
-            <CardHeader className="pb-4 border-b border-slate-50">
-                <div className="flex items-center justify-between">
-                    <CardTitle className="text-base font-semibold text-slate-900">{title}</CardTitle>
-                    <Icon className="h-4 w-4 text-slate-400" />
+        <Card className="border-none shadow-none bg-transparent h-full flex flex-col">
+            <CardHeader className="px-1 pb-5 pt-0">
+                <div className="flex items-center gap-2">
+                    <div className="p-1.5 bg-white rounded-lg shadow-sm border border-slate-100">
+                        <Icon className="h-4 w-4 text-emerald-600" />
+                    </div>
+                    <CardTitle className="text-lg font-bold text-slate-800 tracking-tight">{title}</CardTitle>
                 </div>
             </CardHeader>
-            <CardContent className="pt-6 flex-1">
+            <CardContent className="px-1 flex-1">
                 {children}
             </CardContent>
         </Card>
     )
 }
 
-function EmptyState({ message }) {
+function EmptyState({ icon: Icon, message }) {
     return (
-        <div className="flex flex-col items-center justify-center h-full min-h-[120px] text-center px-4">
-            <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center mb-3">
-                <span className="text-slate-300 text-lg">?</span>
+        <div className="flex flex-col items-center justify-center py-10 px-4 bg-white border border-slate-100 border-dashed rounded-2xl">
+            <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center mb-4">
+                <Icon className="h-5 w-5 text-slate-300" />
             </div>
             <p className="text-sm text-slate-400 font-medium">{message}</p>
         </div>

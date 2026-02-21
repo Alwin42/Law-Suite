@@ -2,10 +2,11 @@ from rest_framework import status, views, generics, permissions
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import get_user_model
-
+from api.models import Client, Appointment, Case, Payment 
+from api.serializers import UserSerializer
 from api.models import Client, Appointment
 from api.serializers import UserSerializer
-
+from django.utils import timezone
 User = get_user_model()
 
 class ActiveAdvocateListView(generics.ListAPIView):
@@ -73,3 +74,63 @@ class ClientPaymentListView(views.APIView):
     def get(self, request):
         # TODO: Implement Client-specific Payment fetching logic
         return Response([])
+    
+class ClientCaseListView(views.APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # Find all cases where the linked client matches the logged-in user's email
+        cases = Case.objects.filter(client__email=request.user.email).select_related('created_by')
+        
+        # Format the data exactly how ClientDashboard.jsx expects it
+        data = [{
+            "id": c.id,
+            "title": c.case_title,
+            "lawyer_name": f"Adv. {c.created_by.full_name}" if c.created_by else "Unassigned",
+            "status": c.status
+        } for c in cases]
+        
+        return Response(data) 
+
+
+class ClientHearingListView(views.APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        today = timezone.now().date()
+        
+        # Find all future hearings for this client, ordered by closest date
+        hearings = Case.objects.filter(
+            client__email=request.user.email, 
+            next_hearing__gte=today
+        ).order_by('next_hearing')
+        
+        # Format the data exactly how ClientDashboard.jsx expects it
+        data = [{
+            "id": h.id,
+            "date": str(h.next_hearing), 
+            "court_name": h.court_name,
+            # Since you don't have a specific 'hearing time' in your Case model yet,
+            # we will pass a placeholder, or you can leave it blank.
+            "time": "Time TBD by Court" 
+        } for h in hearings]
+        
+        return Response(data)
+
+
+class ClientPaymentListView(views.APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # Fetch all payments linked to this client
+        payments = Payment.objects.filter(client__email=request.user.email).order_by('-payment_date')
+        
+        # Format the data exactly how ClientDashboard.jsx expects it
+        data = [{
+            "id": p.id,
+            "description": f"Payment for {p.case.case_title}" if p.case else p.notes or f"Retainer ({p.payment_mode})",
+            "date": str(p.payment_date),
+            "amount": str(p.amount)
+        } for p in payments]
+        
+        return Response(data)
