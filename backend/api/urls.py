@@ -7,7 +7,7 @@ from .views import (
     CustomTokenObtainPairView, ActiveAdvocateListView, UserProfileView, 
     ClientCaseListView, ClientHearingListView, ClientPaymentListView, TemplateListCreateView,
     CaseDetailView, AdvocateAppointmentListView, ClientListCreateView, BookAppointmentView,
-    ClientDetailView, AdvocateClientCasesView, ClientPaymentListCreateView
+    ClientDetailView, AdvocateClientCasesView, ClientPaymentListCreateView, ClientFullCaseListView, ClientCaseDetailView
 )
 
 urlpatterns = [
@@ -58,4 +58,6 @@ urlpatterns = [
     path('client/cases/', ClientCaseListView.as_view(), name='client-portal-cases'),
     path('client/hearings/', ClientHearingListView.as_view(), name='client-portal-hearings'),
     path('client/payments/', ClientPaymentListView.as_view(), name='client-portal-payments'),
+    path('client/my-cases/', ClientFullCaseListView.as_view(), name='client-full-cases'),
+    path('client/my-cases/<int:pk>/', ClientCaseDetailView.as_view(), name='client-case-detail'),
 ]

@@ -25,7 +25,8 @@ import Documents from "./components/Advocate-pages/Documents";
 
 // Client Features (Note: Based on your screenshot, BookAppointment is in Advocate-pages)
 import BookAppointment from "./components/Advocate-pages/BookAppointment";
-
+import ClientCasesPage from "./components/Client-pages/ClientCasesPage";
+import ClientCaseView from "./components/Client-pages/ClientCaseView";
 function App() {
   return (
     <Router>
@@ -59,6 +60,8 @@ function App() {
         <Route path="/advocate/appointments" element={<AdvocateAppointments />} />
         <Route path="/advocate/hearings" element={<Hearings />} /> 
         
+        <Route path="/client-dashboard/cases" element={<ClientCasesPage />} />
+        <Route path="/client-dashboard/cases/:id" element={<ClientCaseView />} />
       </Routes>
     </Router>
   );

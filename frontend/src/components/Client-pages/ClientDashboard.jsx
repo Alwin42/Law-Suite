@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { 
   LayoutDashboard, Briefcase, Gavel, CreditCard, FileText, User, 
   Plus, CalendarDays, Bell, LogOut, ChevronRight, Loader2, Sparkles, Clock
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { motion, AnimatePresence } from "framer-motion"; // <-- NEW: Animations
+import { motion, AnimatePresence } from "framer-motion"; 
 import api from "../../api"; 
 
 import { Button } from "../ui/button";
@@ -28,8 +28,8 @@ const itemVariants = {
 
 export default function ClientDashboard() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("dashboard");
-
+  const location = useLocation();
+  
   // Real Data States
   const [userData, setUserData] = useState({ name: "Client", email: "Loading..." });
   const [cases, setCases] = useState([]);
@@ -123,11 +123,36 @@ export default function ClientDashboard() {
         </div>
 
         <nav className="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto">
-          <SidebarItem icon={LayoutDashboard} label="Overview" active={activeTab === "dashboard"} onClick={() => setActiveTab("dashboard")} />
-          <SidebarItem icon={Briefcase} label="My Cases" active={activeTab === "cases"} onClick={() => setActiveTab("cases")} />
-          <SidebarItem icon={Gavel} label="Hearings" active={activeTab === "hearings"} onClick={() => setActiveTab("hearings")} />
-          <SidebarItem icon={CreditCard} label="Billing & Payments" active={activeTab === "payments"} onClick={() => setActiveTab("payments")} />
-          <SidebarItem icon={FileText} label="Documents" active={activeTab === "notes"} onClick={() => setActiveTab("notes")} />
+          <SidebarItem 
+            icon={LayoutDashboard} 
+            label="Overview" 
+            active={location.pathname === "/client-dashboard"} 
+            onClick={() => navigate("/client-dashboard")} 
+          />
+          <SidebarItem 
+            icon={Briefcase} 
+            label="My Cases" 
+            active={location.pathname.includes("/cases")} 
+            onClick={() => navigate("/client-dashboard/cases")} 
+          />
+          <SidebarItem 
+            icon={Gavel} 
+            label="Hearings" 
+            active={location.pathname.includes("/hearings")} 
+            onClick={() => navigate("/client-dashboard/hearings")} 
+          />
+          <SidebarItem 
+            icon={CreditCard} 
+            label="Billing & Payments" 
+            active={location.pathname.includes("/payments")} 
+            onClick={() => navigate("/client-dashboard/payments")} 
+          />
+          <SidebarItem 
+            icon={FileText} 
+            label="Documents" 
+            active={location.pathname.includes("/documents")} 
+            onClick={() => navigate("/client-dashboard/documents")} 
+          />
         </nav>
 
         <div className="p-4 mb-4">
@@ -185,6 +210,7 @@ export default function ClientDashboard() {
                     {cases.map((c, index) => (
                         <motion.div 
                             key={c.id} 
+                            onClick={() => navigate(`/client-dashboard/cases/${c.id}`)}
                             whileHover={{ scale: 1.01, x: 4 }}
                             className="group flex items-center justify-between p-5 bg-white border border-slate-100/50 rounded-2xl shadow-sm hover:shadow-md hover:border-emerald-100 transition-all cursor-pointer"
                         >
@@ -266,7 +292,7 @@ export default function ClientDashboard() {
       </main>
     </div>
   );
-}
+} // <--- THE FIX: Function is now properly closed here!
 
 // --- SUB-COMPONENTS ---
 function SidebarItem({ icon: Icon, label, active, onClick }) {

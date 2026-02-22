@@ -59,5 +59,7 @@ export const addClientPayment = (id, data) => api.post(`clients/${id}/payments/`
 // --- Client Portal (For later) ---
 export const getClientCases = () => api.get('client/cases/');
 export const getClientHearings = () => api.get('client/hearings/');
+export const getClientFullCases = () => api.get('client/my-cases/');
+export const getClientCaseDetail = (id) => api.get(`client/my-cases/${id}/`);
 
 export default api;

@@ -3,9 +3,9 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import get_user_model
 from api.models import Client, Appointment, Case, Payment 
-from api.serializers import UserSerializer
+from api.serializers import CaseSerializer, UserSerializer
 from api.models import Client, Appointment
-from api.serializers import UserSerializer
+from api.serializers import UserSerializer, CaseSerializer
 from django.utils import timezone
 User = get_user_model()
 
@@ -54,12 +54,23 @@ class BookAppointmentView(views.APIView):
             "appointment_id": appointment.id
         }, status=status.HTTP_201_CREATED)
 
-class ClientCaseListView(views.APIView):
-    permission_classes = [IsAuthenticated]
+class ClientFullCaseListView(generics.ListAPIView):
+    """Returns the full list of cases for the client page"""
+    serializer_class = CaseSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
-    def get(self, request):
-        # TODO: Implement Client-specific Case fetching logic
-        return Response([]) 
+    def get_queryset(self):
+        # Only return cases matching the logged-in client's email
+        return Case.objects.filter(client__email=self.request.user.email).order_by('-updated_at')
+
+class ClientCaseDetailView(generics.RetrieveAPIView):
+    """Returns the specific details of a single case for the client"""
+    serializer_class = CaseSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # SECURITY: Ensure they can only retrieve IDs that belong to their email
+        return Case.objects.filter(client__email=self.request.user.email)
 
 class ClientHearingListView(views.APIView):
     permission_classes = [IsAuthenticated]
