@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   // Handle scroll effect
   useEffect(() => {
@@ -14,7 +16,48 @@ const Navbar = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const navLinks = ["Home", "Clients", "Cases", "Dashboard", "Login"];
+  // --- 1. CHECK AUTHENTICATION ---
+  const token = localStorage.getItem('access_token');
+  const role = localStorage.getItem('user_role'); // 'ADVOCATE', 'CLIENT', or 'STAFF'
+
+  // --- 2. DEFINE ROLE-BASED LINKS ---
+  const publicLinks = [
+    { name: "Home", path: "/" },
+    { name: "Client Login", path: "/client-login" },
+    { name: "Advocate Login", path: "/login" }
+  ];
+
+  const advocateLinks = [
+    { name: "Home", path: "/" },
+    { name: "Dashboard", path: "/dashboard" },
+    { name: "Clients", path: "/clients" },
+    { name: "Cases", path: "/cases" },
+  ];
+
+  const clientLinks = [
+    { name: "Home", path: "/" },
+    { name: "Dashboard", path: "/client-dashboard" },
+    { name: "Book Appointment", path: "/book-appointment" },
+  ];
+
+  const staffLinks = [
+    { name: "Staff Dashboard", path: "/staff-dashboard" }, // You can build this next!
+    { name: "Active Cases", path: "/cases" },
+  ];
+
+  // --- 3. SELECT WHICH LINKS TO SHOW ---
+  let currentLinks = publicLinks;
+  if (token) {
+    if (role === 'ADVOCATE') currentLinks = advocateLinks;
+    else if (role === 'CLIENT') currentLinks = clientLinks;
+    else if (role === 'STAFF') currentLinks = staffLinks;
+  }
+
+  const handleLogout = () => {
+    localStorage.clear();
+    navigate('/login');
+  };
+
 
   return (
     <motion.nav
@@ -26,7 +69,7 @@ const Navbar = () => {
       }`}
     >
       {/* Left: Logo */}
-      <Link to="/home">
+      <Link to="/">
         <div className="text-xl font-bold tracking-[0.2em] text-primary uppercase">
           Law Suite
         </div>
@@ -34,18 +77,28 @@ const Navbar = () => {
       
       {/* Right: Navigation */}
       <div className="hidden md:flex items-center space-x-8">
-        {navLinks.map((link) => (
+        {currentLinks.map((link) => (
           <Link
-            key={link}
-            // THE FIX: "Home" goes to "/", everything else gets a leading "/"
-            to={link === "Home" ? "/" : `/${link.toLowerCase()}`}
+            key={link.name}
+            to={link.path}
             className="group relative text-md font-medium text-primary/80 hover:text-primary transition-colors"
           >
-            {link}
+            {link.name}
             {/* Hover Underline Animation */}
             <span className="absolute -bottom-1 left-0 w-0 h-[2px] bg-primary transition-all duration-300 group-hover:w-full" />
           </Link>
         ))}
+
+        {/* Dynamic Logout Button (Matches your link styling) */}
+        {token && (
+           <button
+             onClick={handleLogout}
+             className="group relative text-md font-medium text-red-500/80 hover:text-red-500 transition-colors cursor-pointer"
+           >
+             Logout
+             <span className="absolute -bottom-1 left-0 w-0 h-[2px] bg-red-500 transition-all duration-300 group-hover:w-full" />
+           </button>
+        )}
       </div>
       
       {/* Mobile Menu Icon would go here (omitted for brevity) */}
