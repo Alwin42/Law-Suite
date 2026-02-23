@@ -119,11 +119,9 @@ class ClientHearingListView(views.APIView):
         # Format the data exactly how ClientDashboard.jsx expects it
         data = [{
             "id": h.id,
+            "case_title": h.case_title,
             "date": str(h.next_hearing), 
             "court_name": h.court_name,
-            # Since you don't have a specific 'hearing time' in your Case model yet,
-            # we will pass a placeholder, or you can leave it blank.
-            "time": "Time TBD by Court" 
         } for h in hearings]
         
         return Response(data)
@@ -145,3 +143,4 @@ class ClientPaymentListView(views.APIView):
         } for p in payments]
         
         return Response(data)
+

@@ -253,9 +253,7 @@ export default function ClientDashboard() {
                         </div>
                         <div className="relative z-10">
                             <p className="font-bold text-white text-base leading-tight">{h.court_name}</p>
-                            <p className="text-xs text-slate-300 mt-1.5 flex items-center gap-1.5 font-medium">
-                                <Clock size={12} className="text-emerald-400"/> {h.time}
-                            </p>
+                            
                         </div>
                         </motion.div>
                     ))}
@@ -292,7 +290,7 @@ export default function ClientDashboard() {
       </main>
     </div>
   );
-} // <--- THE FIX: Function is now properly closed here!
+} 
 
 // --- SUB-COMPONENTS ---
 function SidebarItem({ icon: Icon, label, active, onClick }) {

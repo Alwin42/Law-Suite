@@ -27,6 +27,8 @@ import Documents from "./components/Advocate-pages/Documents";
 import BookAppointment from "./components/Advocate-pages/BookAppointment";
 import ClientCasesPage from "./components/Client-pages/ClientCasesPage";
 import ClientCaseView from "./components/Client-pages/ClientCaseView";
+import ClientHearingsPage from "./components/Client-pages/ClientHearingsPage";
+
 function App() {
   return (
     <Router>
@@ -59,9 +61,10 @@ function App() {
         <Route path="/book-appointment" element={<BookAppointment />} />
         <Route path="/advocate/appointments" element={<AdvocateAppointments />} />
         <Route path="/advocate/hearings" element={<Hearings />} /> 
-        
+        {/* CLient path */}
         <Route path="/client-dashboard/cases" element={<ClientCasesPage />} />
         <Route path="/client-dashboard/cases/:id" element={<ClientCaseView />} />
+        <Route path="/client-dashboard/hearings" element={<ClientHearingsPage />} />
       </Routes>
     </Router>
   );
