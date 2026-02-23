@@ -66,7 +66,7 @@ export default function BookAppointment() {
     try {
         await bookAppointment(bookingData); // <-- Replaced mock timeout with real API
         alert("Appointment Request Sent Successfully!");
-        navigate("/client/hearings/"); // Redirects to client dashboard
+        navigate("/client-dashboard"); // Redirects to client dashboard
     } catch (error) {
         console.error("Booking failed", error);
         alert("Failed to book appointment. Check connection or data.");

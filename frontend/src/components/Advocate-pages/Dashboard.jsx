@@ -134,6 +134,7 @@ const Dashboard = () => {
 
       {/* MAIN CONTENT */}
       <main className="flex-1 md:ml-64 min-h-[calc(100vh-4rem)]">
+        {/* --- Dashboard Header with Search & Notifications added soon --- 
         <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 sticky top-0 z-20">
           <h2 className="text-lg font-semibold text-slate-800">Dashboard Overview</h2>
           <div className="flex items-center gap-4">
@@ -142,8 +143,8 @@ const Dashboard = () => {
               <input type="text" placeholder="Search..." className="pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-slate-900/10 w-64" />
             </div>
             <button className="p-2 text-slate-500 hover:bg-slate-100 rounded-full relative"><Bell size={20} /></button>
-          </div>
-        </header>
+          </div>z
+        </header> */}
 
         <div className="p-6 max-w-7xl mx-auto space-y-6">
           
