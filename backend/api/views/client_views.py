@@ -3,10 +3,11 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import get_user_model
 from api.models import Client, Appointment, Case, Payment 
-from api.serializers import CaseSerializer, UserSerializer
-from api.models import Client, Appointment
+from api.serializers import CaseSerializer, UserSerializer , DocumentSerializer
+from api.models import Client, Appointment , Document , Case , Payment 
 from api.serializers import UserSerializer, CaseSerializer
 from django.utils import timezone
+from rest_framework.parsers import MultiPartParser, FormParser
 User = get_user_model()
 
 class ActiveAdvocateListView(generics.ListAPIView):
@@ -143,4 +144,24 @@ class ClientPaymentListView(views.APIView):
         } for p in payments]
         
         return Response(data)
+
+class ClientDocumentListCreateView(generics.ListCreateAPIView):
+    serializer_class = DocumentSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    parser_classes = (MultiPartParser, FormParser) 
+
+    def get_queryset(self):
+        # Fetch all documents linked to cases that belong to this client
+        return Document.objects.filter(case__client__email=self.request.user.email).order_by('-uploaded_at')
+
+    def perform_create(self, serializer):
+        # When client uploads, we need to verify the case belongs to them!
+        case_id = self.request.data.get('case')
+        case = Case.objects.get(id=case_id)
+        
+        # Security Check: Ensure client owns the case they are uploading to
+        if case.client.email != self.request.user.email:
+            raise permissions.PermissionDenied("You cannot upload to this case.")
+            
+        serializer.save()
 

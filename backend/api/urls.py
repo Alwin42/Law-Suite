@@ -6,9 +6,10 @@ from .views import (
     DashboardStatsView, RequestOTPView, UpdateAppointmentStatusView, VerifyOTPView, 
     CustomTokenObtainPairView, ActiveAdvocateListView, UserProfileView, 
     ClientCaseListView, ClientHearingListView, ClientPaymentListView, TemplateListCreateView,
-    CaseDetailView, AdvocateAppointmentListView, ClientListCreateView, BookAppointmentView,
+    CaseDetailView, AdvocateAppointmentListView, ClientListCreateView, BookAppointmentView, ClientDocumentListCreateView,
     ClientDetailView, AdvocateClientCasesView, ClientPaymentListCreateView, ClientFullCaseListView, ClientCaseDetailView
 )
+from .views.chatbot_views import ChatbotView
 
 urlpatterns = [
     # Auth
@@ -60,4 +61,9 @@ urlpatterns = [
     path('client/payments/', ClientPaymentListView.as_view(), name='client-portal-payments'),
     path('client/my-cases/', ClientFullCaseListView.as_view(), name='client-full-cases'),
     path('client/my-cases/<int:pk>/', ClientCaseDetailView.as_view(), name='client-case-detail'),
+    path('client/documents/', ClientDocumentListCreateView.as_view(), name='client-documents'),
+
+
+    #Ai 
+    path('chat/ask/', ChatbotView.as_view(), name='chatbot-ask'),
 ]

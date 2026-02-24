@@ -348,9 +348,9 @@ export default function CasePage() {
                 <SelectTrigger>
                   <SelectValue placeholder="Select Client" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-slate-50">
                   {clients.map(c => (
-                    <SelectItem key={c.id} value={c.id.toString()}>{c.full_name} ({c.email})</SelectItem>
+                    <SelectItem key={c.id} value={c.id.toString()}>{c.full_name} </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -363,7 +363,7 @@ export default function CasePage() {
                   <SelectTrigger>
                     <SelectValue placeholder="Case Type" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-slate-50">
                     <SelectItem value="Civil">Civil</SelectItem>
                     <SelectItem value="Criminal">Criminal</SelectItem>
                     <SelectItem value="Corporate">Corporate</SelectItem>
@@ -377,7 +377,7 @@ export default function CasePage() {
                   <SelectTrigger>
                     <SelectValue placeholder="Status" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-slate-50">
                     <SelectItem value="Open">Open</SelectItem>
                     <SelectItem value="Pending">Pending</SelectItem>
                     <SelectItem value="Closed">Closed</SelectItem>

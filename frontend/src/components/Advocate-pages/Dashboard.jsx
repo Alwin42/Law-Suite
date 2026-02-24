@@ -9,7 +9,7 @@ import {
   Settings, LogOut, Bell, Search, ArrowRight, Loader, Clock , FileUser
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
-
+import Chatbot from "../Chatbot";
 const NavItem = ({ icon: Icon, label, to }) => (
   <NavLink 
     to={to}
@@ -219,7 +219,7 @@ const Dashboard = () => {
               </div>
             </div>
           </div>
-
+          <Chatbot />
           {/* BOTTOM ROW: APPOINTMENTS & CALENDAR */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
