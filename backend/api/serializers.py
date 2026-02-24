@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.utils.crypto import get_random_string
 from rest_framework import serializers
-from .models import Appointment, Case, Client, Document, Payment , Template
+from .models import Appointment, Case, Client, Document, Payment , Template , AdvocateFile
 
 User = get_user_model()
 
@@ -155,3 +155,9 @@ class PaymentSerializer(serializers.ModelSerializer):
         model = Payment
         fields = '__all__'
         read_only_fields = ['id', 'created_at', 'client']
+
+class AdvocateFileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AdvocateFile
+        fields = ['id', 'name', 'file_url', 'file_type', 'uploaded_at']
+        read_only_fields = ['id', 'uploaded_at']

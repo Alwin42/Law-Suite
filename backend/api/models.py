@@ -170,3 +170,13 @@ class Payment(models.Model):
 
     def __str__(self):
         return f"{self.amount} - {self.client.full_name} ({self.status})"
+
+class AdvocateFile(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='files')
+    name = models.CharField(max_length=255)
+    file_url = models.URLField(max_length=500) 
+    file_type = models.CharField(max_length=255)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.name} ({self.user.email})"

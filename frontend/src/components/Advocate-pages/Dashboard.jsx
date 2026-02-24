@@ -6,10 +6,10 @@ import { Button } from "../ui/button";
 import { Calendar as ShadcnCalendar } from "@/components/ui/calendar"; 
 import { 
   LayoutDashboard, Users, FileText, Gavel, Calendar as CalendarIcon, FilePen,
-  Settings, LogOut, Bell, Search, ArrowRight, Loader, Clock , FileUser
+  Settings, LogOut,  ArrowRight, Loader, Clock , FileUser , Cloud
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
-import Chatbot from "../Chatbot";
+
 const NavItem = ({ icon: Icon, label, to }) => (
   <NavLink 
     to={to}
@@ -111,6 +111,7 @@ const Dashboard = () => {
           <NavItem icon={CalendarIcon} label="Appointments" to="/advocate/appointments" />
           <NavItem icon={FileUser} label="Case Documents" to="/documents" />
           <NavItem icon={FilePen} label="Templates" to="/templates" />
+          <NavItem icon={Cloud} label="Cloud " to="/cloud" />
           <div className="pt-4 mt-4 border-t border-slate-100">
             <NavItem icon={Settings} label="Settings" to="/settings" />
           </div>
@@ -219,7 +220,7 @@ const Dashboard = () => {
               </div>
             </div>
           </div>
-          <Chatbot />
+          
           {/* BOTTOM ROW: APPOINTMENTS & CALENDAR */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             

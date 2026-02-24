@@ -9,8 +9,8 @@ from .views import (
     CaseDetailView, AdvocateAppointmentListView, ClientListCreateView, BookAppointmentView, ClientDocumentListCreateView,
     ClientDetailView, AdvocateClientCasesView, ClientPaymentListCreateView, ClientFullCaseListView, ClientCaseDetailView
 )
-from .views.chatbot_views import ChatbotView
 
+from .views.file_views import FileUploadView,FileDeleteView
 urlpatterns = [
     # Auth
     path('register/advocate/', AdvocateRegisterView.as_view(), name='register_advocate'),
@@ -62,8 +62,8 @@ urlpatterns = [
     path('client/my-cases/', ClientFullCaseListView.as_view(), name='client-full-cases'),
     path('client/my-cases/<int:pk>/', ClientCaseDetailView.as_view(), name='client-case-detail'),
     path('client/documents/', ClientDocumentListCreateView.as_view(), name='client-documents'),
-
-
-    #Ai 
-    path('chat/ask/', ChatbotView.as_view(), name='chatbot-ask'),
+    #cloud
+    path('cloud/upload/', FileUploadView.as_view(), name='cloud-upload'),
+    path('cloud/upload/', FileUploadView.as_view(), name='cloud-upload'), # GET and POST
+    path('cloud/delete/<int:pk>/', FileDeleteView.as_view(), name='cloud-delete'), # DELETE
 ]
