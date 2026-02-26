@@ -32,7 +32,6 @@ import ClientDocumentsPage from "./components/Client-pages/ClientDocumentsPage";
 
 import CloudPage from "./components/Advocate-pages/Cloud"
 
-
 function App() {
   return (
     <Router>
@@ -70,7 +69,10 @@ function App() {
         <Route path="/client-dashboard/cases/:id" element={<ClientCaseView />} />
         <Route path="/client-dashboard/hearings" element={<ClientHearingsPage />} />
         <Route path="/client-dashboard/documents" element={<ClientDocumentsPage />} />
+        {/* Cloud */}
         <Route path="/cloud" element={<CloudPage/>} />
+        
+
       </Routes>
     </Router>
   );

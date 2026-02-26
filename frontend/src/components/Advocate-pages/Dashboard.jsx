@@ -132,7 +132,7 @@ const Dashboard = () => {
               <p className="text-slate-500 text-sm mt-1">{today}</p>
             </div>
             <Button onClick={() => navigate('/cases/new')} className="bg-slate-900 hover:bg-slate-800 text-white rounded-lg">
-              + New Case
+              <p class="text-2xl m-2">+</p> New Case 
             </Button>
           </div>
 

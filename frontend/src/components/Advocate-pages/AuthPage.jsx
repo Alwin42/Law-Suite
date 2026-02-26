@@ -124,6 +124,9 @@ const AuthPage = () => {
                 <Link to="/client-login" className="text-md font-medium text-emerald-600 hover:text-emerald-700 hover:underline flex items-center justify-center gap-1">
                     Are you a Client? Login with OTP <ArrowRight size={12}/>
                 </Link>
+                <Link to="/staff/login" className="text-md font-medium text-emerald-600 hover:text-emerald-700 hover:underline flex items-center justify-center gap-1">
+                    Are you a Staff ? <ArrowRight size={12}/>
+                </Link>
             </div>
           </div>
         </div>

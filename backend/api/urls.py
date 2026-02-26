@@ -9,8 +9,11 @@ from .views import (
     CaseDetailView, AdvocateAppointmentListView, ClientListCreateView, BookAppointmentView, ClientDocumentListCreateView,
     ClientDetailView, AdvocateClientCasesView, ClientPaymentListCreateView, ClientFullCaseListView, ClientCaseDetailView
 )
-
 from .views.file_views import FileUploadView,FileDeleteView
+
+
+
+
 urlpatterns = [
     # Auth
     path('register/advocate/', AdvocateRegisterView.as_view(), name='register_advocate'),
@@ -66,4 +69,6 @@ urlpatterns = [
     path('cloud/upload/', FileUploadView.as_view(), name='cloud-upload'),
     path('cloud/upload/', FileUploadView.as_view(), name='cloud-upload'), # GET and POST
     path('cloud/delete/<int:pk>/', FileDeleteView.as_view(), name='cloud-delete'), # DELETE
+
+    
 ]
