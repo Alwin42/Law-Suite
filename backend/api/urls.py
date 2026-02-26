@@ -11,7 +11,7 @@ from .views import (
 )
 from .views.file_views import FileUploadView,FileDeleteView 
 from .views.staff_views import StaffRequestOTPView, StaffVerifyOTPView
-backend/core/settings.pybackend/core/settings.py
+
 urlpatterns = [
     # Auth
     path('register/advocate/', AdvocateRegisterView.as_view(), name='register_advocate'),
