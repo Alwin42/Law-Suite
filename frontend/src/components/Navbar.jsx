@@ -42,7 +42,7 @@ const Navbar = () => {
 
   const staffLinks = [
     { name: "Staff Dashboard", path: "/staff/dashboard" }, 
-    { name: "Active Cases", path: "/cases" },
+    { name: "Active Cases", path: "/staff/cases" },
   ];
 
   // --- 3. SELECT WHICH LINKS TO SHOW ---

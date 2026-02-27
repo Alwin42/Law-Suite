@@ -89,16 +89,11 @@ const StaffDashboard = () => {
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 
   return (
-    <div className="min-h-screen bg-zinc-50 flex font-sans text-zinc-900">
+    <div className="min-h-screen bg-zinc-50 flex  font-sans text-zinc-900">
       
       {/* --- SIDEBAR --- */}
-      <aside className="w-64 bg-white border-r border-zinc-200 hidden md:flex flex-col fixed inset-y-0 z-10">
-        <div className="p-6 border-b border-zinc-100 flex items-center gap-3">
-          <div className="bg-black text-white p-2 rounded-lg">
-            <ShieldCheck size={20} />
-          </div>
-          <span className="font-bold text-lg tracking-tight">Staff Portal</span>
-        </div>
+      <aside className="w-64 bg-white border-r mt-9 border-zinc-200 hidden md:flex flex-col fixed inset-y-0 z-10">
+        
 
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
           <NavItem icon={LayoutDashboard} label="Overview" to="/staff/dashboard" />
@@ -122,7 +117,7 @@ const StaffDashboard = () => {
 
       {/* --- MAIN CONTENT --- */}
       <main className="flex-1 md:ml-64 p-8">
-        <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in mt-9 slide-in-from-bottom-4 duration-500">
           
           <div className="flex justify-between items-end">
             <div>

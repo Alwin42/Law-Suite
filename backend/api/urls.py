@@ -11,6 +11,8 @@ from .views import (
 )
 from .views.file_views import FileUploadView,FileDeleteView 
 from .views.staff_views import StaffRequestOTPView, StaffVerifyOTPView, StaffDashboardStatsView
+from .views.appointment_views import AppointmentListCreateView, AppointmentDetailView
+
 urlpatterns = [
     # Auth
     path('register/advocate/', AdvocateRegisterView.as_view(), name='register_advocate'),
@@ -70,4 +72,6 @@ urlpatterns = [
     path('staff/request-otp/', StaffRequestOTPView.as_view(), name='staff-request-otp'),
     path('staff/verify-otp/', StaffVerifyOTPView.as_view(), name='staff-verify-otp'),
     path('staff/dashboard-stats/', StaffDashboardStatsView.as_view(), name='staff-dashboard-stats'),
+    path('appointments/', AppointmentListCreateView.as_view(), name='appointment-list-create'),
+    path('appointments/<int:pk>/', AppointmentDetailView.as_view(), name='appointment-detail'),
 ]
