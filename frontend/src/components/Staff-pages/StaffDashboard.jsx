@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, NavLink } from 'react-router-dom';
 import { 
   ShieldCheck, LayoutDashboard, CalendarDays, Briefcase, 
-  CreditCard, Users, Settings, LogOut, CheckCircle2, 
+  CreditCard, Users, Settings, LogOut, 
   Clock, Mail, AlertCircle, Loader2, ChevronRight 
 } from 'lucide-react';
 import axios from 'axios';
@@ -26,23 +26,16 @@ const NavItem = ({ icon: Icon, label, to }) => (
 const StaffDashboard = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState({ name: "Staff Member", email: "" });
   
-  // Dummy data for the UI structure (You will replace this with an API call later)
+  // States to hold the real database data
   const [stats, setStats] = useState({
-    pending_appointments: 5,
-    active_cases: 24,
-    unpaid_invoices: 8,
+    pending_appointments: 0,
+    active_cases: 0,
+    unpaid_invoices: 0,
   });
-
-  const [pendingTasks, setPendingTasks] = useState([
-    { id: 1, type: "appointment", title: "Approve consultation for John Doe", time: "Today, 2:00 PM" },
-    { id: 2, type: "payment", title: "Send payment reminder to Sarah Smith", time: "Overdue by 2 days" },
-    { id: 3, type: "case", title: "Update hearing date for Case #MC-24", time: "Requires action" },
-  ]);
+  const [pendingTasks, setPendingTasks] = useState([]);
 
   useEffect(() => {
-    // 1. Check if user is logged in
     const token = localStorage.getItem('access_token');
     const role = localStorage.getItem('user_role');
 
@@ -51,12 +44,28 @@ const StaffDashboard = () => {
       return;
     }
 
-    // 2. Fetch Dashboard Data (Placeholder for your future API)
-    // In the future, you'll do: axios.get('/api/staff/dashboard/', { headers: ... })
-    setTimeout(() => {
-      setLoading(false);
-    }, 800);
+    // Fetch REAL Dashboard Data from Database
+    const fetchDashboardData = async () => {
+      try {
+        const response = await axios.get('http://127.0.0.1:8000/api/staff/dashboard-stats/', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        // Update state with backend data
+        setStats(response.data.stats);
+        setPendingTasks(response.data.pendingTasks);
+        
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+        if (error.response?.status === 401) {
+            navigate('/staff/login'); // Redirect if token expired
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
 
+    fetchDashboardData();
   }, [navigate]);
 
   const handleLogout = () => {
@@ -64,9 +73,9 @@ const StaffDashboard = () => {
     navigate('/staff/login');
   };
 
-  const handleSendReminder = (id) => {
-    alert(`Triggering email reminder for task ${id}...`);
-    // Future API call to the SendPaymentReminderView we discussed
+  const handleSendReminder = (realId) => {
+    // We pass the 'real_id' from the database to this function now
+    alert(`Triggering email reminder for payment ID: ${realId}...`);
   };
 
   if (loading) {
@@ -115,7 +124,6 @@ const StaffDashboard = () => {
       <main className="flex-1 md:ml-64 p-8">
         <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
           
-          {/* Header */}
           <div className="flex justify-between items-end">
             <div>
               <h1 className="text-3xl font-bold tracking-tight text-zinc-900">Workspace Overview</h1>
@@ -127,70 +135,57 @@ const StaffDashboard = () => {
             </div>
           </div>
 
-          {/* KPI Stats Row */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <StatCard 
-              title="Pending Appointments" 
-              value={stats.pending_appointments} 
-              icon={Clock} 
-              color="amber" 
-            />
-            <StatCard 
-              title="Active Cases" 
-              value={stats.active_cases} 
-              icon={Briefcase} 
-              color="blue" 
-            />
-            <StatCard 
-              title="Unpaid Invoices" 
-              value={stats.unpaid_invoices} 
-              icon={AlertCircle} 
-              color="red" 
-            />
+            <StatCard title="Pending Appointments" value={stats.pending_appointments} icon={Clock} color="amber" />
+            <StatCard title="Active Cases" value={stats.active_cases} icon={Briefcase} color="blue" />
+            <StatCard title="Unpaid Invoices" value={stats.unpaid_invoices} icon={AlertCircle} color="red" />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
-            {/* Action Required List */}
             <div className="lg:col-span-2 bg-white rounded-2xl border border-zinc-200 shadow-sm p-6">
               <div className="flex justify-between items-center mb-6">
                 <h3 className="font-bold text-lg text-zinc-900">Action Required</h3>
-                <button className="text-sm font-medium text-blue-600 hover:underline">View All</button>
               </div>
 
               <div className="space-y-4">
-                {pendingTasks.map(task => (
-                  <div key={task.id} className="flex items-center justify-between p-4 rounded-xl border border-zinc-100 hover:border-zinc-300 hover:shadow-sm transition-all bg-zinc-50/50">
-                    <div className="flex items-start gap-4">
-                      <div className={`mt-1 p-2 rounded-lg ${
-                        task.type === 'payment' ? 'bg-red-50 text-red-600' : 
-                        task.type === 'appointment' ? 'bg-amber-50 text-amber-600' : 'bg-blue-50 text-blue-600'
-                      }`}>
-                        {task.type === 'payment' ? <CreditCard size={18}/> : 
-                         task.type === 'appointment' ? <CalendarDays size={18}/> : <Briefcase size={18}/>}
+                {pendingTasks.length === 0 ? (
+                  <p className="text-zinc-500 text-sm py-4 text-center">No pending tasks found.</p>
+                ) : (
+                  pendingTasks.map(task => (
+                    <div key={task.id} className="flex items-center justify-between p-4 rounded-xl border border-zinc-100 hover:border-zinc-300 hover:shadow-sm transition-all bg-zinc-50/50">
+                      <div className="flex items-start gap-4">
+                        <div className={`mt-1 p-2 rounded-lg ${
+                          task.type === 'payment' ? 'bg-red-50 text-red-600' : 
+                          task.type === 'appointment' ? 'bg-amber-50 text-amber-600' : 'bg-blue-50 text-blue-600'
+                        }`}>
+                          {task.type === 'payment' ? <CreditCard size={18}/> : 
+                           task.type === 'appointment' ? <CalendarDays size={18}/> : <Briefcase size={18}/>}
+                        </div>
+                        <div>
+                          <p className="font-bold text-sm text-zinc-900">{task.title}</p>
+                          <p className="text-xs text-zinc-500 mt-1">{task.time}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-bold text-sm text-zinc-900">{task.title}</p>
-                        <p className="text-xs text-zinc-500 mt-1">{task.time}</p>
-                      </div>
-                    </div>
 
-                    {/* Dynamic Action Button based on task type */}
-                    {task.type === 'payment' ? (
-                      <button onClick={() => handleSendReminder(task.id)} className="flex items-center gap-2 px-3 py-1.5 bg-black text-white text-xs font-bold rounded-lg hover:bg-zinc-800 transition-colors">
-                        <Mail size={14} /> Send Reminder
-                      </button>
-                    ) : (
-                      <button className="flex items-center gap-2 px-3 py-1.5 border border-zinc-200 text-zinc-700 text-xs font-bold rounded-lg hover:bg-zinc-100 transition-colors">
-                        Review <ChevronRight size={14} />
-                      </button>
-                    )}
-                  </div>
-                ))}
+                      {task.type === 'payment' ? (
+                        <button onClick={() => handleSendReminder(task.real_id)} className="flex items-center gap-2 px-3 py-1.5 bg-black text-white text-xs font-bold rounded-lg hover:bg-zinc-800 transition-colors shrink-0">
+                          <Mail size={14} /> Send Reminder
+                        </button>
+                      ) : (
+                        <button 
+                          onClick={() => navigate('/staff/appointments')}
+                          className="flex items-center gap-2 px-3 py-1.5 border border-zinc-200 text-zinc-700 text-xs font-bold rounded-lg hover:bg-zinc-100 transition-colors shrink-0"
+                        >
+                          Review <ChevronRight size={14} />
+                        </button>
+                      )}
+                    </div>
+                  ))
+                )}
               </div>
             </div>
 
-            {/* Quick Actions Panel */}
             <div className="bg-black text-white rounded-2xl shadow-xl p-6 flex flex-col relative overflow-hidden">
                <div className="absolute -right-10 -top-10 opacity-10 pointer-events-none">
                  <ShieldCheck size={150} />
@@ -200,10 +195,9 @@ const StaffDashboard = () => {
                <p className="text-zinc-400 text-sm mt-1 mb-6 relative z-10">Common staff operations</p>
 
                <div className="space-y-3 relative z-10 flex-1">
-                 <QuickActionButton icon={CalendarDays} label="Schedule New Appointment" />
-                 <QuickActionButton icon={Users} label="Register New Client" />
-                 <QuickActionButton icon={CreditCard} label="Record Payment Receipt" />
-                 <QuickActionButton icon={Briefcase} label="Update Case Status" />
+                 <QuickActionButton icon={CalendarDays} label="Manage Appointments" onClick={() => navigate('/staff/appointments')} />
+                 <QuickActionButton icon={Users} label="Register New Client" onClick={() => navigate('/staff/clients')} />
+                 <QuickActionButton icon={Briefcase} label="Update Case Status" onClick={() => navigate('/staff/cases')} />
                </div>
             </div>
 
@@ -213,8 +207,6 @@ const StaffDashboard = () => {
     </div>
   );
 };
-
-// --- Subcomponents for clean code ---
 
 const StatCard = ({ title, value, icon: Icon, color }) => {
   const colorMap = {
@@ -236,8 +228,11 @@ const StatCard = ({ title, value, icon: Icon, color }) => {
   );
 };
 
-const QuickActionButton = ({ icon: Icon, label }) => (
-  <button className="w-full flex items-center gap-3 p-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 transition-colors text-left group">
+const QuickActionButton = ({ icon: Icon, label, onClick }) => (
+  <button 
+    onClick={onClick}
+    className="w-full flex items-center gap-3 p-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 transition-colors text-left group"
+  >
     <div className="bg-zinc-800 p-2 rounded-lg group-hover:bg-black transition-colors">
       <Icon size={16} className="text-zinc-300 group-hover:text-white" />
     </div>

@@ -41,7 +41,7 @@ const Navbar = () => {
   ];
 
   const staffLinks = [
-    { name: "Staff Dashboard", path: "/staff-dashboard" }, // You can build this next!
+    { name: "Staff Dashboard", path: "/staff/dashboard" }, 
     { name: "Active Cases", path: "/cases" },
   ];
 

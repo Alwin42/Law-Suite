@@ -10,8 +10,7 @@ from .views import (
     ClientDetailView, AdvocateClientCasesView, ClientPaymentListCreateView, ClientFullCaseListView, ClientCaseDetailView
 )
 from .views.file_views import FileUploadView,FileDeleteView 
-from .views.staff_views import StaffRequestOTPView, StaffVerifyOTPView
-
+from .views.staff_views import StaffRequestOTPView, StaffVerifyOTPView, StaffDashboardStatsView
 urlpatterns = [
     # Auth
     path('register/advocate/', AdvocateRegisterView.as_view(), name='register_advocate'),
@@ -70,5 +69,5 @@ urlpatterns = [
 
     path('staff/request-otp/', StaffRequestOTPView.as_view(), name='staff-request-otp'),
     path('staff/verify-otp/', StaffVerifyOTPView.as_view(), name='staff-verify-otp'),
-    
+    path('staff/dashboard-stats/', StaffDashboardStatsView.as_view(), name='staff-dashboard-stats'),
 ]

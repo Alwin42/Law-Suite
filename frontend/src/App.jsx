@@ -34,6 +34,8 @@ import CloudPage from "./components/Advocate-pages/Cloud"
 
 import StaffAuth from './components/Staff-pages/StaffAuth';
 import StaffDashboard from './components/Staff-pages/StaffDashboard';
+import AppointmentManage from './components/Staff-pages/appointment_manage';
+
 
 function App() {
   return (
@@ -77,7 +79,7 @@ function App() {
         
         <Route path="/staff/login" element={<StaffAuth />} />
         <Route path="/staff/dashboard" element={<StaffDashboard />} />
-
+        <Route path="/staff/appointments" element={<AppointmentManage />} />
       </Routes>
     </Router>
   );
