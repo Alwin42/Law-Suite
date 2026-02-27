@@ -12,6 +12,8 @@ from .views import (
 from .views.file_views import FileUploadView,FileDeleteView 
 from .views.staff_views import StaffRequestOTPView, StaffVerifyOTPView, StaffDashboardStatsView
 from .views.appointment_views import AppointmentListCreateView, AppointmentDetailView
+from .views.payment_views import SendUPIPaymentRequestView
+from .views.payment_views import PaymentDetailView
 
 urlpatterns = [
     # Auth
@@ -68,10 +70,14 @@ urlpatterns = [
     path('cloud/upload/', FileUploadView.as_view(), name='cloud-upload'),
     path('cloud/upload/', FileUploadView.as_view(), name='cloud-upload'), # GET and POST
     path('cloud/delete/<int:pk>/', FileDeleteView.as_view(), name='cloud-delete'), # DELETE
-
+    #Staff 
     path('staff/request-otp/', StaffRequestOTPView.as_view(), name='staff-request-otp'),
     path('staff/verify-otp/', StaffVerifyOTPView.as_view(), name='staff-verify-otp'),
     path('staff/dashboard-stats/', StaffDashboardStatsView.as_view(), name='staff-dashboard-stats'),
     path('appointments/', AppointmentListCreateView.as_view(), name='appointment-list-create'),
     path('appointments/<int:pk>/', AppointmentDetailView.as_view(), name='appointment-detail'),
+
+    #Payments
+    path('payments/request-upi/', SendUPIPaymentRequestView.as_view(), name='request-upi-payment'),
+    path('payments/<int:pk>/', PaymentDetailView.as_view(), name='payment-detail'),
 ]

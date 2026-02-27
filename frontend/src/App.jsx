@@ -36,6 +36,7 @@ import StaffAuth from './components/Staff-pages/StaffAuth';
 import StaffDashboard from './components/Staff-pages/StaffDashboard';
 import AppointmentManage from './components/Staff-pages/appointment_manage';
 
+import PaymentManage from './components/Advocate-pages/Payment';
 
 function App() {
   return (
@@ -80,6 +81,16 @@ function App() {
         <Route path="/staff/login" element={<StaffAuth />} />
         <Route path="/staff/dashboard" element={<StaffDashboard />} />
         <Route path="/staff/appointments" element={<AppointmentManage />} />
+
+        <Route path="/payments" element={<PaymentManage />} />
+        <Route 
+            path="*" 
+            element={
+              <div className="min-h-screen flex items-center justify-center text-zinc-500 font-medium">
+                404 - Page Not Found
+              </div>
+            } 
+          />
       </Routes>
     </Router>
   );

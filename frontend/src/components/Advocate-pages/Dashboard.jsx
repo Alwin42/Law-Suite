@@ -5,8 +5,8 @@ import { Button } from "../ui/button";
 import { Calendar as ShadcnCalendar } from "@/components/ui/calendar"; 
 import { 
   LayoutDashboard, Users, FileText, Gavel, Calendar as CalendarIcon, FilePen,
-  Settings, LogOut, ArrowRight, Loader, Clock, FileUser, Cloud, 
-  Briefcase, Scale, ChevronRight
+  Settings, LogOut, ArrowRight, Loader, Clock, FileUser, Cloud, Banknote,
+  Briefcase, ChevronRight
 } from "lucide-react";
 
 // --- REFINED NAV ITEM (Subtler Active State) ---
@@ -105,6 +105,7 @@ const Dashboard = () => {
           <NavItem icon={FileUser} label="Case Documents" to="/documents" />
           <NavItem icon={FilePen} label="Templates" to="/templates" />
           <NavItem icon={Cloud} label="Cloud Vault" to="/cloud" />
+          <NavItem icon={Banknote} label="Payments" to="/payments" />
         </div>
 
         <div className="p-4 border-t border-slate-100">
@@ -114,8 +115,15 @@ const Dashboard = () => {
               {user.name?.[0]}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold truncate">{user.name}</p>
-              <button onClick={handleLogout} className="text-xs text-red-500 hover:underline">Sign Out</button>
+              <p className="text-sm font-semibold truncate text-zinc-900">{user.name}</p>
+              
+              <button 
+                onClick={handleLogout} 
+                className="flex items-center gap-1.5 text-xs font-medium text-red-500 hover:text-red-700 hover:underline transition-colors mt-0.5"
+              >
+                <LogOut size={14} />
+                Sign Out
+              </button>
             </div>
           </div>
         </div>
@@ -183,7 +191,13 @@ const Dashboard = () => {
               <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="font-semibold text-slate-800">Appointments</h3>
-                  <button onClick={() => navigate('/advocate/appointments')} className="text-sm text-blue-600 hover:underline">Manage</button>
+                  
+                  <button 
+                    onClick={() => navigate('/advocate/appointments')} 
+                    className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+                  >
+                    Manage <ArrowRight size={14} /> 
+                  </button>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {recentAppointments.map((appt) => (
