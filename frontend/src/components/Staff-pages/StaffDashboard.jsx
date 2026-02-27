@@ -126,7 +126,7 @@ const StaffDashboard = () => {
             </div>
             <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-full border border-zinc-200 shadow-sm">
                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-               <span className="text-xs font-bold text-zinc-700 uppercase tracking-wider">System Online</span>
+               <span className="text-xs font-bold text-zinc-700 uppercase tracking-wider">Online</span>
             </div>
           </div>
 
@@ -191,7 +191,7 @@ const StaffDashboard = () => {
 
                <div className="space-y-3 relative z-10 flex-1">
                  <QuickActionButton icon={CalendarDays} label="Manage Appointments" onClick={() => navigate('/staff/appointments')} />
-                 <QuickActionButton icon={Users} label="Register New Client" onClick={() => navigate('/staff/clients')} />
+                 <QuickActionButton icon={Users} label="Payment" onClick={() => navigate('/staff/clients')} />
                  <QuickActionButton icon={Briefcase} label="Update Case Status" onClick={() => navigate('/staff/cases')} />
                </div>
             </div>

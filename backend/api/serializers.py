@@ -161,3 +161,28 @@ class AdvocateFileSerializer(serializers.ModelSerializer):
         model = AdvocateFile
         fields = ['id', 'name', 'file_url', 'file_type', 'uploaded_at']
         read_only_fields = ['id', 'uploaded_at']
+
+class AppointmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Appointment
+        fields = '__all__'
+
+    def to_representation(self, instance):
+        # 1. Get the default representation (which just has IDs)
+        response = super().to_representation(instance)
+        
+        # 2. Inject the nested Client details for React
+        if instance.client:
+            response['client'] = {
+                'id': instance.client.id,
+                'full_name': instance.client.full_name
+            }
+            
+        # 3. Inject the nested Advocate details for React
+        if instance.advocate:
+            response['advocate'] = {
+                'id': instance.advocate.id,
+                'full_name': instance.advocate.full_name  # Ensure User model has full_name
+            }
+            
+        return response
