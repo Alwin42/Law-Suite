@@ -15,10 +15,9 @@ class User(AbstractUser):
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='STAFF')
     contact_number = models.CharField(max_length=15, blank=True, null=True)
     is_active = models.BooleanField(default=True)
-
-    # --- NEW FIELDS NEEDED FOR CLIENTS ---
+    upi_id = models.CharField(max_length=100, blank=True, null=True)
     address = models.TextField(blank=True, null=True)
-    notes = models.TextField(blank=True, null=True) # For case notes
+    notes = models.TextField(blank=True, null=True) 
     
     def __str__(self):
         return f"{self.username} ({self.role})"
@@ -156,7 +155,7 @@ class Payment(models.Model):
     receipt_number = models.CharField(max_length=100, blank=True, null=True) 
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Completed')
     created_at = models.DateTimeField(auto_now_add=True)
-
+    upi_id = models.CharField(max_length=100, blank=True, null=True)
     def __str__(self):
         return f"{self.amount} - {self.client.full_name} ({self.status})"
 

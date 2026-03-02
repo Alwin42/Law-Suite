@@ -6,7 +6,7 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from api.models import Client, Case, Appointment, Payment, Template, Document
 from api.serializers import (
     CaseSerializer, ClientSerializer, PaymentSerializer, 
-    DocumentSerializer, AppointmentSerializer, TemplateSerializer
+    DocumentSerializer, AppointmentSerializer, TemplateSerializer, UserSerializer
 )
 
 class DashboardStatsView(views.APIView):
@@ -175,3 +175,15 @@ class CaseDocumentListView(generics.ListAPIView):
     def get_queryset(self):
         case_id = self.kwargs['case_id']
         return Document.objects.filter(case_id=case_id, case__created_by=self.request.user).order_by('-uploaded_at')
+    
+class UserProfileView(generics.RetrieveUpdateAPIView):
+    """
+    GET: Returns the logged-in user's profile data (including upi_id).
+    PATCH/PUT: Allows the user to update their profile (like saving a new upi_id).
+    """
+    serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self):
+        # Automatically returns the user associated with the provided access token
+        return self.request.user

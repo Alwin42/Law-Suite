@@ -32,12 +32,17 @@ class BaseRegistrationSerializer(serializers.ModelSerializer):
 
 # --- 2. ADVOCATE REGISTRATION ---
 class AdvocateRegistrationSerializer(BaseRegistrationSerializer):
+    upi_id = serializers.CharField(required=False, allow_blank=True)
     class Meta:
         model = User
-        fields = ('username', 'password', 'email', 'full_name', 'contact_number')
+        fields = ('username', 'password', 'email', 'full_name', 'contact_number', 'upi_id')
 
     def create(self, validated_data):
-        return self.create_user_instance(validated_data, 'ADVOCATE')
+        user = self.create_user_instance(validated_data, 'ADVOCATE')
+        user.upi_id = validated_data.get('upi_id', '')
+        user.save()
+        
+        return user
 
 # --- 3. CLIENT REGISTRATION ---
 class ClientRegistrationSerializer(serializers.ModelSerializer):
@@ -91,8 +96,8 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('id', 'full_name', 'email', 'contact_number', 'role', 'is_active', 'address')
-
+        fields = ('id', 'full_name', 'email', 'contact_number', 'role', 'is_active', 'address','upi_id')
+        read_only_fields = ('id', 'email', 'role', 'is_active')
 class EmailSerializer(serializers.Serializer):
     email = serializers.EmailField()
 
