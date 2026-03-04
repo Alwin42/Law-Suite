@@ -18,7 +18,7 @@ const Navbar = () => {
 
   // --- 1. CHECK AUTHENTICATION ---
   const token = localStorage.getItem('access_token');
-  const role = localStorage.getItem('user_role'); // 'ADVOCATE', 'CLIENT', or 'STAFF'
+  const role = localStorage.getItem('user_role'); 
 
   // --- 2. DEFINE ROLE-BASED LINKS ---
   const publicLinks = [

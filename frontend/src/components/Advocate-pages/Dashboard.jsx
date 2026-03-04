@@ -249,7 +249,7 @@ const Dashboard = () => {
               </div>
 
               {/* UPCOMING HEARINGS LIST */}
-              <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+              <div className="bg-blue-200 rounded-xl border border-slate-200 shadow-sm p-5">
                 <h3 className="font-semibold text-slate-800 mb-4">Upcoming Hearings</h3>
                 <div className="space-y-4">
                   {upcomingHearings.map((h) => (
@@ -266,7 +266,7 @@ const Dashboard = () => {
                         </div>
                      </div>
                   ))}
-                  {upcomingHearings.length === 0 && <p className="text-sm text-slate-400">No hearings coming up.</p>}
+                  {upcomingHearings.length === 0 && <p className="text-sm text-blue-500">No hearings coming up.</p>}
                 </div>
               </div>
 
