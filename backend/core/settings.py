@@ -3,6 +3,7 @@ from pathlib import Path
 import os
 from pathlib import Path
 import cloudinary
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -74,18 +75,11 @@ TEMPLATES = [
 WSGI_APPLICATION = 'core.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/6.0/ref/settings/#databases
-
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'advocate_db',
-        'USER': 'postgres',      
-        'PASSWORD': 'alwin123',  
-        'HOST': 'localhost',
-        'PORT': '5432',
-    }
+    "default": dj_database_url.config(
+        default=os.environ.get("DATABASE_URL"),
+        conn_max_age=600 
+    )
 }
 
 # Password validation
@@ -122,11 +116,7 @@ USE_I18N = True
 
 USE_TZ = True
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-    "http://localhost:5174",
-    "http://localhost:3000",
-]
+CORS_ALLOWED_ORIGINS = False 
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
