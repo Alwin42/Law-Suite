@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Parallax, ParallaxLayer } from '@react-spring/parallax';
 import { motion } from 'framer-motion'; 
-import api from '../api';
+import api from '../../api';
 import { 
   ChevronDown, Calendar, Gavel, CheckCircle, 
   AlertCircle, DollarSign, Clock, Users, Briefcase, ArrowRight 

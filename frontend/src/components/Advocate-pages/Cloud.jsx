@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import api from '../api'; // Imported the centralized API
+import api from '../../api';
 import { 
   Cloud, Plus, Trash2, FileText, 
   Image as ImageIcon, File, Loader2, DownloadCloud,

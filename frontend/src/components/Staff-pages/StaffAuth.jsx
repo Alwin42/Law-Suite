@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../api'; // Imported the centralized API
+import api from '../../api';
 import { ShieldCheck, Mail, KeyRound, Loader2, ArrowLeft } from 'lucide-react';
 
 const StaffAuth = () => {

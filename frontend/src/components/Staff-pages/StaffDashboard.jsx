@@ -5,7 +5,7 @@ import {
   CreditCard, Users, Settings, LogOut, 
   Clock, Mail, AlertCircle, Loader2, ChevronRight 
 } from 'lucide-react';
-import api from '../api'; // Imported the centralized API
+import api from '../../api';
 
 // --- Sidebar Navigation Item ---
 const NavItem = ({ icon: Icon, label, to }) => (
