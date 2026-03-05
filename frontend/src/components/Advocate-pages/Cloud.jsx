@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api'; // Imported the centralized API
 import { 
   Cloud, Plus, Trash2, FileText, 
   Image as ImageIcon, File, Loader2, DownloadCloud,
@@ -11,17 +11,13 @@ const CloudPage = () => {
   const [uploading, setUploading] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
 
-  const API_URL = "http://127.0.0.1:8000/api/cloud/upload/";
-  const DELETE_URL = "http://127.0.0.1:8000/api/cloud/delete/";
-
   useEffect(() => {
     fetchFiles();
   }, []);
 
   const fetchFiles = async () => {
     try {
-      const token = localStorage.getItem('access_token');
-      const res = await axios.get(API_URL, { headers: { Authorization: `Bearer ${token}` } });
+      const res = await api.get('cloud/upload/');
       setFiles(res.data);
     } catch (error) {
       console.error("Error fetching files:", error);
@@ -39,9 +35,8 @@ const CloudPage = () => {
     formData.append("file", file);
 
     try {
-      const token = localStorage.getItem('access_token');
-      await axios.post(API_URL, formData, {
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' },
+      await api.post('cloud/upload/', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
       fetchFiles(); 
     } catch (error) {
@@ -54,8 +49,7 @@ const CloudPage = () => {
   const confirmDelete = async () => {
     if (!deleteId) return;
     try {
-      const token = localStorage.getItem('access_token');
-      await axios.delete(`${DELETE_URL}${deleteId}/`, { headers: { Authorization: `Bearer ${token}` } });
+      await api.delete(`cloud/delete/${deleteId}/`);
       setFiles(files.filter(f => f.id !== deleteId));
       setDeleteId(null);
     } catch (error) {

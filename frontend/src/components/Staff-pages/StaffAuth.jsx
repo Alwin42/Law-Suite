@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api'; // Imported the centralized API
 import { ShieldCheck, Mail, KeyRound, Loader2, ArrowLeft } from 'lucide-react';
 
 const StaffAuth = () => {
@@ -24,7 +24,7 @@ const StaffAuth = () => {
     setSuccessMsg('');
 
     try {
-      const response = await axios.post('http://127.0.0.1:8000/api/staff/request-otp/', { email });
+      const response = await api.post('staff/request-otp/', { email });
       if (response.status === 200) {
         setSuccessMsg(response.data.message);
         setStep(2); // Move to OTP input screen
@@ -43,7 +43,7 @@ const StaffAuth = () => {
     setError('');
 
     try {
-      const response = await axios.post('http://127.0.0.1:8000/api/staff/verify-otp/', { 
+      const response = await api.post('staff/verify-otp/', { 
         email, 
         otp 
       });
