@@ -5,7 +5,7 @@ import {
   CreditCard, Users, Settings, LogOut, 
   Clock, Mail, AlertCircle, Loader2, ChevronRight 
 } from 'lucide-react';
-import axios from 'axios';
+import api from '../api'; // Imported the centralized API
 
 // --- Sidebar Navigation Item ---
 const NavItem = ({ icon: Icon, label, to }) => (
@@ -47,9 +47,7 @@ const StaffDashboard = () => {
     // Fetch REAL Dashboard Data from Database
     const fetchDashboardData = async () => {
       try {
-        const response = await axios.get('http://127.0.0.1:8000/api/staff/dashboard-stats/', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const response = await api.get('staff/dashboard-stats/');
         
         // Update state with backend data
         setStats(response.data.stats);

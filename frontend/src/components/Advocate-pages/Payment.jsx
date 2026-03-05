@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api'; 
 import { 
   CreditCard, QrCode, Trash2, Save, 
   History, Plus, Edit, Loader2, IndianRupee, Mail, AlertCircle
@@ -29,12 +29,7 @@ const PaymentManage = () => {
 
   const fetchAdvocateProfile = async () => {
     try {
-      const token = localStorage.getItem('access_token');
-      // Matches the exact URL in your urls.py
-      const response = await axios.get('http://127.0.0.1:8000/api/user/profile/', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
+      const response = await api.get('user/profile/');
       if (response.data.upi_id) {
         setUpiId(response.data.upi_id);
       }
@@ -45,10 +40,7 @@ const PaymentManage = () => {
 
   const fetchClients = async () => {
     try {
-      const token = localStorage.getItem('access_token');
-      const response = await axios.get('http://127.0.0.1:8000/api/clients/', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get('clients/');
       setClients(response.data);
     } catch (error) {
       console.error("Error fetching clients:", error);
@@ -62,12 +54,7 @@ const PaymentManage = () => {
     if (!upiId) return alert("Please enter a valid UPI ID");
     
     try {
-      const token = localStorage.getItem('access_token');
-      // Save directly to the database profile
-      await axios.patch('http://127.0.0.1:8000/api/user/profile/', 
-        { upi_id: upiId }, 
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await api.patch('user/profile/', { upi_id: upiId });
       alert("UPI ID Saved to Database Successfully! This will be used for all future payment requests.");
     } catch (error) {
       console.error("Error saving UPI ID:", error);
@@ -77,12 +64,7 @@ const PaymentManage = () => {
 
   const handleDeleteUpi = async () => {
     try {
-      const token = localStorage.getItem('access_token');
-      // Clear it in the database
-      await axios.patch('http://127.0.0.1:8000/api/user/profile/', 
-        { upi_id: "" }, 
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await api.patch('user/profile/', { upi_id: "" });
       setUpiId('');
       alert("UPI ID Removed from Database.");
     } catch (error) {
@@ -105,14 +87,13 @@ const PaymentManage = () => {
     e.preventDefault();
     setProcessingId('sending');
     try {
-      const token = localStorage.getItem('access_token');
-      await axios.post('http://127.0.0.1:8000/api/payments/request-upi/', {
+      await api.post('payments/request-upi/', {
         client_id: selectedClient.id,
         title: paymentForm.title,
         amount: paymentForm.amount,
         due_date: paymentForm.due_date,
         upi_id: upiId // Sent dynamically from state/DB
-      }, { headers: { Authorization: `Bearer ${token}` } });
+      });
       
       alert("Payment Request & QR Code sent to client's email!");
       setIsAddModalOpen(false);
@@ -133,10 +114,7 @@ const PaymentManage = () => {
   const fetchClientPayments = async (clientId) => {
     setProcessingId('fetching_history');
     try {
-      const token = localStorage.getItem('access_token');
-      const response = await axios.get(`http://127.0.0.1:8000/api/clients/${clientId}/payments/`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get(`clients/${clientId}/payments/`);
       setClientPayments(response.data);
     } catch (error) {
       console.error("Error fetching payments", error);
@@ -147,11 +125,7 @@ const PaymentManage = () => {
 
   const handleStatusUpdate = async (paymentId, newStatus) => {
     try {
-      const token = localStorage.getItem('access_token');
-      await axios.patch(`http://127.0.0.1:8000/api/payments/${paymentId}/`, 
-        { status: newStatus }, 
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await api.patch(`payments/${paymentId}/`, { status: newStatus });
       setClientPayments(clientPayments.map(p => p.id === paymentId ? { ...p, status: newStatus } : p));
     } catch (error) {
       alert("Failed to update status");
@@ -161,10 +135,7 @@ const PaymentManage = () => {
   const handleDeletePayment = async (paymentId) => {
     if (!window.confirm("Delete this payment record?")) return;
     try {
-      const token = localStorage.getItem('access_token');
-      await axios.delete(`http://127.0.0.1:8000/api/payments/${paymentId}/`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.delete(`payments/${paymentId}/`);
       setClientPayments(clientPayments.filter(p => p.id !== paymentId));
     } catch (error) {
       alert("Failed to delete payment");

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api'; // Imported the centralized API
 import { 
   CalendarDays, Clock, User, CheckCircle, 
   XCircle, CalendarClock, Loader2, Search, Plus, FileText, Briefcase
@@ -38,16 +38,13 @@ const AppointmentManage = () => {
 
   const fetchData = async () => {
     try {
-      const token = localStorage.getItem('access_token');
-      const headers = { Authorization: `Bearer ${token}` };
-
       // Fetch Appointments
-      const apptRes = await axios.get('http://127.0.0.1:8000/api/appointments/', { headers });
+      const apptRes = await api.get('appointments/');
       setAppointments(apptRes.data);
 
       // Fetch Clients for the dropdown
       try {
-        const clientRes = await axios.get('http://127.0.0.1:8000/api/clients/', { headers });
+        const clientRes = await api.get('clients/');
         setClients(clientRes.data);
       } catch (clientErr) {
         console.warn("Could not load clients list. Please ensure the endpoint exists.");
@@ -65,11 +62,7 @@ const AppointmentManage = () => {
   const handleStatusChange = async (id, newStatus) => {
     setProcessingId(id);
     try {
-      const token = localStorage.getItem('access_token');
-      await axios.patch(`http://127.0.0.1:8000/api/appointments/${id}/`, 
-        { status: newStatus },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await api.patch(`appointments/${id}/`, { status: newStatus });
       
       setAppointments(appointments.map(appt => 
         appt.id === id ? { ...appt, status: newStatus } : appt
@@ -85,15 +78,11 @@ const AppointmentManage = () => {
     e.preventDefault();
     setProcessingId(selectedAppt.id);
     try {
-      const token = localStorage.getItem('access_token');
-      await axios.patch(`http://127.0.0.1:8000/api/appointments/${selectedAppt.id}/`, 
-        { 
-          appointment_date: newDate, 
-          appointment_time: newTime,
-          status: 'Pending'
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await api.patch(`appointments/${selectedAppt.id}/`, { 
+        appointment_date: newDate, 
+        appointment_time: newTime,
+        status: 'Pending'
+      });
       
       fetchData(); 
       setIsRescheduleModalOpen(false);
@@ -108,11 +97,7 @@ const AppointmentManage = () => {
     e.preventDefault();
     setProcessingId('creating');
     try {
-      const token = localStorage.getItem('access_token');
-      await axios.post('http://127.0.0.1:8000/api/appointments/', 
-        newAppt,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await api.post('appointments/', newAppt);
       
       fetchData(); // Refresh list
       setIsAddModalOpen(false);
