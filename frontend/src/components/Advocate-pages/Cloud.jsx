@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import api from '../../api';
+import api from '../../api'; // <-- Changed from raw axios to centralized api
 import { 
   Cloud, Plus, Trash2, FileText, 
   Image as ImageIcon, File, Loader2, DownloadCloud,
+  AlertCircle, CheckCircle // <-- Added icons for alerts
 } from 'lucide-react';
+
+// <-- Import Alert Components
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const CloudPage = () => {
   const [files, setFiles] = useState([]);
@@ -11,16 +15,28 @@ const CloudPage = () => {
   const [uploading, setUploading] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
 
+  // <-- Alert State
+  const [alertInfo, setAlertInfo] = useState({ show: false, type: 'default', message: '' });
+
+  // <-- Helper function to trigger alerts and auto-hide them
+  const showAlert = (type, message) => {
+    setAlertInfo({ show: true, type, message });
+    setTimeout(() => {
+      setAlertInfo({ show: false, type: 'default', message: '' });
+    }, 5000);
+  };
+
   useEffect(() => {
     fetchFiles();
   }, []);
 
   const fetchFiles = async () => {
     try {
-      const res = await api.get('cloud/upload/');
+      const res = await api.get('cloud/upload/'); // <-- Using api instance
       setFiles(res.data);
     } catch (error) {
       console.error("Error fetching files:", error);
+      showAlert("destructive", "Failed to load files from the cloud.");
     } finally {
       setLoading(false);
     }
@@ -35,12 +51,13 @@ const CloudPage = () => {
     formData.append("file", file);
 
     try {
-      await api.post('cloud/upload/', formData, {
+      await api.post('cloud/upload/', formData, { // <-- Using api instance
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       fetchFiles(); 
+      showAlert("default", "File uploaded successfully!");
     } catch (error) {
-      alert("Upload failed");
+      showAlert("destructive", "Upload failed. Please try again.");
     } finally {
       setUploading(false);
     }
@@ -49,15 +66,17 @@ const CloudPage = () => {
   const confirmDelete = async () => {
     if (!deleteId) return;
     try {
-      await api.delete(`cloud/delete/${deleteId}/`);
+      await api.delete(`cloud/delete/${deleteId}/`); // <-- Using api instance
       setFiles(files.filter(f => f.id !== deleteId));
       setDeleteId(null);
+      showAlert("default", "File permanently deleted.");
     } catch (error) {
-      alert("Delete failed");
+      showAlert("destructive", "Delete failed. You may not have permission.");
+      setDeleteId(null);
     }
   };
 
-  // --- THE FIX: FORCE DOWNLOAD ---
+  // --- FORCE DOWNLOAD ---
   // This injects "fl_attachment" into the Cloudinary URL so the browser downloads it immediately
   const getDownloadUrl = (url) => {
     if (!url) return "#";
@@ -109,6 +128,20 @@ const CloudPage = () => {
 
   return (
     <div className="min-h-screen bg-white p-18 mt-7 font-sans text-zinc-900">
+      
+      {/* --- ALERT NOTIFICATION BAR --- */}
+      {alertInfo.show && (
+        <div className="max-w-6xl mx-auto mb-6">
+          <Alert variant={alertInfo.type} className="animate-in fade-in slide-in-from-top-4 bg-white shadow-sm">
+            {alertInfo.type === 'destructive' ? <AlertCircle className="h-4 w-4" /> : <CheckCircle className="h-4 w-4" />}
+            <AlertTitle>{alertInfo.type === 'destructive' ? 'Error' : 'Success'}</AlertTitle>
+            <AlertDescription>
+              {alertInfo.message}
+            </AlertDescription>
+          </Alert>
+        </div>
+      )}
+
       <div className="max-w-6xl mx-auto flex items-center justify-between mb-12 animate-in fade-in slide-in-from-top-4 duration-700">
         <div>
           <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">

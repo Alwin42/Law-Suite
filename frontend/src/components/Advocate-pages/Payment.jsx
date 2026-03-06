@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import api from '../../api';
+import api from '../api'; // <-- Using centralized API to prevent Vercel 404s
 import { 
   CreditCard, QrCode, Trash2, Save, 
-  History, Plus, Edit, Loader2, IndianRupee, Mail, AlertCircle
+  History, Plus, Edit, Loader2, IndianRupee, Mail, AlertCircle, CheckCircle // <-- Added CheckCircle
 } from 'lucide-react';
+
+// <-- Import Alert Components
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const PaymentManage = () => {
   // --- STATE ---
@@ -20,6 +23,17 @@ const PaymentManage = () => {
   // Processing & Form States
   const [processingId, setProcessingId] = useState(null);
   const [paymentForm, setPaymentForm] = useState({ title: '', amount: '', due_date: '' });
+
+  // --- NEW: Alert State ---
+  const [alertInfo, setAlertInfo] = useState({ show: false, type: 'default', message: '' });
+
+  // --- NEW: Helper function to trigger alerts and auto-hide them ---
+  const showAlert = (type, message) => {
+    setAlertInfo({ show: true, type, message });
+    setTimeout(() => {
+      setAlertInfo({ show: false, type: 'default', message: '' });
+    }, 5000);
+  };
 
   // --- INITIALIZATION ---
   useEffect(() => {
@@ -51,14 +65,16 @@ const PaymentManage = () => {
 
   // --- DATABASE UPI ID MANAGEMENT ---
   const handleSaveUpi = async () => {
-    if (!upiId) return alert("Please enter a valid UPI ID");
+    if (!upiId) {
+      return showAlert("destructive", "Please enter a valid UPI ID");
+    }
     
     try {
       await api.patch('user/profile/', { upi_id: upiId });
-      alert("UPI ID Saved to Database Successfully! This will be used for all future payment requests.");
+      showAlert("default", "UPI ID Saved! This will be used for all future payment requests.");
     } catch (error) {
       console.error("Error saving UPI ID:", error);
-      alert("Failed to save UPI ID to database.");
+      showAlert("destructive", "Failed to save UPI ID to database.");
     }
   };
 
@@ -66,17 +82,17 @@ const PaymentManage = () => {
     try {
       await api.patch('user/profile/', { upi_id: "" });
       setUpiId('');
-      alert("UPI ID Removed from Database.");
+      showAlert("default", "UPI ID Removed from Database.");
     } catch (error) {
       console.error("Error deleting UPI ID:", error);
-      alert("Failed to remove UPI ID from database.");
+      showAlert("destructive", "Failed to remove UPI ID from database.");
     }
   };
 
   // --- ACTIONS: ADD PAYMENT REQUEST ---
   const openAddModal = (client) => {
     if (!upiId) {
-      return alert("Please save your UPI ID in the configuration box first before requesting payments.");
+      return showAlert("destructive", "Please save your UPI ID in the configuration box first before requesting payments.");
     }
     setSelectedClient(client);
     setPaymentForm({ title: 'Legal Consultation Fee', amount: '', due_date: '' });
@@ -92,13 +108,13 @@ const PaymentManage = () => {
         title: paymentForm.title,
         amount: paymentForm.amount,
         due_date: paymentForm.due_date,
-        upi_id: upiId // Sent dynamically from state/DB
+        upi_id: upiId 
       });
       
-      alert("Payment Request & QR Code sent to client's email!");
+      showAlert("default", "Payment Request & QR Code sent to client's email!");
       setIsAddModalOpen(false);
     } catch (error) {
-      alert("Failed to send request.");
+      showAlert("destructive", "Failed to send request.");
     } finally {
       setProcessingId(null);
     }
@@ -127,8 +143,9 @@ const PaymentManage = () => {
     try {
       await api.patch(`payments/${paymentId}/`, { status: newStatus });
       setClientPayments(clientPayments.map(p => p.id === paymentId ? { ...p, status: newStatus } : p));
+      showAlert("default", `Payment status updated to ${newStatus}`);
     } catch (error) {
-      alert("Failed to update status");
+      showAlert("destructive", "Failed to update status");
     }
   };
 
@@ -137,8 +154,9 @@ const PaymentManage = () => {
     try {
       await api.delete(`payments/${paymentId}/`);
       setClientPayments(clientPayments.filter(p => p.id !== paymentId));
+      showAlert("default", "Payment record deleted.");
     } catch (error) {
-      alert("Failed to delete payment");
+      showAlert("destructive", "Failed to delete payment");
     }
   };
 
@@ -147,6 +165,19 @@ const PaymentManage = () => {
   return (
     <div className="p-8 mt-9 max-w-7xl mx-auto font-sans bg-zinc-50/30 min-h-screen">
       
+      {/* --- ALERT NOTIFICATION BAR --- */}
+      {alertInfo.show && (
+        <div className="mb-6">
+          <Alert variant={alertInfo.type} className="animate-in fade-in slide-in-from-top-4 bg-white shadow-sm border-zinc-200">
+            {alertInfo.type === 'destructive' ? <AlertCircle className="h-4 w-4" /> : <CheckCircle className="h-4 w-4" />}
+            <AlertTitle>{alertInfo.type === 'destructive' ? 'Error' : 'Success'}</AlertTitle>
+            <AlertDescription>
+              {alertInfo.message}
+            </AlertDescription>
+          </Alert>
+        </div>
+      )}
+
       <div className="mb-8 animate-in fade-in slide-in-from-top-4">
         <h1 className="text-3xl font-bold text-zinc-900 tracking-tight flex items-center gap-3">
           <CreditCard className="w-8 h-8 text-black" /> Payment Management

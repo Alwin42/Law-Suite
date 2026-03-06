@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { getAdvocateHearings, updateCaseDetails } from '../../api'; 
 import { 
   Gavel, Calendar, MapPin, FileText, 
-  Loader2, Edit, AlertCircle 
+  Loader2, Edit, AlertCircle, CheckCircle // <-- NEW: Added CheckCircle
 } from 'lucide-react';
 
 // Shadcn UI Components
@@ -17,6 +17,9 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter
 } from "@/components/ui/dialog";
 
+// <-- NEW: Import Alert Components
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+
 export default function Hearings() {
   const [hearings, setHearings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -28,6 +31,17 @@ export default function Hearings() {
   const [editCourt, setEditCourt] = useState("");
   const [editStatus, setEditStatus] = useState("");
 
+  // <-- NEW: Alert State
+  const [alertInfo, setAlertInfo] = useState({ show: false, type: 'default', message: '' });
+
+  // <-- NEW: Helper function to trigger alerts and auto-hide them
+  const showAlert = (type, message) => {
+    setAlertInfo({ show: true, type, message });
+    setTimeout(() => {
+      setAlertInfo({ show: false, type: 'default', message: '' });
+    }, 5000);
+  };
+
   useEffect(() => {
     fetchHearings();
   }, []);
@@ -38,6 +52,7 @@ export default function Hearings() {
       setHearings(response.data);
     } catch (error) {
       console.error("Failed to fetch hearings:", error);
+      showAlert("destructive", "Failed to load upcoming hearings."); // <-- NEW: Added error alert
     } finally {
       setLoading(false);
     }
@@ -67,9 +82,10 @@ export default function Hearings() {
       ));
       
       setSelectedHearing(null); // Close modal
+      showAlert("default", "Hearing details updated successfully!"); // <-- NEW: Added success alert
     } catch (error) {
       console.error("Failed to update hearing:", error);
-      alert("Failed to update hearing details.");
+      showAlert("destructive", "Failed to update hearing details."); // <-- NEW: Replaced native alert
     } finally {
       setIsUpdating(false);
     }
@@ -96,6 +112,19 @@ export default function Hearings() {
     <div className="min-h-screen bg-slate-50 p-8 md:p-12 font-sans text-slate-900 pt-20 md:ml-64">
       <div className="max-w-7xl mx-auto">
         
+        {/* --- NEW: ALERT NOTIFICATION BAR --- */}
+        {alertInfo.show && (
+          <div className="mb-6">
+            <Alert variant={alertInfo.type} className="animate-in fade-in slide-in-from-top-4 bg-white shadow-sm">
+              {alertInfo.type === 'destructive' ? <AlertCircle className="h-4 w-4" /> : <CheckCircle className="h-4 w-4" />}
+              <AlertTitle>{alertInfo.type === 'destructive' ? 'Error' : 'Success'}</AlertTitle>
+              <AlertDescription>
+                {alertInfo.message}
+              </AlertDescription>
+            </Alert>
+          </div>
+        )}
+
         {/* HEADER */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
@@ -208,7 +237,7 @@ export default function Hearings() {
                 />
               </div>
 
-              {/* Status Select (Using native select for simplicity, or swap with Shadcn Select) */}
+              {/* Status Select */}
               <div className="space-y-2">
                 <Label htmlFor="status">Case Status</Label>
                 <select 

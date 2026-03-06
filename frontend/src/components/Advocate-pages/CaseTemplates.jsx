@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { getTemplates, uploadTemplate, deleteTemplate } from '../../api'; // <-- Imported deleteTemplate
+import { getTemplates, uploadTemplate, deleteTemplate } from '../../api'; 
 import { 
-  FileText, Download, Plus, Search, Loader2, FolderOpen, Trash2 
-} from 'lucide-react'; // <-- Imported Trash2 icon
+  FileText, Download, Plus, Search, Loader2, FolderOpen, Trash2,
+  AlertCircle, CheckCircle2 // <-- Added icons
+} from 'lucide-react'; 
 
 // Shadcn UI Components
 import { Button } from "@/components/ui/button";
@@ -13,12 +14,26 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 
+// --- NEW: Alert Components ---
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+
 export default function CaseTemplates() {
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // --- NEW: Alert State ---
+  const [alertInfo, setAlertInfo] = useState(null);
+
+  // Auto-hide alerts after 5 seconds
+  useEffect(() => {
+    if (alertInfo) {
+      const timer = setTimeout(() => setAlertInfo(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [alertInfo]);
 
   useEffect(() => {
     fetchTemplates();
@@ -38,35 +53,40 @@ export default function CaseTemplates() {
   const handleUpload = async (e) => {
     e.preventDefault();
     setIsUploading(true);
+    setAlertInfo(null);
     
     const formData = new FormData(e.target);
     
     try {
       await uploadTemplate(formData);
-      await fetchTemplates(); // Refresh list
-      setIsModalOpen(false); // Close modal
+      await fetchTemplates(); 
+      setIsModalOpen(false); 
       e.target.reset();
+      // --- NEW: Success Alert ---
+      setAlertInfo({ variant: "default", title: "Success", desc: "Template uploaded successfully." });
     } catch (error) {
       console.error("Upload failed", error);
-      alert("Failed to upload template.");
+      // --- NEW: Error Alert ---
+      setAlertInfo({ variant: "destructive", title: "Upload Failed", desc: "Failed to upload template." });
     } finally {
       setIsUploading(false);
     }
   };
 
-  // --- NEW: Handle Deletion ---
   const handleDelete = async (id) => {
+    // Keep standard confirm for destructive actions, or use a custom Dialog later
     if (!window.confirm("Are you sure you want to delete this template? This cannot be undone.")) {
       return;
     }
 
     try {
       await deleteTemplate(id);
-      // Remove the deleted template from the UI instantly without reloading the page
       setTemplates(templates.filter(template => template.id !== id));
+      // --- NEW: Delete Success Alert ---
+      setAlertInfo({ variant: "default", title: "Deleted", desc: "Template removed successfully." });
     } catch (error) {
       console.error("Delete failed", error);
-      alert("Failed to delete the template. Please try again.");
+      setAlertInfo({ variant: "destructive", title: "Delete Failed", desc: "Failed to delete the template. Please try again." });
     }
   };
 
@@ -139,6 +159,22 @@ export default function CaseTemplates() {
           </div>
         </div>
 
+        {/* --- NEW: ALERT RENDERER --- */}
+        {alertInfo && (
+          <Alert 
+            variant={alertInfo.variant} 
+            className={`mb-6 transition-all duration-300 ${alertInfo.variant === 'default' ? 'border-green-200 bg-green-50 text-green-800' : ''}`}
+          >
+            {alertInfo.variant === "destructive" ? (
+              <AlertCircle className="h-4 w-4" />
+            ) : (
+              <CheckCircle2 className="h-4 w-4 text-green-600" />
+            )}
+            <AlertTitle>{alertInfo.title}</AlertTitle>
+            <AlertDescription>{alertInfo.desc}</AlertDescription>
+          </Alert>
+        )}
+
         {/* MINIMALIST CARD TILES */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredTemplates.length > 0 ? (
@@ -152,7 +188,6 @@ export default function CaseTemplates() {
                     <FileText size={24} />
                   </div>
                   
-                  {/* --- NEW: Delete Button next to the Badge --- */}
                   <div className="flex items-center gap-2">
                     <Badge variant="outline" className="bg-slate-50 text-slate-600 border-slate-200">
                       {template.category}

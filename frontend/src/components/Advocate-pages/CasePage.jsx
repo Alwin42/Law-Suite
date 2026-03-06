@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom'; 
 import api from '../../api';
 import { 
-  Search, Plus, MoreHorizontal, FileText, Edit2, RefreshCcw, Loader2
+  Search, Plus, MoreHorizontal, FileText, Edit2, RefreshCcw, Loader2,
+  AlertCircle, CheckCircle2 // <-- Added icons for alerts
 } from 'lucide-react';
 
 // Shadcn UI Components
@@ -21,6 +22,9 @@ import {
 import { 
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue 
 } from "@/components/ui/select";
+
+// --- NEW: Alert Components ---
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export default function CasePage() {
   const navigate = useNavigate(); 
@@ -46,6 +50,17 @@ export default function CasePage() {
     status: 'Open',
     next_hearing: ''
   });
+
+  // --- NEW: Alert State ---
+  const [alertInfo, setAlertInfo] = useState(null);
+
+  // Auto-hide alerts after 5 seconds
+  useEffect(() => {
+    if (alertInfo) {
+      const timer = setTimeout(() => setAlertInfo(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [alertInfo]);
 
   useEffect(() => {
     fetchData();
@@ -89,6 +104,7 @@ export default function CasePage() {
   };
 
   const handleEditClick = (caseItem) => {
+    setAlertInfo(null); // Clear previous alerts when opening edit modal
     setEditingCase(caseItem);
     setFormData({
       case_title: caseItem.case_title || '',
@@ -112,9 +128,15 @@ export default function CasePage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setAlertInfo(null);
 
-    if (!formData.client) return alert("Please select a client.");
-    if (!formData.case_title || !formData.court_name) return alert("Title and Court are required.");
+    // --- REPLACED: Alerts with Shadcn state ---
+    if (!formData.client) {
+        return setAlertInfo({ variant: "destructive", title: "Validation Error", desc: "Please select a client." });
+    }
+    if (!formData.case_title || !formData.court_name) {
+        return setAlertInfo({ variant: "destructive", title: "Validation Error", desc: "Title and Court are required." });
+    }
 
     const finalClientId = parseInt(formData.client, 10);
     
@@ -139,9 +161,18 @@ export default function CasePage() {
         setCases([response.data, ...cases]);
       }
       resetForm();
+      
+      // --- NEW: Success Alert ---
+      setAlertInfo({ 
+        variant: "default", 
+        title: "Success", 
+        desc: editingCase ? "Case updated successfully." : "New case created successfully." 
+      });
+
     } catch (error) {
       console.error("Operation failed:", error);
-      alert("Failed to save case. Please check your connection.");
+      // --- REPLACED: Error Alert ---
+      setAlertInfo({ variant: "destructive", title: "Operation Failed", desc: "Failed to save case. Please check your connection." });
     }
   };
 
@@ -190,11 +221,27 @@ export default function CasePage() {
             <p className="text-muted-foreground mt-1 text-sm">Manage active litigation, case history, and upcoming hearings.</p>
           </div>
           <div className="mt-4 md:mt-0 flex gap-3">
-            <Button className="bg-slate-900 hover:bg-slate-800 text-white shadow-sm transition-all" onClick={() => { setEditingCase(null); setIsModalOpen(true); }}>
+            <Button className="bg-slate-900 hover:bg-slate-800 text-white shadow-sm transition-all" onClick={() => { setEditingCase(null); setAlertInfo(null); setIsModalOpen(true); }}>
               <Plus className="mr-2 h-4 w-4" /> New Case
             </Button>
           </div>
         </div>
+
+        {/* --- MAIN PAGE ALERT (Visible only when modal is closed) --- */}
+        {!isModalOpen && alertInfo && (
+            <Alert 
+              variant={alertInfo.variant} 
+              className={`mb-6 transition-all duration-300 ${alertInfo.variant === 'default' ? 'border-green-200 bg-green-50 text-green-800' : ''}`}
+            >
+              {alertInfo.variant === "destructive" ? (
+                <AlertCircle className="h-4 w-4" />
+              ) : (
+                <CheckCircle2 className="h-4 w-4 text-green-600" />
+              )}
+              <AlertTitle>{alertInfo.title}</AlertTitle>
+              <AlertDescription>{alertInfo.desc}</AlertDescription>
+            </Alert>
+        )}
 
         {/* =========================================
             2️⃣ FILTER ROW
@@ -324,8 +371,24 @@ export default function CasePage() {
           <DialogHeader>
             <DialogTitle>{editingCase ? 'Edit Case Details' : 'Open New Case File'}</DialogTitle>
           </DialogHeader>
+
+          {/* --- MODAL ALERT (Visible only when modal is open for validation errors) --- */}
+          {isModalOpen && alertInfo && (
+            <Alert 
+              variant={alertInfo.variant} 
+              className={`mt-2 transition-all duration-300 ${alertInfo.variant === 'default' ? 'border-green-200 bg-green-50 text-green-800' : ''}`}
+            >
+              {alertInfo.variant === "destructive" ? (
+                <AlertCircle className="h-4 w-4" />
+              ) : (
+                <CheckCircle2 className="h-4 w-4 text-green-600" />
+              )}
+              <AlertTitle>{alertInfo.title}</AlertTitle>
+              <AlertDescription>{alertInfo.desc}</AlertDescription>
+            </Alert>
+          )}
           
-          <form onSubmit={handleSubmit} className="space-y-4 py-4">
+          <form onSubmit={handleSubmit} className="space-y-4 py-2">
             <div className="space-y-2">
               <label className="text-xs font-bold text-muted-foreground uppercase">Case Title</label>
               <Input required name="case_title" value={formData.case_title} onChange={handleInputChange} placeholder="e.g. State vs Doe" />
