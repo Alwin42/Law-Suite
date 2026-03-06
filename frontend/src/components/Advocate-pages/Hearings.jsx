@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom'; // <-- Added useNavigate
 import { getAdvocateHearings, updateCaseDetails } from '../../api'; 
 import { 
   Gavel, Calendar, MapPin, FileText, 
-  Loader2, Edit, AlertCircle, CheckCircle // <-- NEW: Added CheckCircle
+  Loader2, Edit, AlertCircle, CheckCircle, ArrowLeft
 } from 'lucide-react';
 
 // Shadcn UI Components
@@ -17,10 +18,11 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter
 } from "@/components/ui/dialog";
 
-// <-- NEW: Import Alert Components
+// Import Alert Components
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export default function Hearings() {
+  const navigate = useNavigate(); // <-- Initialize navigate
   const [hearings, setHearings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedHearing, setSelectedHearing] = useState(null);
@@ -31,10 +33,10 @@ export default function Hearings() {
   const [editCourt, setEditCourt] = useState("");
   const [editStatus, setEditStatus] = useState("");
 
-  // <-- NEW: Alert State
+  // Alert State
   const [alertInfo, setAlertInfo] = useState({ show: false, type: 'default', message: '' });
 
-  // <-- NEW: Helper function to trigger alerts and auto-hide them
+  // Helper function to trigger alerts and auto-hide them
   const showAlert = (type, message) => {
     setAlertInfo({ show: true, type, message });
     setTimeout(() => {
@@ -52,7 +54,7 @@ export default function Hearings() {
       setHearings(response.data);
     } catch (error) {
       console.error("Failed to fetch hearings:", error);
-      showAlert("destructive", "Failed to load upcoming hearings."); // <-- NEW: Added error alert
+      showAlert("destructive", "Failed to load upcoming hearings."); 
     } finally {
       setLoading(false);
     }
@@ -82,10 +84,10 @@ export default function Hearings() {
       ));
       
       setSelectedHearing(null); // Close modal
-      showAlert("default", "Hearing details updated successfully!"); // <-- NEW: Added success alert
+      showAlert("default", "Hearing details updated successfully!"); 
     } catch (error) {
       console.error("Failed to update hearing:", error);
-      showAlert("destructive", "Failed to update hearing details."); // <-- NEW: Replaced native alert
+      showAlert("destructive", "Failed to update hearing details."); 
     } finally {
       setIsUpdating(false);
     }
@@ -109,10 +111,20 @@ export default function Hearings() {
   );
 
   return (
-    <div className="min-h-screen bg-slate-50 p-8 md:p-12 font-sans text-slate-900 pt-20 md:ml-64">
+    <div className="min-h-screen bg-slate-50 p-6 sm:p-8 mt-3 md:p-12 font-sans text-slate-900 pt-20 md:ml-4">
+      
       <div className="max-w-7xl mx-auto">
         
-        {/* --- NEW: ALERT NOTIFICATION BAR --- */}
+        {/* --- RESPONSIVE BACK BUTTON --- */}
+        <Button 
+          variant="ghost" 
+          className="mb-4 text-slate-600 hover:text-slate-900 hover:bg-slate-100 w-fit transition-colors -ml-2 sm:-ml-4" 
+          onClick={() => navigate('/dashboard')}
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard
+        </Button>
+
+        {/* ALERT NOTIFICATION BAR */}
         {alertInfo.show && (
           <div className="mb-6">
             <Alert variant={alertInfo.type} className="animate-in fade-in slide-in-from-top-4 bg-white shadow-sm">
@@ -135,8 +147,8 @@ export default function Hearings() {
         </div>
 
         {/* HEARINGS TABLE */}
-        <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-          <Table>
+        <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-x-auto">
+          <Table className="min-w-[600px]">
             <TableHeader className="bg-slate-50">
               <TableRow>
                 <TableHead>Date</TableHead>
@@ -173,7 +185,7 @@ export default function Hearings() {
                     </TableCell>
                     
                     <TableCell>
-                      <span className="flex items-center gap-1.5 text-sm text-slate-600 bg-slate-100 px-2 py-1 rounded-md w-fit">
+                      <span className="flex items-center gap-1.5 text-sm text-slate-600 bg-slate-100 px-2 py-1 rounded-md w-fit whitespace-nowrap">
                         <MapPin size={14} className="text-slate-400" /> {h.court_name}
                       </span>
                     </TableCell>
@@ -201,7 +213,7 @@ export default function Hearings() {
       {/* MANAGE HEARING MODAL */}
       <Dialog open={!!selectedHearing} onOpenChange={() => setSelectedHearing(null)}>
         {selectedHearing && (
-          <DialogContent className="sm:max-w-[450px] bg-white">
+          <DialogContent className="sm:max-w-[450px] bg-white w-[90vw] rounded-xl">
             <DialogHeader>
               <DialogTitle className="text-xl">Update Hearing</DialogTitle>
             </DialogHeader>
@@ -255,11 +267,11 @@ export default function Hearings() {
 
             </div>
 
-            <DialogFooter className="border-t border-slate-100 pt-4">
-              <Button variant="outline" onClick={() => setSelectedHearing(null)} disabled={isUpdating}>
+            <DialogFooter className="border-t border-slate-100 pt-4 flex flex-col sm:flex-row gap-2">
+              <Button variant="outline" onClick={() => setSelectedHearing(null)} disabled={isUpdating} className="w-full sm:w-auto">
                 Cancel
               </Button>
-              <Button onClick={handleUpdateHearing} disabled={isUpdating} className="bg-slate-900 text-white hover:bg-slate-800">
+              <Button onClick={handleUpdateHearing} disabled={isUpdating} className="bg-slate-900 text-white hover:bg-slate-800 w-full sm:w-auto">
                 {isUpdating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Save Changes"}
               </Button>
             </DialogFooter>

@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { getTemplates, uploadTemplate, deleteTemplate } from '../../api'; 
 import { 
   FileText, Download, Plus, Search, Loader2, FolderOpen, Trash2,
-  AlertCircle, CheckCircle2 // <-- Added icons
+  AlertCircle, CheckCircle2 ,ArrowLeft
 } from 'lucide-react'; 
-
+import { useNavigate } from 'react-router-dom';
 // Shadcn UI Components
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +18,7 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export default function CaseTemplates() {
+  const navigate = useNavigate();
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
@@ -108,6 +109,9 @@ export default function CaseTemplates() {
         {/* HEADER */}
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
           <div>
+             <Button variant="ghost" className="mb-2 mt-3 text-slate-800 hover:text-slate-900 -ml-4" onClick={() => navigate('/dashboard')}>
+              <ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard
+            </Button>
             <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
               <FolderOpen className="text-slate-700" size={32} /> 
               Case Templates

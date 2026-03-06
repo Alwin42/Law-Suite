@@ -3,12 +3,12 @@ import api from '../../api';
 import { Link } from 'react-router-dom'; 
 import { 
   Search, Plus, MoreVertical, Phone, Mail, MapPin, 
-  Calendar, User, Loader, AlertCircle, CheckCircle // <-- NEW: Added icons for alerts
+  Calendar, User, Loader, AlertCircle, CheckCircle ,ArrowLeft
 } from 'lucide-react';
 
 // <-- NEW: Import Alert Components
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-
+import { Button } from "@/components/ui/button";
 export default function ClientsPage() {
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -102,8 +102,11 @@ export default function ClientsPage() {
       )}
 
       {/* HEADER */}
-      <div className="max-w-7xl mx-auto mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="max-w-7xl mx-auto mb-8 mt-3 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
+          <Button variant="ghost" className="mb-4 text-slate-800 hover:text-slate-900 -ml-4" onClick={() => navigate('/dashboard')}>
+              <ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard
+          </Button>
           <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Client Directory</h1>
           <p className="text-slate-500 mt-1">Manage your case contacts and details.</p>
         </div>
