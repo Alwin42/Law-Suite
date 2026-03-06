@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { getAdvocateAppointments, updateAppointmentStatus } from '../../api'; // <-- Added new API import
+import { getAdvocateAppointments, updateAppointmentStatus } from '../../api'; 
 import { 
   Calendar, Clock, User, Phone, Mail, FileText, 
-  CheckCircle, XCircle, Eye, Loader2, CheckSquare 
+  CheckCircle, XCircle, Eye, Loader2, CheckSquare,
+  AlertCircle 
 } from 'lucide-react';
 
 // Shadcn UI Components
@@ -15,15 +16,29 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter
 } from "@/components/ui/dialog";
 
+// <-- NEW: Import Alert Components
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+
 export default function AdvocateAppointments() {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedAppt, setSelectedAppt] = useState(null);
   const [isUpdating, setIsUpdating] = useState(false);
+  
+  // <-- NEW: Alert State
+  const [alertInfo, setAlertInfo] = useState(null);
 
   useEffect(() => {
     fetchAppointments();
   }, []);
+
+  // <-- NEW: Auto-hide alert after 3 seconds
+  useEffect(() => {
+    if (alertInfo) {
+      const timer = setTimeout(() => setAlertInfo(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [alertInfo]);
 
   const fetchAppointments = async () => {
     try {
@@ -36,9 +51,11 @@ export default function AdvocateAppointments() {
     }
   };
 
-  // --- NEW: Handle Status Updates ---
+  // --- Handle Status Updates ---
   const handleStatusUpdate = async (id, newStatus) => {
     setIsUpdating(true);
+    setAlertInfo(null); // Clear any existing alerts
+    
     try {
       await updateAppointmentStatus(id, { status: newStatus });
       
@@ -51,9 +68,22 @@ export default function AdvocateAppointments() {
       if (selectedAppt && selectedAppt.id === id) {
         setSelectedAppt({ ...selectedAppt, status: newStatus });
       }
+
+      // <-- NEW: Show Success Alert
+      setAlertInfo({
+        variant: "default",
+        title: "Success",
+        message: `Appointment status updated to ${newStatus}.`
+      });
+
     } catch (error) {
       console.error("Failed to update status:", error);
-      alert("Failed to update appointment status.");
+      // <-- NEW: Show Error Alert instead of browser alert
+      setAlertInfo({
+        variant: "destructive",
+        title: "Error",
+        message: "Failed to update appointment status. Please try again."
+      });
     } finally {
       setIsUpdating(false);
     }
@@ -81,10 +111,23 @@ export default function AdvocateAppointments() {
       <div className="max-w-7xl mx-auto">
         
         {/* HEADER */}
-        <div className="mb-8">
+        <div className="mb-6">
           <h1 className="text-3xl font-bold tracking-tight">My Appointments</h1>
-          <p className="text-slate-500 mt-1">Manage your client consultations and schedules.</p>
+          <p className="text-slate-500 mt-1"> Manage your client consultations and schedules.</p>
         </div>
+
+        {/* <-- NEW: ALERT DISPLAY --> */}
+        {alertInfo && (
+          <Alert variant={alertInfo.variant} className="mb-6 bg-white shadow-sm transition-all duration-300 ease-in-out">
+            {alertInfo.variant === 'destructive' ? (
+              <AlertCircle className="h-4 w-4" />
+            ) : (
+              <CheckCircle className="h-4 w-4 text-green-600" />
+            )}
+            <AlertTitle>{alertInfo.title}</AlertTitle>
+            <AlertDescription>{alertInfo.message}</AlertDescription>
+          </Alert>
+        )}
 
         {/* APPOINTMENTS TABLE */}
         <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
@@ -201,7 +244,7 @@ export default function AdvocateAppointments() {
               </div>
             </div>
 
-            {/* --- NEW: STATUS ACTION BUTTONS --- */}
+            {/* STATUS ACTION BUTTONS */}
             <DialogFooter className="border-t border-slate-100 pt-4 flex flex-col sm:flex-row gap-2 sm:justify-between items-center w-full">
               
               <div className="flex gap-2 w-full sm:w-auto">

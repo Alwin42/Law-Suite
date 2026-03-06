@@ -3,7 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import api, { getCaseDocuments, uploadDocument } from '../../api';
 import { 
   ArrowLeft, Trash2, Calendar, Scale, User, Building2, 
-  Clock, CheckCircle, FileText, Download, Plus, Loader2 
+  Clock, CheckCircle, FileText, Download, Plus, Loader2,
+  AlertCircle // <-- Added AlertCircle for the icon
 } from 'lucide-react';
 
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
+// <-- NEW: Imported Alert Components
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+
 export default function CaseViewPage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -23,6 +27,17 @@ export default function CaseViewPage() {
   const [loading, setLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  // <-- NEW: Alert State
+  const [alertInfo, setAlertInfo] = useState({ show: false, type: 'default', message: '' });
+
+  // Helper function to trigger alerts and auto-hide them after 5 seconds
+  const showAlert = (type, message) => {
+    setAlertInfo({ show: true, type, message });
+    setTimeout(() => {
+      setAlertInfo({ show: false, type: 'default', message: '' });
+    }, 5000);
+  };
 
   useEffect(() => {
     const fetchDetailsAndDocs = async () => {
@@ -35,8 +50,8 @@ export default function CaseViewPage() {
         setDocuments(docsRes.data);
       } catch (error) {
         console.error("Failed to fetch data:", error);
-        alert("Case not found or permission denied.");
-        navigate('/cases');
+        showAlert("destructive", "Case not found or permission denied.");
+        setTimeout(() => navigate('/cases'), 2000); // Give user 2 seconds to read the error before redirecting
       } finally {
         setLoading(false);
       }
@@ -50,7 +65,7 @@ export default function CaseViewPage() {
         await api.delete(`/cases/${id}/`);
         navigate('/cases');
       } catch (error) {
-        alert("Failed to delete the case.");
+        showAlert("destructive", "Failed to delete the case.");
       }
     }
   };
@@ -59,8 +74,9 @@ export default function CaseViewPage() {
     try {
       const response = await api.patch(`/cases/${id}/`, { status: 'Closed' });
       setCaseData(response.data);
+      showAlert("default", "Case status updated to Closed successfully.");
     } catch (error) {
-      alert("Failed to update case status.");
+      showAlert("destructive", "Failed to update case status.");
     }
   };
 
@@ -75,8 +91,9 @@ export default function CaseViewPage() {
       const docsRes = await getCaseDocuments(id);
       setDocuments(docsRes.data);
       setIsModalOpen(false);
+      showAlert("default", "Document uploaded successfully.");
     } catch (error) {
-      alert("Failed to upload document.");
+      showAlert("destructive", "Failed to upload document.");
     } finally {
       setIsUploading(false);
     }
@@ -97,6 +114,17 @@ export default function CaseViewPage() {
     <div className="min-h-screen bg-slate-50/50 p-6 md:p-18 font-sans text-slate-900">
       <div className="max-w-5xl mx-auto space-y-8">
         
+        {/* --- NEW: ALERT NOTIFICATION BAR --- */}
+        {alertInfo.show && (
+          <Alert variant={alertInfo.type} className="animate-in fade-in slide-in-from-top-4">
+            {alertInfo.type === 'destructive' ? <AlertCircle className="h-4 w-4" /> : <CheckCircle className="h-4 w-4" />}
+            <AlertTitle>{alertInfo.type === 'destructive' ? 'Error' : 'Success'}</AlertTitle>
+            <AlertDescription>
+              {alertInfo.message}
+            </AlertDescription>
+          </Alert>
+        )}
+
         {/* HEADER */}
         <div>
           <Button variant="ghost" className="mb-6 text-slate-800 hover:text-slate-900 -ml-6" onClick={() => navigate('/cases')}>
@@ -196,7 +224,7 @@ export default function CaseViewPage() {
           </div>
         </div>
 
-        {/* --- NEW: CASE DOCUMENTS SECTION --- */}
+        {/* --- CASE DOCUMENTS SECTION --- */}
         <div className="pt-6 mt-6 border-t border-slate-200">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold tracking-tight flex items-center gap-2">
