@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import api from '../api'; // <-- Using centralized API to prevent Vercel 404s
+import api from '../../api';
 import { 
   CreditCard, QrCode, Trash2, Save, 
   History, Plus, Edit, Loader2, IndianRupee, Mail, AlertCircle, CheckCircle // <-- Added CheckCircle
