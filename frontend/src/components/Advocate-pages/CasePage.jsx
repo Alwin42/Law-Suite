@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../../api';
 import { 
   Search, Plus, MoreHorizontal, FileText, Edit2, RefreshCcw, Loader2,
-  AlertCircle, CheckCircle2 // <-- Added icons for alerts
+  AlertCircle, CheckCircle2 , ArrowLeft
 } from 'lucide-react';
 
 // Shadcn UI Components
@@ -209,14 +209,18 @@ export default function CasePage() {
   );
 
   return (
-    <div className="min-h-screen bg-background p-9 md:p-16 font-sans text-foreground">
+    <div className="min-h-screen bg-background p-9 mt-9 md:p-16 font-sans text-foreground">
       <div className="max-w-7xl mx-auto">
         
         {/* =========================================
             1️⃣ PAGE HEADER SECTION
         ========================================= */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 pb-4 border-b">
+          
           <div>
+            <Button variant="ghost" className="mb-4 text-slate-800 hover:text-slate-900 -ml-4" onClick={() => navigate('/dashboard')}>
+              <ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard
+            </Button>
             <h1 className="text-4xl font-bold tracking-tight">Case Files</h1>
             <p className="text-muted-foreground mt-1 text-sm">Manage active litigation, case history, and upcoming hearings.</p>
           </div>

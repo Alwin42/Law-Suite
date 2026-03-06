@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { getAdvocateAppointments, updateAppointmentStatus } from '../../api'; 
 import { 
   Calendar, Clock, User, Phone, Mail, FileText, 
-  CheckCircle, XCircle, Eye, Loader2, CheckSquare,
+  CheckCircle, XCircle, Eye, Loader2, CheckSquare,ArrowLeft,
   AlertCircle 
 } from 'lucide-react';
-
+import { useNavigate } from 'react-router-dom';
 // Shadcn UI Components
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +20,7 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export default function AdvocateAppointments() {
+  const navigate = useNavigate();
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedAppt, setSelectedAppt] = useState(null);
@@ -112,6 +113,9 @@ export default function AdvocateAppointments() {
         
         {/* HEADER */}
         <div className="mb-6">
+          <Button variant="ghost" className="mb-2 mt-3 text-slate-800 hover:text-slate-900 -ml-4" onClick={() => navigate('/dashboard')}>
+              <ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard
+          </Button>
           <h1 className="text-3xl font-bold tracking-tight">My Appointments</h1>
           <p className="text-slate-500 mt-1"> Manage your client consultations and schedules.</p>
         </div>
