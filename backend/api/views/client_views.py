@@ -1,13 +1,15 @@
 from rest_framework import status, views, generics, permissions
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from django.contrib.auth import get_user_model
-from api.models import Client, Appointment, Case, Payment 
-from api.serializers import CaseSerializer, UserSerializer , DocumentSerializer
-from api.models import Client, Appointment , Document , Case , Payment 
-from api.serializers import UserSerializer, CaseSerializer
-from django.utils import timezone
 from rest_framework.parsers import MultiPartParser, FormParser
+from django.contrib.auth import get_user_model
+from django.utils import timezone
+from django.shortcuts import get_object_or_404
+
+# Cleaned up and consolidated imports
+from api.models import Client, Appointment, Document, Case, Payment 
+from api.serializers import UserSerializer, CaseSerializer, DocumentSerializer
+
 User = get_user_model()
 
 class ActiveAdvocateListView(generics.ListAPIView):
@@ -73,20 +75,6 @@ class ClientCaseDetailView(generics.RetrieveAPIView):
         # SECURITY: Ensure they can only retrieve IDs that belong to their email
         return Case.objects.filter(client__email=self.request.user.email)
 
-class ClientHearingListView(views.APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        # TODO: Implement Client-specific Hearing fetching logic
-        return Response([])
-
-class ClientPaymentListView(views.APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        # TODO: Implement Client-specific Payment fetching logic
-        return Response([])
-    
 class ClientCaseListView(views.APIView):
     permission_classes = [IsAuthenticated]
 
@@ -103,7 +91,6 @@ class ClientCaseListView(views.APIView):
         } for c in cases]
         
         return Response(data) 
-
 
 class ClientHearingListView(views.APIView):
     permission_classes = [IsAuthenticated]
@@ -126,7 +113,6 @@ class ClientHearingListView(views.APIView):
         } for h in hearings]
         
         return Response(data)
-
 
 class ClientPaymentListView(views.APIView):
     permission_classes = [IsAuthenticated]
@@ -155,13 +141,13 @@ class ClientDocumentListCreateView(generics.ListCreateAPIView):
         return Document.objects.filter(case__client__email=self.request.user.email).order_by('-uploaded_at')
 
     def perform_create(self, serializer):
-        # When client uploads, we need to verify the case belongs to them!
         case_id = self.request.data.get('case')
-        case = Case.objects.get(id=case_id)
+        
+        # FIXED: Prevents a 500 server crash if case_id is invalid
+        case = get_object_or_404(Case, id=case_id)
         
         # Security Check: Ensure client owns the case they are uploading to
         if case.client.email != self.request.user.email:
             raise permissions.PermissionDenied("You cannot upload to this case.")
             
         serializer.save()
-

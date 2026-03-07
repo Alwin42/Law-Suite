@@ -96,7 +96,7 @@ const Navbar = () => {
              className="group relative text-md font-medium text-red-500/80 hover:text-red-500 transition-colors cursor-pointer"
            >
              Logout
-             <span className="absolute -bottom-1 left-0 w-0 h-[2px] bg-red-500 transition-all duration-300 group-hover:w-full" />
+             
            </button>
         )}
       </div>
