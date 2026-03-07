@@ -2,11 +2,12 @@ import urllib.parse
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from django.core.mail import send_mail
-from ..models import Client, Payment
 from rest_framework import generics
-from rest_framework.permissions import IsAuthenticated
-from api.models import Payment
+
+# Import our new Brevo utility function 
+from api.utils import send_brevo_otp_email 
+
+from ..models import Client, Payment
 from api.serializers import PaymentSerializer
 
 class SendUPIPaymentRequestView(APIView):
@@ -78,17 +79,21 @@ class SendUPIPaymentRequestView(APIView):
             </div>
             """
 
-            # 5. Send the email
-            send_mail(
-                subject=f'Payment Request: {title}',
-                message=f'Please pay Rs. {amount} by {due_date}. UPI ID: {upi_id}',
-                from_email='billing@lawsuite.com',
-                recipient_list=[client.email],
-                fail_silently=False,
+            # 5. Send the email using Brevo
+            subject = f'Payment Request: {title}'
+            plain_message = f'Please pay Rs. {amount} by {due_date}. UPI ID: {upi_id}'
+            
+            success = send_brevo_otp_email(
+                subject=subject,
+                plain_message=plain_message,
                 html_message=html_message,
+                recipient_email=client.email
             )
 
-            return Response({"message": "Payment request sent successfully!"}, status=200)
+            if success:
+                return Response({"message": "Payment request sent successfully!"}, status=200)
+            else:
+                return Response({"error": "Failed to send payment request email."}, status=500)
 
         except Client.DoesNotExist:
             return Response({"error": "Client not found."}, status=404)

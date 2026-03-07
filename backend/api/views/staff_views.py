@@ -1,5 +1,4 @@
 from django.contrib.auth import get_user_model
-from django.core.mail import send_mail
 from django.utils.crypto import get_random_string
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -9,8 +8,10 @@ from rest_framework.permissions import IsAuthenticated
 from ..models import Appointment, Case, Payment
 from ..models import LoginOTP
 
-User = get_user_model()
+# Import our Brevo utility function 
+from api.utils import send_brevo_otp_email
 
+User = get_user_model()
 
 class StaffRequestOTPView(APIView):
     permission_classes = [AllowAny]
@@ -73,16 +74,18 @@ class StaffRequestOTPView(APIView):
             If you did not request this code, please ignore this email.
             """
 
-            send_mail(
+            # Use Brevo to send the email
+            success = send_brevo_otp_email(
                 subject='Law Suite - Secure Login Code',
-                message=plain_message,
-                from_email='noreply@lawsuite.com',
-                recipient_list=[email],
-                fail_silently=False,
+                plain_message=plain_message,
                 html_message=html_message,
+                recipient_email=email
             )
 
-            return Response({"message": "OTP sent successfully. Please check your email."}, status=200)
+            if success:
+                return Response({"message": "OTP sent successfully. Please check your email."}, status=200)
+            else:
+                return Response({"error": "Failed to send email via Brevo. Please try again later."}, status=500)
 
         except User.DoesNotExist:
             return Response({"error": "No staff account found with this email."}, status=404)

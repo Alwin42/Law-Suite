@@ -5,9 +5,11 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model
 from django.conf import settings
 from rest_framework.permissions import IsAuthenticated
-from django.core.mail import send_mail  
 from django.utils.html import strip_tags
 import random
+
+# Import the new Brevo utility function
+from api.utils import send_brevo_otp_email
 
 # Notice the "api." prefix to correctly import from the parent directory
 from api.models import Client, LoginOTP
@@ -92,15 +94,23 @@ class RequestOTPView(views.APIView):
             """
             
             plain_message = strip_tags(html_message)
-            email_from = settings.EMAIL_HOST_USER
-            recipient_list = [email]
+            recipient_email = email
             
-            try:
-                send_mail(subject, plain_message, email_from, recipient_list, fail_silently=False, html_message=html_message)
+            # Use the new Brevo utility function
+            success = send_brevo_otp_email(
+                subject=subject, 
+                plain_message=plain_message, 
+                html_message=html_message, 
+                recipient_email=recipient_email
+            )
+
+            if success:
                 return Response({"message": "OTP sent successfully."})
-            except Exception as e:
-                print(f"Error sending email: {e}")
-                return Response({"error": "Failed to send email. Please try again later."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            else:
+                return Response(
+                    {"error": "Failed to send email. Please try again later."}, 
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

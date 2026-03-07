@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 import cloudinary
 import dj_database_url
 from django.core.management.utils import get_random_secret_key
-print(get_random_secret_key())
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -110,14 +110,9 @@ CSRF_TRUSTED_ORIGINS = ['https://law-suite-niov.onrender.com', 'https://law-suit
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# --- FIXED EMAIL SETTINGS ---
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 465
-EMAIL_USE_SSL = True   
-EMAIL_USE_TLS = False  # Strictly False when using Port 465
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+# Email Settings 
+BREVO_API_KEY = os.environ.get('LawSuiteAPI')
+DEFAULT_FROM_EMAIL = 'alwindev1010@gmail.com'
 
 # Cloudinary Settings
 cloudinary.config(
