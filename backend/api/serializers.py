@@ -155,7 +155,7 @@ class DocumentSerializer(serializers.ModelSerializer):
 
 class PaymentSerializer(serializers.ModelSerializer):
     case_title = serializers.CharField(source='case.case_title', read_only=True)
-
+    client_name = serializers.CharField(source='client.full_name', read_only=True)
     class Meta:
         model = Payment
         fields = '__all__'

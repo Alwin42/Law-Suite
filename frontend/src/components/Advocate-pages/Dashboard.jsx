@@ -258,24 +258,22 @@ const Dashboard = () => {
                   <h3 className="font-semibold text-slate-800">Calendar</h3>
                 </div>
                 
-                {/* --- FIXED: Fully Responsive Center Alignment --- */}
-                <div className="w-full flex justify-center pb-2">
+                <div className="w-auto flex justify-center pb-2">
                   <ShadcnCalendar
                     mode="single"
                     selected={new Date()}
-                    className="rounded-md border border-slate-100 p-3 sm:p-4 w-full max-w-full"
+                    className="rounded-md border border-slate-100 p-2 sm:p-4 w-full"
                     classNames={{
                       months: "w-full flex flex-col",
-                      month: "w-full space-y-4",
+                      month: "w-full space-y-4 ",
                       table: "w-full border-collapse",
-                      // Use CSS Grid for perfect 7-column alignment
-                      head_row: "grid grid-cols-7 w-full",
-                      head_cell: "text-slate-500 font-normal text-xs text-center flex items-center justify-center",
+                      head_row: "grid grid-cols-7 w-auto",
+                      head_cell: "text-slate-500 font-medium text-[11px] sm:text-xs text-center flex items-center justify-center",
                       row: "grid grid-cols-7 w-full mt-2",
-                      cell: "text-center text-sm p-0 flex items-center justify-center relative focus-within:relative focus-within:z-20",
-                      // Added mx-auto to ensure the day button is centered in the cell
-                      day: "h-9 w-9 sm:h-10 sm:w-10 p-0 font-normal aria-selected:opacity-100 rounded-md flex items-center justify-center transition-colors hover:bg-slate-100 mx-auto",
-                      day_selected: "bg-slate-900 text-white hover:bg-slate-800 hover:text-white",
+                      cell: "text-center p-0 flex items-center justify-center relative",
+                      
+                      day: "h-8 w-8 sm:h-9 sm:w-9 lg:h-8 lg:w-8 xl:h-10 xl:w-10 p-0 text-xs sm:text-sm font-normal aria-selected:opacity-100 rounded-md flex items-center justify-center transition-colors hover:bg-slate-100 mx-auto",
+                      day_selected: "bg-slate-900 text-white hover:bg-slate-800 hover:text-white font-semibold",
                       day_today: "bg-slate-100 text-slate-900 font-bold",
                     }}
                     modifiers={{

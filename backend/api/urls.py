@@ -76,7 +76,12 @@ urlpatterns = [
     path('staff/dashboard-stats/', StaffDashboardStatsView.as_view(), name='staff-dashboard-stats'),
     path('appointments/', AppointmentListCreateView.as_view(), name='appointment-list-create'),
     path('appointments/<int:pk>/', AppointmentDetailView.as_view(), name='appointment-detail'),
-
+    path('staff/cases/', staff_views.StaffCaseListView.as_view(), name='staff-case-list'),
+    path('staff/cases/<int:pk>/', staff_views.StaffCaseDetailView.as_view(), name='staff-case-detail'),
+    path('staff/payments/', staff_views.StaffPaymentListView.as_view(), name='staff-payment-list'),
+    path('staff/payments/<int:pk>/', staff_views.StaffPaymentDetailView.as_view(), name='staff-payment-detail'),
+    path('staff/clients/', staff_views.StaffClientListView.as_view(), name='staff-client-list'),
+    path('staff/clients/<int:pk>/', staff_views.StaffClientDetailView.as_view(), name='staff-client-detail'),
     #Payments
     path('payments/request-upi/', SendUPIPaymentRequestView.as_view(), name='request-upi-payment'),
     path('payments/<int:pk>/', PaymentDetailView.as_view(), name='payment-detail'),
