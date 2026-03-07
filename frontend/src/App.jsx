@@ -32,11 +32,13 @@ import ClientDocumentsPage from "./components/Client-pages/ClientDocumentsPage";
 
 import CloudPage from "./components/Advocate-pages/Cloud"
 
+import StaffClientView from './components/Staff-pages/StaffClientView';
 import StaffAuth from './components/Staff-pages/StaffAuth';
 import StaffDashboard from './components/Staff-pages/StaffDashboard';
 import AppointmentManage from './components/Staff-pages/appointment_manage';
-
+import StaffCaseView from './components/Staff-pages/StaffCaseView';
 import PaymentManage from './components/Advocate-pages/Payment';
+import StaffBillingView from './components/Staff-pages/StaffBillingView';
 
 function App() {
   return (
@@ -81,8 +83,11 @@ function App() {
         <Route path="/staff/login" element={<StaffAuth />} />
         <Route path="/staff/dashboard" element={<StaffDashboard />} />
         <Route path="/staff/appointments" element={<AppointmentManage />} />
-
+        <Route path="/staff/cases" element={<StaffCaseView />} />
         <Route path="/payments" element={<PaymentManage />} />
+        <Route path="/staff/billing" element={<StaffBillingView />} />
+        <Route path="/staff/clients" element={<StaffClientView />} />
+
         <Route 
             path="*" 
             element={

@@ -1,18 +1,35 @@
 from django.contrib.auth import get_user_model
 from django.utils.crypto import get_random_string
-from rest_framework.permissions import AllowAny
+from rest_framework import generics, permissions
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.permissions import IsAuthenticated
-from ..models import Appointment, Case, Payment
-from ..models import LoginOTP
+from ..models import Appointment, Case, Payment, LoginOTP
+from api.serializers import CaseSerializer
 
 # Import our Brevo utility function 
 from api.utils import send_brevo_otp_email
 
 User = get_user_model()
 
+# ==========================================
+# 1. CUSTOM PERMISSIONS
+# ==========================================
+class IsStaffPermission(permissions.BasePermission):
+    """
+    Allows access only to authenticated staff users.
+    """
+    def has_permission(self, request, view):
+        return bool(
+            request.user and 
+            request.user.is_authenticated and 
+            (request.user.is_staff or request.user.role == 'STAFF')
+        )
+
+# ==========================================
+# 2. STAFF AUTHENTICATION VIEWS
+# ==========================================
 class StaffRequestOTPView(APIView):
     permission_classes = [AllowAny]
 
@@ -133,16 +150,15 @@ class StaffVerifyOTPView(APIView):
 
         except User.DoesNotExist:
             return Response({"error": "User no longer exists."}, status=404)
-        
+
+# ==========================================
+# 3. STAFF DASHBOARD & MANAGEMENT VIEWS
+# ==========================================
 class StaffDashboardStatsView(APIView):
-    # This endpoint is protected. Only logged-in users with valid tokens can hit it.
-    permission_classes = [IsAuthenticated]
+    # This endpoint is now protected by our custom IsStaffPermission
+    permission_classes = [IsStaffPermission]
 
     def get(self, request):
-        # Double-check that the user is actually staff
-        if not request.user.is_staff and request.user.role != 'STAFF':
-            return Response({"error": "Access Denied: Not a staff member."}, status=403)
-
         # 1. Calculate Top-Level Stats
         stats = {
             "pending_appointments": Appointment.objects.filter(status='Pending').count(),
@@ -180,3 +196,83 @@ class StaffDashboardStatsView(APIView):
             "stats": stats,
             "pendingTasks": tasks
         }, status=200)
+
+
+class StaffCaseListView(generics.ListAPIView):
+    serializer_class = CaseSerializer
+    permission_classes = [IsStaffPermission]
+
+    def get_queryset(self):
+        # select_related makes the database fetch client and advocate info in a single query 
+        # instead of hundreds of separate queries, making the page load lightning fast.
+        return Case.objects.all().select_related('client', 'created_by').order_by('-updated_at')
+
+
+class StaffCaseDetailView(generics.UpdateAPIView):
+    serializer_class = CaseSerializer
+    permission_classes = [IsStaffPermission]
+    queryset = Case.objects.all()
+
+class StaffPaymentListView(generics.ListAPIView):
+    serializer_class = PaymentSerializer
+    permission_classes = [IsStaffPermission]
+
+    def get_queryset(self):
+        # Fetch all payments, optimize by joining client and case tables
+        return Payment.objects.all().select_related('client', 'case').order_by('-created_at')
+
+class StaffPaymentDetailView(generics.UpdateAPIView):
+    serializer_class = PaymentSerializer
+    permission_classes = [IsStaffPermission]
+    queryset = Payment.objects.all()
+
+class StaffClientSerializer(serializers.ModelSerializer):
+    advocate_name = serializers.CharField(source='created_by.full_name', read_only=True, default="System")
+    payment_status = serializers.SerializerMethodField()
+    hearings = serializers.SerializerMethodField()
+    case_status = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Client
+        fields = [
+            'id', 'full_name', 'email', 'contact_number', 'address', 
+            'is_active', 'advocate_name', 'payment_status', 'hearings', 'case_status'
+        ]
+
+    def get_payment_status(self, obj):
+        # Checks if this client has any pending invoices
+        if obj.payment_set.filter(status='Pending').exists():
+            return "Pending Dues"
+        return "Clear"
+
+    def get_hearings(self, obj):
+        # Extracts all upcoming hearing dates from all their cases
+        dates = obj.case_set.filter(next_hearing__isnull=False).values_list('next_hearing', flat=True)
+        return [d.strftime('%b %d, %Y') for d in dates if d]
+
+    def get_case_status(self, obj):
+        # Determines overall case status
+        cases = obj.case_set.all()
+        if not cases: return "No Cases"
+        if cases.filter(status__in=['Open', 'Pending']).exists(): return "Active Cases"
+        return "Closed"
+
+
+# 2. View to List and Create Clients
+class StaffClientListView(generics.ListCreateAPIView):
+    serializer_class = StaffClientSerializer
+    permission_classes = [IsStaffPermission]
+
+    def get_queryset(self):
+        # prefetch_related prevents database lag by loading cases and payments in a single batch
+        return Client.objects.prefetch_related('case_set', 'payment_set').select_related('created_by').order_by('-created_at')
+
+    def perform_create(self, serializer):
+        # Automatically assign the staff member as the creator when adding a new client
+        serializer.save(created_by=self.request.user)
+
+# 3. View to Update and Delete Clients
+class StaffClientDetailView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = StaffClientSerializer
+    permission_classes = [IsStaffPermission]
+    queryset = Client.objects.all()
