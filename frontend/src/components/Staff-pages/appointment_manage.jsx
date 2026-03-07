@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import api from '../../api';
+import api from '../../api'; 
 import { 
   CalendarDays, Clock, User, CheckCircle, 
-  XCircle, CalendarClock, Loader2, Search, Plus, FileText, Briefcase
+  XCircle, CalendarClock, Loader2, Search, Plus, FileText, Briefcase,
+  AlertCircle // <-- Added for error alerts
 } from 'lucide-react';
+
+// <-- Import Alert Components
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const AppointmentManage = () => {
   const [appointments, setAppointments] = useState([]);
@@ -32,13 +36,24 @@ const AppointmentManage = () => {
     purpose: ''
   });
 
+  // --- NEW: Alert State ---
+  const [alertInfo, setAlertInfo] = useState({ show: false, type: 'default', message: '' });
+
+  // --- NEW: Helper function to trigger alerts and auto-hide them ---
+  const showAlert = (type, message) => {
+    setAlertInfo({ show: true, type, message });
+    setTimeout(() => {
+      setAlertInfo({ show: false, type: 'default', message: '' });
+    }, 5000);
+  };
+
   useEffect(() => {
     fetchData();
   }, []);
 
   const fetchData = async () => {
     try {
-      // Fetch Appointments
+      // Fetch Appointments using API instance (no manual token needed)
       const apptRes = await api.get('appointments/');
       setAppointments(apptRes.data);
 
@@ -52,6 +67,7 @@ const AppointmentManage = () => {
 
     } catch (error) {
       console.error("Error fetching data:", error);
+      showAlert("destructive", "Failed to load appointments.");
     } finally {
       setLoading(false);
     }
@@ -67,8 +83,9 @@ const AppointmentManage = () => {
       setAppointments(appointments.map(appt => 
         appt.id === id ? { ...appt, status: newStatus } : appt
       ));
+      showAlert("default", `Appointment status updated to ${newStatus}.`);
     } catch (error) {
-      alert("Failed to update status.");
+      showAlert("destructive", "Failed to update status.");
     } finally {
       setProcessingId(null);
     }
@@ -86,8 +103,9 @@ const AppointmentManage = () => {
       
       fetchData(); 
       setIsRescheduleModalOpen(false);
+      showAlert("default", "Appointment successfully rescheduled.");
     } catch (error) {
-      alert("Failed to reschedule.");
+      showAlert("destructive", "Failed to reschedule appointment.");
     } finally {
       setProcessingId(null);
     }
@@ -102,8 +120,9 @@ const AppointmentManage = () => {
       fetchData(); // Refresh list
       setIsAddModalOpen(false);
       setNewAppt({ client: '', advocate: '', appointment_date: '', appointment_time: '', duration: '30 Mins', purpose: '' });
+      showAlert("default", "New appointment successfully booked!");
     } catch (error) {
-      alert("Failed to create appointment. Please check required fields.");
+      showAlert("destructive", "Failed to create appointment. Please check required fields.");
       console.error(error.response?.data);
     } finally {
       setProcessingId(null);
@@ -147,8 +166,21 @@ const AppointmentManage = () => {
   return (
     <div className="p-8 max-w-7xl mx-auto font-sans bg-zinc-50/30 min-h-screen">
       
+      {/* --- ALERT NOTIFICATION BAR --- */}
+      {alertInfo.show && (
+        <div className="mt-9 mb-6">
+          <Alert variant={alertInfo.type} className="animate-in fade-in slide-in-from-top-4 bg-white shadow-sm border-zinc-200">
+            {alertInfo.type === 'destructive' ? <AlertCircle className="h-4 w-4" /> : <CheckCircle className="h-4 w-4" />}
+            <AlertTitle>{alertInfo.type === 'destructive' ? 'Error' : 'Success'}</AlertTitle>
+            <AlertDescription>
+              {alertInfo.message}
+            </AlertDescription>
+          </Alert>
+        </div>
+      )}
+
       {/* HEADER */}
-      <div className="flex mt-9 flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-5 animate-in fade-in slide-in-from-top-4 duration-500">
+      <div className={`flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-5 animate-in fade-in slide-in-from-top-4 duration-500 ${!alertInfo.show ? 'mt-9' : ''}`}>
         <div>
           <h1 className="text-3xl font-bold text-zinc-900 tracking-tight">Appointments</h1>
           <p className="text-zinc-500 text-sm mt-1">Manage schedules, approve bookings, and coordinate clients.</p>

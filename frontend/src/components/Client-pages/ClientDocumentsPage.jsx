@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
   LayoutDashboard, Briefcase, Gavel, CreditCard, FileText, 
-  UploadCloud, Download, File, X, Loader2, CheckCircle2 
+  UploadCloud, Download, File, X, Loader2, CheckCircle2,
+  AlertCircle, CheckCircle // <-- Added alert icons
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import api, { getClientFullCases } from "../../api"; 
@@ -14,6 +15,9 @@ import { Label } from "../ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
+// <-- Import Alert Components
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+
 export default function ClientDocumentsPage() {
   const navigate = useNavigate();
   const [documents, setDocuments] = useState([]);
@@ -21,6 +25,17 @@ export default function ClientDocumentsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  // <-- NEW: Alert State
+  const [alertInfo, setAlertInfo] = useState({ show: false, type: 'default', message: '' });
+
+  // <-- NEW: Helper function to trigger alerts and auto-hide them
+  const showAlert = (type, message) => {
+    setAlertInfo({ show: true, type, message });
+    setTimeout(() => {
+      setAlertInfo({ show: false, type: 'default', message: '' });
+    }, 5000);
+  };
 
   // --- FETCH DATA ---
   const fetchData = async () => {
@@ -33,6 +48,7 @@ export default function ClientDocumentsPage() {
       setMyCases(casesRes.data);
     } catch (error) {
       console.error("Failed to load data:", error);
+      showAlert("destructive", "Failed to load documents.");
     } finally {
       setIsLoading(false);
     }
@@ -54,12 +70,12 @@ export default function ClientDocumentsPage() {
       await api.post('client/documents/', formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      alert("Document Uploaded Successfully!");
+      showAlert("default", "Document Uploaded Successfully!"); // <-- Replaced native alert
       setIsDialogOpen(false);
       fetchData(); // Refresh the list
     } catch (error) {
       console.error("Upload failed:", error);
-      alert("Failed to upload document.");
+      showAlert("destructive", "Failed to upload document."); // <-- Replaced native alert
     } finally {
       setIsUploading(false);
     }
@@ -89,6 +105,19 @@ export default function ClientDocumentsPage() {
       <main className="flex-1 ml-72 p-8 lg:p-12 overflow-y-auto h-[calc(100vh-4rem)]">
         <div className="max-w-6xl mx-auto">
             
+            {/* --- ALERT NOTIFICATION BAR --- */}
+            {alertInfo.show && (
+              <div className="mb-6">
+                <Alert variant={alertInfo.type} className="animate-in fade-in slide-in-from-top-4 bg-white shadow-sm border-slate-200">
+                  {alertInfo.type === 'destructive' ? <AlertCircle className="h-4 w-4" /> : <CheckCircle className="h-4 w-4" />}
+                  <AlertTitle>{alertInfo.type === 'destructive' ? 'Error' : 'Success'}</AlertTitle>
+                  <AlertDescription>
+                    {alertInfo.message}
+                  </AlertDescription>
+                </Alert>
+              </div>
+            )}
+
             <motion.header initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex justify-between items-end mb-10">
               <div>
                 <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Case Documents</h1>
@@ -166,11 +195,10 @@ export default function ClientDocumentsPage() {
 
                   <div className="mt-6 pt-4 border-t border-slate-50 flex justify-between items-center">
                     <p className="text-xs font-medium text-slate-400">
-                        {/* You can display file size here if your API sends it */}
                         Ready to view
                     </p>
                     <a 
-                      href={doc.document} // This assumes your API returns the full URL
+                      href={doc.document} 
                       target="_blank" 
                       rel="noopener noreferrer"
                       className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all"

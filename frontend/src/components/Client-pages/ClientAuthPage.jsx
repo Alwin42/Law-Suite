@@ -3,23 +3,36 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "../ui/button"; 
 import { Input } from "../ui/input";   
 import { motion, AnimatePresence } from "framer-motion";
-import { Mail, User, Phone, MapPin, FileText, ShieldCheck } from "lucide-react";
+import { Mail, User, Phone, MapPin, FileText, ShieldCheck, AlertCircle, CheckCircle } from "lucide-react"; // <-- Added Alert Icons
 import { registerClient, requestOTP, verifyOTP } from "../../api";
+
+// <-- Import Alert Components
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const ClientAuthPage = () => {
   const [view, setView] = useState("LOGIN"); 
   const [step, setStep] = useState(1);       
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
+  
+  // <-- Replaced old error state with new alert state
+  const [alertInfo, setAlertInfo] = useState({ show: false, type: 'default', message: '' });
   
   // Pull previous email from local storage if it exists
   const [email, setEmail] = useState(() => localStorage.getItem("last_client_email") || "");
   const navigate = useNavigate();
 
+  // <-- Helper function to trigger alerts and auto-hide them
+  const showAlert = (type, message) => {
+    setAlertInfo({ show: true, type, message });
+    setTimeout(() => {
+      setAlertInfo({ show: false, type: 'default', message: '' });
+    }, 5000);
+  };
+
   const handleRegister = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    setError("");
+    setAlertInfo({ show: false, type: 'default', message: '' }); // Clear previous alerts
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData);
     
@@ -34,10 +47,10 @@ const ClientAuthPage = () => {
 
     try {
         await registerClient(payload);
-        alert("Registration Successful! Please login with your email.");
+        showAlert("default", "Registration Successful! Please login with your email."); // <-- Replaced native alert
         setView("LOGIN");
     } catch (err) {
-        setError("Registration failed. Email or Username might be taken.");
+        showAlert("destructive", "Registration failed. Email or Username might be taken."); // <-- Replaced error text
     } finally {
         setIsLoading(false);
     }
@@ -46,7 +59,7 @@ const ClientAuthPage = () => {
   const handleRequestOTP = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    setError("");
+    setAlertInfo({ show: false, type: 'default', message: '' }); // Clear previous alerts
     
     try {
         await requestOTP(email);
@@ -54,7 +67,7 @@ const ClientAuthPage = () => {
         localStorage.setItem("last_client_email", email);
         setStep(2); 
     } catch (err) {
-        setError("Client not found or error sending OTP.");
+        showAlert("destructive", "Client not found or error sending OTP."); // <-- Replaced error text
     } finally {
         setIsLoading(false);
     }
@@ -63,7 +76,7 @@ const ClientAuthPage = () => {
   const handleVerifyOTP = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    setError("");
+    setAlertInfo({ show: false, type: 'default', message: '' }); // Clear previous alerts
     const formData = new FormData(e.target);
     const otp = formData.get("otp");
 
@@ -76,7 +89,7 @@ const ClientAuthPage = () => {
         
         navigate('/client-dashboard');
     } catch (err) {
-        setError("Invalid or expired OTP.");
+        showAlert("destructive", "Invalid or expired OTP."); // <-- Replaced error text
     } finally {
         setIsLoading(false);
     }
@@ -100,9 +113,16 @@ const ClientAuthPage = () => {
                 </p>
             </div>
 
-            {error && (
-              <div className="mb-4 p-3 text-xs text-red-500 bg-red-50 rounded-md border border-red-100 text-center">
-                  {error}
+            {/* --- ALERT NOTIFICATION BAR --- */}
+            {alertInfo.show && (
+              <div className="mb-4">
+                <Alert variant={alertInfo.type} className="animate-in fade-in slide-in-from-top-2 bg-white shadow-sm border-slate-200">
+                  {alertInfo.type === 'destructive' ? <AlertCircle className="h-4 w-4" /> : <CheckCircle className="h-4 w-4" />}
+                  <AlertTitle>{alertInfo.type === 'destructive' ? 'Error' : 'Success'}</AlertTitle>
+                  <AlertDescription>
+                    {alertInfo.message}
+                  </AlertDescription>
+                </Alert>
               </div>
             )}
 
@@ -164,7 +184,7 @@ const ClientAuthPage = () => {
                     onClick={() => {
                         setView(view === "LOGIN" ? "REGISTER" : "LOGIN");
                         setStep(1);
-                        setError("");
+                        setAlertInfo({ show: false, type: 'default', message: '' }); // Clear alerts when toggling
                     }}
                     className="text-sm font-medium text-emerald-700 hover:underline"
                 >

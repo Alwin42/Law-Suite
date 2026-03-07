@@ -2,14 +2,15 @@ import * as React from "react";
 import { format } from "date-fns";
 import { 
     Calendar as CalendarIcon, 
-    User, Phone, Mail, MapPin, CheckCircle2, Clock, FileText 
+    User, Phone, Mail, MapPin, CheckCircle2, Clock, FileText,ArrowLeft,
+    AlertCircle // <-- Added for error alert icon
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // --- API & HOOKS ---
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getActiveAdvocates, bookAppointment } from "../../api"; // <-- Imported new API call
+import { getActiveAdvocates, bookAppointment } from "../../api"; 
 
 // --- UI COMPONENTS ---
 import { Button } from "../ui/button";
@@ -20,12 +21,26 @@ import { Label } from "../ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"; 
 
+// --- NEW: Alert Components ---
+import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
+
 export default function BookAppointment() {
   const [date, setDate] = useState();
   const [advocates, setAdvocates] = useState([]);
   const [selectedAdvocate, setSelectedAdvocate] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  
+  // --- NEW: Alert State ---
+  const [alertInfo, setAlertInfo] = useState(null);
   const navigate = useNavigate();
+
+  // Auto-hide alerts after 5 seconds
+  useEffect(() => {
+    if (alertInfo) {
+      const timer = setTimeout(() => setAlertInfo(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [alertInfo]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -42,15 +57,20 @@ export default function BookAppointment() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setAlertInfo(null); // Clear previous alerts
+
     if (!date || !selectedAdvocate) {
-        alert("Please select an advocate and a date.");
+        setAlertInfo({
+            variant: "destructive",
+            title: "Missing Information",
+            message: "Please select an advocate and a date."
+        });
         return;
     }
 
     setIsLoading(true);
     const formData = new FormData(e.target);
     
-    // Matched exact payload to the Backend View requirements based on DFD
     const bookingData = {
         client_name: formData.get("full_name"),
         client_email: formData.get("email"),
@@ -58,18 +78,33 @@ export default function BookAppointment() {
         client_address: formData.get("address"),
         advocate_id: selectedAdvocate,
         appointment_date: format(date, "yyyy-MM-dd"),
-        appointment_time: formData.get("appointment_time"), // Added from DFD
-        duration: formData.get("duration"), // Added from DFD
-        purpose: formData.get("purpose"), // Added from DFD
+        appointment_time: formData.get("appointment_time"), 
+        duration: formData.get("duration"), 
+        purpose: formData.get("purpose"), 
     };
 
     try {
-        await bookAppointment(bookingData); // <-- Replaced mock timeout with real API
-        alert("Appointment Request Sent Successfully!");
-        navigate("/client-dashboard"); // Redirects to client dashboard
+        await bookAppointment(bookingData); 
+        
+        // --- NEW: Show success alert and delay navigation so user can see it ---
+        setAlertInfo({
+            variant: "default",
+            title: "Success!",
+            message: "Appointment Request Sent Successfully!"
+        });
+        
+        setTimeout(() => {
+            navigate("/client-dashboard");
+        }, 1500); 
+
     } catch (error) {
         console.error("Booking failed", error);
-        alert("Failed to book appointment. Check connection or data.");
+        // --- NEW: Show error alert ---
+        setAlertInfo({
+            variant: "destructive",
+            title: "Booking Failed",
+            message: "Failed to book appointment. Check connection or data."
+        });
     } finally {
         setIsLoading(false);
     }
@@ -82,6 +117,9 @@ export default function BookAppointment() {
           <div className="mx-auto w-12 h-12 bg-slate-900 rounded-full flex items-center justify-center mb-4 text-white shadow-lg">
             <CheckCircle2 size={24} />
           </div>
+          <Button variant="ghost" className="mb-4 text-slate-800 hover:text-slate-900 -ml-4" onClick={() => navigate('/dashboard')}>
+              <ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard
+          </Button>
           <CardTitle className="text-2xl font-bold text-slate-900">Book an Appointment</CardTitle>
           <CardDescription className="text-slate-500">
             Schedule a legal consultation securely.
@@ -89,6 +127,23 @@ export default function BookAppointment() {
         </CardHeader>
         
         <CardContent className="pt-8">
+          
+          {/* --- NEW: ALERT RENDERER --- */}
+          {alertInfo && (
+            <Alert 
+              variant={alertInfo.variant} 
+              className={`mb-6 transition-all duration-300 ${alertInfo.variant === 'default' ? 'border-green-200 bg-green-50 text-green-800' : ''}`}
+            >
+              {alertInfo.variant === "destructive" ? (
+                <AlertCircle className="h-4 w-4" />
+              ) : (
+                <CheckCircle2 className="h-4 w-4 text-green-600" />
+              )}
+              <AlertTitle>{alertInfo.title}</AlertTitle>
+              <AlertDescription>{alertInfo.message}</AlertDescription>
+            </Alert>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-8">
             
             {/* SECTION 1: APPOINTMENT DETAILS */}

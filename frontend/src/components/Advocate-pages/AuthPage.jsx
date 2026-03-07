@@ -1,26 +1,40 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "../ui/button"; 
 import { Input } from "../ui/input"; 
 import { motion, AnimatePresence } from "framer-motion";
-import { Scale, Mail, Lock, User, ArrowRight, Phone } from "lucide-react";
+import { Scale, Mail, Lock, User, ArrowRight, Phone, AlertCircle, CheckCircle } from "lucide-react";
 import { loginUser, registerAdvocate } from "../../api"; 
+
+// --- NEW: Import Alert Components ---
+import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
+  
+  // --- NEW: Unified Alert State ---
+  const [alertInfo, setAlertInfo] = useState(null);
+  
   const navigate = useNavigate();
+
+  // Auto-hide success alerts after 5 seconds so they don't stay forever
+  useEffect(() => {
+    if (alertInfo?.variant === "default") {
+      const timer = setTimeout(() => setAlertInfo(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [alertInfo]);
 
   const toggleMode = () => {
     setIsLogin(!isLogin);
-    setError("");
+    setAlertInfo(null); // Clear alerts when switching modes
   };
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    setError("");
+    setAlertInfo(null);
 
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData);
@@ -40,7 +54,12 @@ const AuthPage = () => {
       }
     } catch (err) {
       console.error("Login Error:", err);
-      setError("Invalid username or password.");
+      // --- NEW: Trigger Error Alert ---
+      setAlertInfo({
+        variant: "destructive",
+        title: "Login Failed",
+        desc: "Invalid username or password. Please try again."
+      });
     } finally {
       setIsLoading(false);
     }
@@ -49,7 +68,7 @@ const AuthPage = () => {
   const handleRegister = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    setError("");
+    setAlertInfo(null);
 
     const formData = new FormData(e.target);
     const rawData = Object.fromEntries(formData);
@@ -64,11 +83,21 @@ const AuthPage = () => {
 
     try {
       await registerAdvocate(payload);
-      alert("Advocate Account Created! Please login.");
-      toggleMode(); 
+      // --- NEW: Trigger Success Alert & switch to Login form ---
+      setAlertInfo({
+        variant: "default",
+        title: "Account Created!",
+        desc: "Your advocate account is ready. Please sign in."
+      });
+      setIsLogin(true); // Switch to login form so they can immediately log in
     } catch (err) {
       console.error("Registration Error:", err.response?.data);
-      setError("Registration failed. Username or Email might be taken.");
+      // --- NEW: Trigger Error Alert ---
+      setAlertInfo({
+        variant: "destructive",
+        title: "Registration Failed",
+        desc: "Username or Email might be taken. Please try another."
+      });
     } finally {
       setIsLoading(false);
     }
@@ -96,10 +125,20 @@ const AuthPage = () => {
             </p>
           </div>
 
-          {error && (
-            <div className="mb-4 p-3 text-xs text-red-500 bg-red-50 rounded-md border border-red-100 text-center">
-                {error}
-            </div>
+          {/* --- NEW: ALERT COMPONENT RENDER --- */}
+          {alertInfo && (
+            <Alert 
+              variant={alertInfo.variant} 
+              className={`mb-6 transition-all duration-300 ${alertInfo.variant === 'default' ? 'border-green-200 bg-green-50 text-green-800' : ''}`}
+            >
+              {alertInfo.variant === "destructive" ? (
+                <AlertCircle className="h-4 w-4" />
+              ) : (
+                <CheckCircle className="h-4 w-4 text-green-600" />
+              )}
+              <AlertTitle>{alertInfo.title}</AlertTitle>
+              <AlertDescription>{alertInfo.desc}</AlertDescription>
+            </Alert>
           )}
 
           <div className="space-y-4">
@@ -114,18 +153,18 @@ const AuthPage = () => {
             <div className="mt-6 text-center">
               <p className="text-sm text-slate-500">
                 {isLogin ? "New Advocate? " : "Already have an account? "}
-                <button onClick={toggleMode} className="font-medium text-slate-900 hover:underline">
+                <button type="button" onClick={toggleMode} className="font-medium text-slate-900 hover:underline">
                   {isLogin ? "Register here" : "Sign in"}
                 </button>
               </p>
             </div>
 
-            <div className="mt-4 pt-4 border-t border-slate-100 text-center">
+            <div className="mt-4 pt-4 border-t border-slate-100 text-center space-y-2">
                 <Link to="/client-login" className="text-md font-medium text-emerald-600 hover:text-emerald-700 hover:underline flex items-center justify-center gap-1">
                     Are you a Client? Login with OTP <ArrowRight size={12}/>
                 </Link>
                 <Link to="/staff/login" className="text-md font-medium text-emerald-600 hover:text-emerald-700 hover:underline flex items-center justify-center gap-1">
-                    Are you a Staff ? <ArrowRight size={12}/>
+                    Are you a Staff? <ArrowRight size={12}/>
                 </Link>
             </div>
           </div>

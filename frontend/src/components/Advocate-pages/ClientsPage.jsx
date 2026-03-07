@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../api'; 
-import { Link } from 'react-router-dom'; // <-- NEW: Import Link
+import { Link } from 'react-router-dom'; 
 import { 
   Search, Plus, MoreVertical, Phone, Mail, MapPin, 
-  Calendar, User, Loader 
+  Calendar, User, Loader, AlertCircle, CheckCircle ,ArrowLeft
 } from 'lucide-react';
 
+// <-- NEW: Import Alert Components
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 export default function ClientsPage() {
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -15,6 +18,17 @@ export default function ClientsPage() {
   const [formData, setFormData] = useState({
     full_name: '', email: '', contact_number: '', address: '', notes: ''
   });
+
+  // <-- NEW: Alert State
+  const [alertInfo, setAlertInfo] = useState({ show: false, type: 'default', message: '' });
+
+  // <-- NEW: Helper function to trigger alerts and auto-hide them
+  const showAlert = (type, message) => {
+    setAlertInfo({ show: true, type, message });
+    setTimeout(() => {
+      setAlertInfo({ show: false, type: 'default', message: '' });
+    }, 5000);
+  };
 
   // Fetch Clients on Load
   useEffect(() => {
@@ -27,6 +41,7 @@ export default function ClientsPage() {
       setClients(response.data);
     } catch (error) {
       console.error("Failed to fetch clients:", error);
+      showAlert("destructive", "Failed to fetch clients. Please try refreshing the page.");
     } finally {
       setLoading(false);
     }
@@ -55,9 +70,10 @@ export default function ClientsPage() {
       setClients([response.data, ...clients]); 
       setIsModalOpen(false);
       setFormData({ full_name: '', email: '', contact_number: '', address: '', notes: '' }); 
+      showAlert("default", "Client added successfully!"); // <-- NEW: Success Alert
     } catch (error) {
       console.error("Failed to create client:", error);
-      alert("Failed to add client. Please check the details.");
+      showAlert("destructive", "Failed to add client. Please check the details."); // <-- NEW: Replaced native alert
     }
   };
 
@@ -72,9 +88,25 @@ export default function ClientsPage() {
   return (
     <div className="min-h-screen bg-gray-50 p-16 font-sans text-slate-800">
       
+      {/* --- NEW: ALERT NOTIFICATION BAR --- */}
+      {alertInfo.show && (
+        <div className="max-w-7xl mx-auto mb-6">
+          <Alert variant={alertInfo.type} className="animate-in fade-in slide-in-from-top-4 bg-white shadow-sm">
+            {alertInfo.type === 'destructive' ? <AlertCircle className="h-4 w-4" /> : <CheckCircle className="h-4 w-4" />}
+            <AlertTitle>{alertInfo.type === 'destructive' ? 'Error' : 'Success'}</AlertTitle>
+            <AlertDescription>
+              {alertInfo.message}
+            </AlertDescription>
+          </Alert>
+        </div>
+      )}
+
       {/* HEADER */}
-      <div className="max-w-7xl mx-auto mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="max-w-7xl mx-auto mb-8 mt-3 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
+          <Button variant="ghost" className="mb-4 text-slate-800 hover:text-slate-900 -ml-4" onClick={() => navigate('/dashboard')}>
+              <ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard
+          </Button>
           <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Client Directory</h1>
           <p className="text-slate-500 mt-1">Manage your case contacts and details.</p>
         </div>
@@ -145,7 +177,7 @@ export default function ClientsPage() {
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredClients.map((client) => (
             
-            // --- NEW: Wrapped entire card in a Link ---
+            // --- Wrapped entire card in a Link ---
             <Link 
                 to={`/clients/${client.id}`} 
                 key={client.id} 

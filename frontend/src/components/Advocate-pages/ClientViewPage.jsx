@@ -3,7 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { getClientDetails, getAdvocateClientCases, getClientPayments, addClientPayment } from '../../api';
 import { 
   ArrowLeft, Phone, Mail, MapPin, 
-  FileText, CreditCard, Plus, Loader2, Calendar, IndianRupee
+  FileText, CreditCard, Plus, Loader2, Calendar, IndianRupee,
+  AlertCircle, CheckCircle // <-- NEW: Added icons for alerts
 } from 'lucide-react';
 
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+
+// <-- NEW: Import Alert Components
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export default function ClientViewPage() {
   const { id } = useParams();
@@ -25,6 +29,17 @@ export default function ClientViewPage() {
   // Payment Form States
   const [isAddingPayment, setIsAddingPayment] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // <-- NEW: Alert State
+  const [alertInfo, setAlertInfo] = useState({ show: false, type: 'default', message: '' });
+
+  // <-- NEW: Helper function to trigger alerts and auto-hide them
+  const showAlert = (type, message) => {
+    setAlertInfo({ show: true, type, message });
+    setTimeout(() => {
+      setAlertInfo({ show: false, type: 'default', message: '' });
+    }, 5000);
+  };
 
   useEffect(() => {
     const fetchAllData = async () => {
@@ -40,8 +55,8 @@ export default function ClientViewPage() {
         setPayments(paymentsRes.data);
       } catch (error) {
         console.error("Failed to fetch client data", error);
-        alert("Client not found.");
-        navigate('/clients');
+        showAlert("destructive", "Client not found or permission denied."); // <-- NEW: Replaced native alert
+        setTimeout(() => navigate('/clients'), 2000); // Give user 2 seconds to read the error
       } finally {
         setLoading(false);
       }
@@ -70,8 +85,9 @@ export default function ClientViewPage() {
       const newPaymentsRes = await getClientPayments(id);
       setPayments(newPaymentsRes.data);
       setIsModalOpen(false);
+      showAlert("default", "Payment recorded successfully."); // <-- NEW: Success Alert
     } catch (error) {
-      alert("Failed to record payment.");
+      showAlert("destructive", "Failed to record payment."); // <-- NEW: Replaced native alert
     } finally {
       setIsAddingPayment(false);
     }
@@ -97,6 +113,17 @@ export default function ClientViewPage() {
     <div className="min-h-screen bg-slate-50/50 p-6 md:p-12 font-sans text-slate-900 pt-20">
       <div className="max-w-6xl mx-auto space-y-8">
         
+        {/* --- NEW: ALERT NOTIFICATION BAR --- */}
+        {alertInfo.show && (
+          <Alert variant={alertInfo.type} className="animate-in fade-in slide-in-from-top-4 bg-white shadow-sm">
+            {alertInfo.type === 'destructive' ? <AlertCircle className="h-4 w-4" /> : <CheckCircle className="h-4 w-4" />}
+            <AlertTitle>{alertInfo.type === 'destructive' ? 'Error' : 'Success'}</AlertTitle>
+            <AlertDescription>
+              {alertInfo.message}
+            </AlertDescription>
+          </Alert>
+        )}
+
         {/* TOP HEADER: CLIENT PROFILE */}
         <div>
           <Button variant="ghost" className="mb-4 text-slate-800 hover:text-slate-900 -ml-4" onClick={() => navigate('/clients')}>
