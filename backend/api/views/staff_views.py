@@ -1,13 +1,14 @@
 from django.contrib.auth import get_user_model
 from django.utils.crypto import get_random_string
 from rest_framework import generics, permissions
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from ..models import Appointment, Case, Payment, LoginOTP
-from api.serializers import CaseSerializer
-
+from api.serializers import AppointmentSerializer, CaseSerializer , PaymentSerializer
+from rest_framework import serializers 
+from api.models import Client
 # Import our Brevo utility function 
 from api.utils import send_brevo_otp_email
 
@@ -276,3 +277,16 @@ class StaffClientDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = StaffClientSerializer
     permission_classes = [IsStaffPermission]
     queryset = Client.objects.all()
+
+class StaffAppointmentListView(generics.ListCreateAPIView):
+    serializer_class = AppointmentSerializer
+    permission_classes = [IsStaffPermission]
+
+    def get_queryset(self):
+        # Staff gets to see ALL appointments across all advocates
+        return Appointment.objects.all().select_related('client', 'advocate').order_by('-appointment_date')
+
+class StaffAppointmentDetailView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = AppointmentSerializer
+    permission_classes = [IsStaffPermission]
+    queryset = Appointment.objects.all()

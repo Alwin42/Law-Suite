@@ -9,11 +9,13 @@ from .views import (
     CaseDetailView, AdvocateAppointmentListView, ClientListCreateView, BookAppointmentView, ClientDocumentListCreateView,
     ClientDetailView, AdvocateClientCasesView, ClientPaymentListCreateView, ClientFullCaseListView, ClientCaseDetailView
 )
-from .views.file_views import FileUploadView,FileDeleteView 
+from .views.file_views import FileUploadView, FileDeleteView 
 from .views.staff_views import StaffRequestOTPView, StaffVerifyOTPView, StaffDashboardStatsView
 from .views.appointment_views import AppointmentListCreateView, AppointmentDetailView
-from .views.payment_views import SendUPIPaymentRequestView
-from .views.payment_views import PaymentDetailView
+from .views.payment_views import SendUPIPaymentRequestView, PaymentDetailView
+
+# ---> BUG 1 FIXED: Imported staff_views module here <---
+from .views import staff_views
 
 urlpatterns = [
     # Auth
@@ -33,10 +35,12 @@ urlpatterns = [
     path('dashboard/', DashboardStatsView.as_view(), name='dashboard-stats'),
     path('user/profile/', UserProfileView.as_view(), name='user-profile'),    
 
-    # Appointments
+    # Appointments (General)
     path('advocate/appointments/', AdvocateAppointmentListView.as_view(), name='advocate-appointments'),
     path('appointments/<int:pk>/status/', UpdateAppointmentStatusView.as_view(), name='update-appointment-status'),
     path('appointments/book/', BookAppointmentView.as_view(), name='book-appointment'),
+    path('appointments/', AppointmentListCreateView.as_view(), name='appointment-list-create'),
+    path('appointments/<int:pk>/', AppointmentDetailView.as_view(), name='appointment-detail'),
 
     # Hearings 
     path('advocate/hearings/', AdvocateHearingListView.as_view(), name='advocate-hearings'),
@@ -59,30 +63,35 @@ urlpatterns = [
     path('documents/', DocumentListCreateView.as_view(), name='document-list-create'),
     path('cases/<int:case_id>/documents/', CaseDocumentListView.as_view(), name='case-document-list'),
 
-    # Client Portal Endpoints (For Later)
+    # Client Portal Endpoints
     path('client/cases/', ClientCaseListView.as_view(), name='client-portal-cases'),
     path('client/hearings/', ClientHearingListView.as_view(), name='client-portal-hearings'),
     path('client/payments/', ClientPaymentListView.as_view(), name='client-portal-payments'),
     path('client/my-cases/', ClientFullCaseListView.as_view(), name='client-full-cases'),
     path('client/my-cases/<int:pk>/', ClientCaseDetailView.as_view(), name='client-case-detail'),
     path('client/documents/', ClientDocumentListCreateView.as_view(), name='client-documents'),
-    #cloud
-    path('cloud/upload/', FileUploadView.as_view(), name='cloud-upload'),
+    
+    # Cloud (BUG 2 FIXED: Removed duplicate route)
     path('cloud/upload/', FileUploadView.as_view(), name='cloud-upload'), # GET and POST
     path('cloud/delete/<int:pk>/', FileDeleteView.as_view(), name='cloud-delete'), # DELETE
-    #Staff 
+    
+    # Staff Portal
     path('staff/request-otp/', StaffRequestOTPView.as_view(), name='staff-request-otp'),
     path('staff/verify-otp/', StaffVerifyOTPView.as_view(), name='staff-verify-otp'),
     path('staff/dashboard-stats/', StaffDashboardStatsView.as_view(), name='staff-dashboard-stats'),
-    path('appointments/', AppointmentListCreateView.as_view(), name='appointment-list-create'),
-    path('appointments/<int:pk>/', AppointmentDetailView.as_view(), name='appointment-detail'),
+    
     path('staff/cases/', staff_views.StaffCaseListView.as_view(), name='staff-case-list'),
     path('staff/cases/<int:pk>/', staff_views.StaffCaseDetailView.as_view(), name='staff-case-detail'),
+    
     path('staff/payments/', staff_views.StaffPaymentListView.as_view(), name='staff-payment-list'),
     path('staff/payments/<int:pk>/', staff_views.StaffPaymentDetailView.as_view(), name='staff-payment-detail'),
+    
     path('staff/clients/', staff_views.StaffClientListView.as_view(), name='staff-client-list'),
     path('staff/clients/<int:pk>/', staff_views.StaffClientDetailView.as_view(), name='staff-client-detail'),
-    #Payments
+    path('staff/appointments/', staff_views.StaffAppointmentListView.as_view(), name='staff-appt-list'),
+    path('staff/appointments/<int:pk>/', staff_views.StaffAppointmentDetailView.as_view(), name='staff-appt-detail'),
+
+    # Payments
     path('payments/request-upi/', SendUPIPaymentRequestView.as_view(), name='request-upi-payment'),
     path('payments/<int:pk>/', PaymentDetailView.as_view(), name='payment-detail'),
 ]

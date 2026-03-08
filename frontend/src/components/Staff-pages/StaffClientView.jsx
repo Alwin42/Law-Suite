@@ -34,7 +34,7 @@ const StaffClientView = () => {
   useEffect(() => { fetchClients(); }, []);
 
   const fetchClients = async () => {
-    try { setLoading(true); const response = await api.get("/staff/clients/"); setClients(response.data); } 
+    try { setLoading(true); const response = await api.get("staff/clients/"); setClients(response.data); } 
     catch (err) { setError("Failed to load clients."); } 
     finally { setLoading(false); }
   };
@@ -55,8 +55,8 @@ const StaffClientView = () => {
     e.preventDefault();
     setSaving(true);
     try {
-      if (currentClient) await api.patch(`/staff/clients/${currentClient.id}/`, formData);
-      else await api.post(`/staff/clients/`, formData);
+      if (currentClient) await api.patch(`staff/clients/${currentClient.id}/`, formData);
+      else await api.post(`staff/clients/`, formData);
       fetchClients(); setIsModalOpen(false);
     } catch (err) { alert("Failed to save client. Ensure email is unique."); } 
     finally { setSaving(false); }
@@ -64,7 +64,7 @@ const StaffClientView = () => {
 
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to permanently delete this client?")) return;
-    try { await api.delete(`/staff/clients/${id}/`); setClients(clients.filter(c => c.id !== id)); } 
+    try { await api.delete(`staff/clients/${id}/`); setClients(clients.filter(c => c.id !== id)); } 
     catch (err) { alert("Failed to delete client."); }
   };
 

@@ -34,7 +34,12 @@ const StaffCaseView = () => {
   useEffect(() => { fetchCases(); }, []);
 
   const fetchCases = async () => {
-    try { setLoading(true); const response = await api.get("/staff/cases/"); setCases(response.data); } 
+    try { 
+      setLoading(true); 
+      // FIXED: Removed the leading slash so Axios uses the correct base URL
+      const response = await api.get("staff/cases/"); 
+      setCases(response.data); 
+    } 
     catch (err) { setError("Failed to load cases."); } 
     finally { setLoading(false); }
   };
@@ -52,7 +57,9 @@ const StaffCaseView = () => {
   const handleUpdateSubmit = async (e) => {
     e.preventDefault();
     try {
-      setUpdating(true); await api.patch(`/staff/cases/${currentCase.id}/`, updateData);
+      setUpdating(true); 
+      // FIXED: Removed the leading slash
+      await api.patch(`staff/cases/${currentCase.id}/`, updateData);
       setCases((prev) => prev.map((c) => (c.id === currentCase.id ? { ...c, ...updateData } : c)));
       setIsUpdateModalOpen(false);
     } catch (err) { alert("Failed to update case."); } finally { setUpdating(false); }

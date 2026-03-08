@@ -34,7 +34,7 @@ const StaffBillingView = () => {
   useEffect(() => { fetchPayments(); }, []);
 
   const fetchPayments = async () => {
-    try { setLoading(true); const response = await api.get("/staff/payments/"); setPayments(response.data); } 
+    try { setLoading(true); const response = await api.get("staff/payments/"); setPayments(response.data); } 
     catch (err) { setError("Failed to load payments."); } 
     finally { setLoading(false); }
   };
@@ -50,7 +50,7 @@ const StaffBillingView = () => {
   const handleUpdateSubmit = async (e) => {
     e.preventDefault();
     try {
-      setUpdating(true); await api.patch(`/staff/payments/${currentPayment.id}/`, updateData);
+      setUpdating(true); await api.patch(`staff/payments/${currentPayment.id}/`, updateData);
       setPayments((prev) => prev.map((p) => (p.id === currentPayment.id ? { ...p, ...updateData } : p)));
       setIsUpdateModalOpen(false);
     } catch (err) { alert("Failed to update payment."); } finally { setUpdating(false); }
