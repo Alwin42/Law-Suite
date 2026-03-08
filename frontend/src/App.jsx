@@ -40,6 +40,8 @@ import StaffCaseView from './components/Staff-pages/StaffCaseView';
 import PaymentManage from './components/Advocate-pages/Payment';
 import StaffBillingView from './components/Staff-pages/StaffBillingView';
 
+import AIChat from './components/Advocate-pages/AI_Chat';
+
 function App() {
   return (
     <Router>
@@ -79,7 +81,7 @@ function App() {
         <Route path="/client-dashboard/documents" element={<ClientDocumentsPage />} />
         {/* Cloud */}
         <Route path="/cloud" element={<CloudPage/>} />
-        
+        {/* Staff */}
         <Route path="/staff/login" element={<StaffAuth />} />
         <Route path="/staff/dashboard" element={<StaffDashboard />} />
         <Route path="/staff/appointments" element={<AppointmentManage />} />
@@ -87,12 +89,13 @@ function App() {
         <Route path="/payments" element={<PaymentManage />} />
         <Route path="/staff/billing" element={<StaffBillingView />} />
         <Route path="/staff/clients" element={<StaffClientView />} />
-
+        {/* Ai */}
+        <Route path="/ai-assistant" element={<AIChat />} />
         <Route 
             path="*" 
             element={
               <div className="min-h-screen flex items-center justify-center text-zinc-500 font-medium">
-                404 - Page Not Found
+                404 - Oops.. Page Not Found
               </div>
             } 
           />

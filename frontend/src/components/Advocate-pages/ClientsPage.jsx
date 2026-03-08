@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../api'; 
-import { Link } from 'react-router-dom'; 
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { 
   Search, Plus, MoreVertical, Phone, Mail, MapPin, 
   Calendar, User, Loader, AlertCircle, CheckCircle ,ArrowLeft
@@ -18,7 +18,7 @@ export default function ClientsPage() {
   const [formData, setFormData] = useState({
     full_name: '', email: '', contact_number: '', address: '', notes: ''
   });
-
+  const navigate = useNavigate();
   // <-- NEW: Alert State
   const [alertInfo, setAlertInfo] = useState({ show: false, type: 'default', message: '' });
 

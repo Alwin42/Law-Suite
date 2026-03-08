@@ -6,7 +6,7 @@ import { Calendar as ShadcnCalendar } from "@/components/ui/calendar";
 import { 
   LayoutDashboard, Users, FileText, Gavel, Calendar as CalendarIcon, FilePen,
   Settings, LogOut, ArrowRight, Loader, Clock, FileUser, Cloud, Banknote,
-  Briefcase, ChevronRight, Menu, X
+  Briefcase, ChevronRight, Menu, X , MessageCircle
 } from "lucide-react";
 import LegalChatbot from '@/components/LegalChatbot';
 
@@ -128,6 +128,7 @@ const Dashboard = () => {
           <NavItem icon={FilePen} label="Templates" to="/templates" onClick={() => setIsSidebarOpen(false)} />
           <NavItem icon={Cloud} label="Cloud Vault" to="/cloud" onClick={() => setIsSidebarOpen(false)} />
           <NavItem icon={Banknote} label="Payments" to="/payments" onClick={() => setIsSidebarOpen(false)} />
+          <NavItem icon={MessageCircle} label="AI Assistant" to="/ai-assistant" onClick={() => setIsSidebarOpen(false)} />
         </div>
 
         <div className="p-4 border-t border-slate-100">
