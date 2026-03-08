@@ -113,7 +113,7 @@ const AppointmentManage = () => {
   if (loading) return <div className="flex justify-center items-center h-screen"><Loader2 className="animate-spin text-zinc-900 w-8 h-8" /></div>;
 
   return (
-    <div className="min-h-screen bg-zinc-50 flex font-sans text-zinc-900">
+    <div className="min-h-screen mt-3 bg-zinc-50 flex font-sans text-zinc-900">
       
       {isSidebarOpen && <div className="fixed inset-0 bg-black/40 z-40 md:hidden backdrop-blur-sm transition-opacity" onClick={() => setIsSidebarOpen(false)} />}
 

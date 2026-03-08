@@ -54,7 +54,7 @@ class GroqRAGChatbotView(APIView):
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_message}
                 ],
-                model="llama3-8b-8192", # Extremely fast, free Llama 3 model
+                model="llama-3.3-70b-versatile",
                 max_tokens=1000,
             )
 

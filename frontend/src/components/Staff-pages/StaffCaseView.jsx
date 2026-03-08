@@ -77,7 +77,7 @@ const StaffCaseView = () => {
   if (loading) return <div className="h-screen flex items-center justify-center bg-[#F8FAFC]"><Loader2 className="animate-spin text-slate-400" size={32} /></div>;
 
   return (
-    <div className="min-h-screen flex font-sans bg-[#F8FAFC] text-slate-900">
+    <div className="min-h-screen  mt-2 flex font-sans bg-[#F8FAFC] text-slate-900">
       
       {isSidebarOpen && <div className="fixed inset-0 bg-black/40 z-40 md:hidden backdrop-blur-sm transition-opacity" onClick={() => setIsSidebarOpen(false)} />}
 
