@@ -41,9 +41,12 @@ const AppointmentManage = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const apptRes = await api.get('appointments/');
+        // FIXED: Using staff endpoints
+        const apptRes = await api.get('staff/appointments/');
         setAppointments(apptRes.data);
-        const clientRes = await api.get('clients/');
+        
+        // FIXED: Using staff endpoints so the dropdown populates!
+        const clientRes = await api.get('staff/clients/');
         setClients(clientRes.data);
       } catch (error) {
         showAlert("destructive", "Failed to load data.");
@@ -55,7 +58,8 @@ const AppointmentManage = () => {
   const handleStatusChange = async (id, newStatus) => {
     setProcessingId(id);
     try {
-      await api.patch(`appointments/${id}/`, { status: newStatus });
+      // FIXED: Using staff endpoints
+      await api.patch(`staff/appointments/${id}/`, { status: newStatus });
       setAppointments(appointments.map(appt => appt.id === id ? { ...appt, status: newStatus } : appt));
       showAlert("default", `Status updated to ${newStatus}.`);
     } catch (error) { showAlert("destructive", "Failed to update status."); } finally { setProcessingId(null); }
@@ -65,9 +69,12 @@ const AppointmentManage = () => {
     e.preventDefault();
     setProcessingId(selectedAppt.id);
     try {
-      await api.patch(`appointments/${selectedAppt.id}/`, { appointment_date: newDate, appointment_time: newTime, status: 'Pending' });
-      const apptRes = await api.get('appointments/'); setAppointments(apptRes.data); 
-      setIsRescheduleModalOpen(false); showAlert("default", "Appointment rescheduled.");
+      // FIXED: Using staff endpoints
+      await api.patch(`staff/appointments/${selectedAppt.id}/`, { appointment_date: newDate, appointment_time: newTime, status: 'Pending' });
+      const apptRes = await api.get('staff/appointments/'); 
+      setAppointments(apptRes.data); 
+      setIsRescheduleModalOpen(false); 
+      showAlert("default", "Appointment rescheduled.");
     } catch (error) { showAlert("destructive", "Failed to reschedule."); } finally { setProcessingId(null); }
   };
 
@@ -75,9 +82,12 @@ const AppointmentManage = () => {
     e.preventDefault();
     setProcessingId('creating');
     try {
-      await api.post('appointments/', newAppt);
-      const apptRes = await api.get('appointments/'); setAppointments(apptRes.data); 
-      setIsAddModalOpen(false); setNewAppt({ client: '', advocate: '', appointment_date: '', appointment_time: '', duration: '30 Mins', purpose: '' });
+      // FIXED: Using staff endpoints
+      await api.post('staff/appointments/', newAppt);
+      const apptRes = await api.get('staff/appointments/'); 
+      setAppointments(apptRes.data); 
+      setIsAddModalOpen(false); 
+      setNewAppt({ client: '', advocate: '', appointment_date: '', appointment_time: '', duration: '30 Mins', purpose: '' });
       showAlert("default", "New appointment booked!");
     } catch (error) { showAlert("destructive", "Failed to create appointment."); } finally { setProcessingId(null); }
   };

@@ -13,8 +13,7 @@ from .views.file_views import FileUploadView, FileDeleteView
 from .views.staff_views import StaffRequestOTPView, StaffVerifyOTPView, StaffDashboardStatsView
 from .views.appointment_views import AppointmentListCreateView, AppointmentDetailView
 from .views.payment_views import SendUPIPaymentRequestView, PaymentDetailView
-
-# ---> BUG 1 FIXED: Imported staff_views module here <---
+from .views.chatbot_views import GroqRAGChatbotView
 from .views import staff_views
 
 urlpatterns = [
@@ -71,7 +70,7 @@ urlpatterns = [
     path('client/my-cases/<int:pk>/', ClientCaseDetailView.as_view(), name='client-case-detail'),
     path('client/documents/', ClientDocumentListCreateView.as_view(), name='client-documents'),
     
-    # Cloud (BUG 2 FIXED: Removed duplicate route)
+    # Cloud 
     path('cloud/upload/', FileUploadView.as_view(), name='cloud-upload'), # GET and POST
     path('cloud/delete/<int:pk>/', FileDeleteView.as_view(), name='cloud-delete'), # DELETE
     
@@ -91,6 +90,9 @@ urlpatterns = [
     path('staff/appointments/', staff_views.StaffAppointmentListView.as_view(), name='staff-appt-list'),
     path('staff/appointments/<int:pk>/', staff_views.StaffAppointmentDetailView.as_view(), name='staff-appt-detail'),
 
+    # AI Chatbot Endpoint
+    path('chatbot/ask/', GroqRAGChatbotView.as_view(), name='chatbot-ask'),
+    
     # Payments
     path('payments/request-upi/', SendUPIPaymentRequestView.as_view(), name='request-upi-payment'),
     path('payments/<int:pk>/', PaymentDetailView.as_view(), name='payment-detail'),

@@ -8,8 +8,9 @@ import {
   Settings, LogOut, ArrowRight, Loader, Clock, FileUser, Cloud, Banknote,
   Briefcase, ChevronRight, Menu, X
 } from "lucide-react";
+import LegalChatbot from '@/components/LegalChatbot';
 
-// --- REFINED NAV ITEM (Subtler Active State) ---
+
 const NavItem = ({ icon: Icon, label, to, onClick }) => (
   <NavLink 
     to={to}
@@ -173,7 +174,7 @@ const Dashboard = () => {
               <span className="text-xl font-light mr-2 leading-none">+</span> New Case 
             </Button>
           </div>
-
+          <LegalChatbot />
           {/* STATS ROW (Clean & Uniform) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
             <StatCard label="Active Cases" value={stats.active_cases} icon={Briefcase} />
