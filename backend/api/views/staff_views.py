@@ -241,19 +241,19 @@ class StaffClientSerializer(serializers.ModelSerializer):
         ]
 
     def get_payment_status(self, obj):
-        # Checks if this client has any pending invoices
-        if obj.payment_set.filter(status='Pending').exists():
+        # FIXED: Changed from obj.payment_set to obj.payments to match models.py
+        if obj.payments.filter(status='Pending').exists():
             return "Pending Dues"
         return "Clear"
 
     def get_hearings(self, obj):
-        # Extracts all upcoming hearing dates from all their cases
-        dates = obj.case_set.filter(next_hearing__isnull=False).values_list('next_hearing', flat=True)
+        # FIXED: Changed from obj.case_set to obj.cases to match models.py
+        dates = obj.cases.filter(next_hearing__isnull=False).values_list('next_hearing', flat=True)
         return [d.strftime('%b %d, %Y') for d in dates if d]
 
     def get_case_status(self, obj):
-        # Determines overall case status
-        cases = obj.case_set.all()
+        # FIXED: Changed from obj.case_set to obj.cases to match models.py
+        cases = obj.cases.all()
         if not cases: return "No Cases"
         if cases.filter(status__in=['Open', 'Pending']).exists(): return "Active Cases"
         return "Closed"
@@ -265,8 +265,8 @@ class StaffClientListView(generics.ListCreateAPIView):
     permission_classes = [IsStaffPermission]
 
     def get_queryset(self):
-        # prefetch_related prevents database lag by loading cases and payments in a single batch
-        return Client.objects.prefetch_related('case_set', 'payment_set').select_related('created_by').order_by('-created_at')
+        # FIXED: Changed 'case_set', 'payment_set' to 'cases', 'payments'
+        return Client.objects.prefetch_related('cases', 'payments').select_related('created_by').order_by('-created_at')
 
     def perform_create(self, serializer):
         # Automatically assign the staff member as the creator when adding a new client
