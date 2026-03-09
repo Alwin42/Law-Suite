@@ -119,8 +119,8 @@ const ClientPaymentPortal = () => {
       <div className="w-full max-w-md bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
         {/* Header */}
         <div className="bg-primary p-6 text-center">
-          <h1 className="text-xl font-bold text-white tracking-tight">Law Suite</h1>
-          <p className="text-gray-300 text-sm mt-1">Secure Client Payment Portal</p>
+          <h1 className="text-xl font-bold text-gray-600 tracking-tight">Law Suite</h1>
+          <p className="text-gray-700 text-lg mt-1">Secure Client Payment Portal</p>
         </div>
 
         <div className="p-8">
@@ -144,9 +144,9 @@ const ClientPaymentPortal = () => {
                 </div>
               </div>
 
-              <div className="bg-background rounded-xl p-5 mb-8 flex items-center justify-between border border-gray-100">
-                <span className="font-semibold text-primary">Total Amount Due</span>
-                <span className="text-2xl font-bold text-primary flex items-center">
+              <div className="bg-secondary shadow-lg rounded-xl p-5 mb-8 flex items-center justify-between border border-gray-300">
+                <span className="font-semibold ">Total Amount Due</span>
+                <span className="text-2xl  font-bold text-primary flex items-center">
                   <IndianRupee className="w-5 h-5 mr-1" />{invoice.amount}
                 </span>
               </div>
@@ -155,7 +155,7 @@ const ClientPaymentPortal = () => {
               <button 
                 onClick={handlePayment} 
                 disabled={processing}
-                className="w-full py-4 bg-primary text-white rounded-xl font-bold flex justify-center items-center gap-2 hover:bg-opacity-90 transition-all disabled:opacity-70 shadow-lg shadow-primary/10"
+                className="w-full py-4 bg-black text-white rounded-xl font-bold flex justify-center items-center gap-2 hover:bg-opacity-90 transition-all disabled:opacity-70 shadow-lg shadow-primary/10"
               >
                 {processing ? <Loader2 className="w-5 h-5 animate-spin" /> : <><CreditCard className="w-5 h-5" /> Pay via Cards / NetBanking</>}
               </button>
