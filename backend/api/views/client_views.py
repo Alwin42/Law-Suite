@@ -124,7 +124,9 @@ class ClientPaymentListView(views.APIView):
         # Format the data exactly how ClientDashboard.jsx expects it
         data = [{
             "id": p.id,
-            "description": f"Payment for {p.case.case_title}" if p.case else p.notes or f"Retainer ({p.payment_mode})",
+            "description": p.title,
+            "title": p.title,  
+            "due_date": p.due_date,
             "date": str(p.payment_date),
             "amount": str(p.amount)
         } for p in payments]
