@@ -30,7 +30,7 @@ import ClientCaseView from "./components/Client-pages/ClientCaseView";
 import ClientHearingsPage from "./components/Client-pages/ClientHearingsPage";
 import ClientDocumentsPage from "./components/Client-pages/ClientDocumentsPage";
 import ClientPaymentPortal from './components/Client-pages/ClientPaymentPortal';
-
+import ClientPaymentsList from './components/Client-pages/ClientPaymentsList'; 
 import CloudPage from "./components/Advocate-pages/Cloud"
 
 import StaffClientView from './components/Staff-pages/StaffClientView';
@@ -80,6 +80,7 @@ function App() {
         <Route path="/client-dashboard/cases/:id" element={<ClientCaseView />} />
         <Route path="/client-dashboard/hearings" element={<ClientHearingsPage />} />
         <Route path="/client-dashboard/documents" element={<ClientDocumentsPage />} />
+        <Route path="/client-dashboard/payments" element={<ClientPaymentsList />} />
         {/* Cloud */}
         <Route path="/cloud" element={<CloudPage/>} />
         {/* Staff */}

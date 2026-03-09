@@ -1,26 +1,28 @@
 import os
 import urllib.parse
 import razorpay
-from django.core.mail import send_mail
-from django.conf import settings
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework import generics
 
-# Import your models and serializers
+# Import models and serializers
 from api.models import Client, Payment
 from api.serializers import PaymentSerializer
+
+# Import your custom Brevo email utility
+from api.utils import send_brevo_otp_email
 
 # Initialize Razorpay Client using environment variables
 razorpay_client = razorpay.Client(
     auth=(os.environ.get('RAZORPAY_KEY_ID'), os.environ.get('RAZORPAY_KEY_SECRET'))
 )
 
+
 class RequestPaymentView(APIView):
     """
     Called by the Advocate Dashboard. Creates the invoice in the DB and emails the client 
-    with BOTH a UPI QR Code and a secure Razorpay checkout link.
+    with BOTH a UPI QR Code and a secure Razorpay checkout link via Brevo.
     """
     permission_classes = [IsAuthenticated]
 
@@ -29,7 +31,7 @@ class RequestPaymentView(APIView):
         amount = request.data.get('amount')
         title = request.data.get('title')
         due_date = request.data.get('due_date')
-        upi_id = request.data.get('upi_id') # The Advocate's UPI ID
+        upi_id = request.data.get('upi_id')
 
         if not all([client_id, amount, title, due_date, upi_id]):
             return Response({"error": "All fields are required."}, status=400)
@@ -45,7 +47,7 @@ class RequestPaymentView(APIView):
                 amount=amount,
                 due_date=due_date, 
                 upi_id=upi_id,
-                payment_mode='UPI', # Default, updates if paid via Razorpay
+                payment_mode='UPI', # Default, updates to 'Razorpay' if they use the portal
                 status='Pending',
             )
 
@@ -56,8 +58,8 @@ class RequestPaymentView(APIView):
             final_qr_payload = urllib.parse.quote(upi_string)
             qr_image_url = f"https://quickchart.io/qr?size=250&text={final_qr_payload}"
 
-            # 3. Generate the Razorpay Web Portal Link
-            payment_link = f"https://law-suite-niov.onrender.com/pay/{payment.id}"
+            # 3. Generate the Razorpay Web Portal Link (Pointing to your Vercel frontend)
+            payment_link = f"https://law-suite-mu.vercel.app/pay/{payment.id}" 
 
             # 4. Build the HTML Email
             html_message = f"""
@@ -89,17 +91,21 @@ class RequestPaymentView(APIView):
             </div>
             """
 
-            # 5. Send Email via Django's SMTP (Gmail)
-            send_mail(
-                subject=f"Payment Request: {title}",
-                message=f"Please pay Rs. {amount} by {due_date}. Pay via portal: {payment_link} or use UPI ID: {upi_id}",
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[client.email],
+            # 5. Send Email using Brevo
+            subject = f"Payment Request: {title}"
+            plain_message = f"Please pay Rs. {amount} by {due_date}. Pay via portal: {payment_link} or use UPI ID: {upi_id}"
+            
+            email_sent = send_brevo_otp_email(
+                subject=subject,
+                plain_message=plain_message,
                 html_message=html_message,
-                fail_silently=False,
+                recipient_email=client.email
             )
 
-            return Response({"message": "Payment requested and email sent successfully!"}, status=201)
+            if email_sent:
+                return Response({"message": "Payment requested and email sent successfully!"}, status=201)
+            else:
+                return Response({"error": "Failed to send email via Brevo API."}, status=500)
 
         except Client.DoesNotExist:
             return Response({"error": "Client not found."}, status=404)
@@ -108,7 +114,7 @@ class RequestPaymentView(APIView):
 
 
 class PaymentDetailView(generics.RetrieveUpdateDestroyAPIView):
-    """ Allows an advocate to update the status or delete an existing payment """
+    """ Allows an advocate to update the status or delete an existing payment manually """
     serializer_class = PaymentSerializer
     permission_classes = [IsAuthenticated]
 
@@ -133,7 +139,7 @@ class PublicPaymentDetailView(APIView):
                 "amount": payment.amount,
                 "due_date": payment.due_date,
                 "status": payment.status,
-                "upi_id": payment.upi_id
+                "upi_id": payment.upi_id  # Required for frontend to generate the QR code fallback
             }, status=200)
         except Payment.DoesNotExist:
             return Response({"error": "Invoice not found"}, status=404)
@@ -205,7 +211,7 @@ class VerifyRazorpayPaymentView(APIView):
             payment.razorpay_payment_id = razorpay_payment_id
             payment.razorpay_signature = razorpay_signature
             payment.status = 'Completed'
-            payment.payment_mode = 'Razorpay' # Update mode since they didn't use the UPI QR
+            payment.payment_mode = 'Razorpay' # Update mode since they used the gateway
             payment.save()
             
             return Response({"message": "Payment verified securely"}, status=200)
