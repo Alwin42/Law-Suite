@@ -29,6 +29,7 @@ import ClientCasesPage from "./components/Client-pages/ClientCasesPage";
 import ClientCaseView from "./components/Client-pages/ClientCaseView";
 import ClientHearingsPage from "./components/Client-pages/ClientHearingsPage";
 import ClientDocumentsPage from "./components/Client-pages/ClientDocumentsPage";
+import ClientPaymentPortal from './components/Client-pages/ClientPaymentPortal';
 
 import CloudPage from "./components/Advocate-pages/Cloud"
 
@@ -91,6 +92,8 @@ function App() {
         <Route path="/staff/clients" element={<StaffClientView />} />
         {/* Ai */}
         <Route path="/ai-assistant" element={<AIChat />} />
+        <Route path="/pay/:paymentId" element={<ClientPaymentPortal />} />
+
         <Route 
             path="*" 
             element={

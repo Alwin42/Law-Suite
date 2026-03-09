@@ -31,9 +31,9 @@ class LoginOTP(models.Model):
         # OTP valid for 5 minutes
         return self.created_at >= timezone.now() - datetime.timedelta(minutes=5)
     
-
     def __str__(self):
-        return f"{self.full_name} ({self.email})"
+        # FIXED: Removed self.full_name since it doesn't exist in this model
+        return f"OTP for {self.email}"
     
 class Client(models.Model):
     # DFD: client_id is handled automatically by Django as 'id'
@@ -134,7 +134,8 @@ class Payment(models.Model):
         ('Cash', 'Cash'),
         ('UPI', 'UPI'),
         ('Bank Transfer', 'Bank Transfer'),
-        ('Cheque', 'Cheque')
+        ('Cheque', 'Cheque'),
+        ('Razorpay', 'Razorpay') # NEW: Added Razorpay option
     ]
     
     STATUS_CHOICES = [
@@ -144,20 +145,35 @@ class Payment(models.Model):
         ('Refunded', 'Refunded')
     ]
 
-    # DFD Foreign Keys
-    client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='payments') # client_id (FK)
-    case = models.ForeignKey(Case, on_delete=models.SET_NULL, null=True, blank=True, related_name='payments') # case_id (FK)
+    # Foreign Keys
+    client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='payments')
+    case = models.ForeignKey(Case, on_delete=models.SET_NULL, null=True, blank=True, related_name='payments')
     
-    # DFD Attributes
+    # NEW: Link the payment to the advocate who issued it
+    advocate = models.ForeignKey(User, on_delete=models.CASCADE, related_name='issued_payments', null=True) 
+    
+    # Attributes
+    title = models.CharField(max_length=255, default="Legal Consultation Fee") # NEW: Required for the frontend display
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-    payment_date = models.DateField()
+    payment_date = models.DateField(null=True, blank=True)
+    due_date = models.DateField(null=True, blank=True) # NEW: Required to match the frontend form
+    
     payment_mode = models.CharField(max_length=50, choices=PAYMENT_MODE_CHOICES, default='UPI')
     receipt_number = models.CharField(max_length=100, blank=True, null=True) 
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Completed')
-    created_at = models.DateTimeField(auto_now_add=True)
+    
+    # CHANGED: Default is now Pending since invoices are issued before they are paid
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending') 
     upi_id = models.CharField(max_length=100, blank=True, null=True)
+    
+    # --- NEW: Razorpay Fields ---
+    razorpay_order_id = models.CharField(max_length=100, blank=True, null=True)
+    razorpay_payment_id = models.CharField(max_length=100, blank=True, null=True)
+    razorpay_signature = models.CharField(max_length=255, blank=True, null=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+
     def __str__(self):
-        return f"{self.amount} - {self.client.full_name} ({self.status})"
+        return f"{self.title} - {self.client.full_name} ({self.status})"
 
 class AdvocateFile(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='files')

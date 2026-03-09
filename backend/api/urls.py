@@ -12,9 +12,17 @@ from .views import (
 from .views.file_views import FileUploadView, FileDeleteView 
 from .views.staff_views import StaffRequestOTPView, StaffVerifyOTPView, StaffDashboardStatsView
 from .views.appointment_views import AppointmentListCreateView, AppointmentDetailView
-from .views.payment_views import SendUPIPaymentRequestView, PaymentDetailView
 from .views.chatbot_views import GroqRAGChatbotView
 from .views import staff_views
+
+# CLEANED: Consolidated all payment imports into one block
+from .views.payment_views import (
+    RequestPaymentView, 
+    PaymentDetailView,
+    PublicPaymentDetailView, 
+    CreateRazorpayOrderView, 
+    VerifyRazorpayPaymentView
+)
 
 urlpatterns = [
     # Auth
@@ -93,7 +101,10 @@ urlpatterns = [
     # AI Chatbot Endpoint
     path('chatbot/ask/', GroqRAGChatbotView.as_view(), name='chatbot-ask'),
     
-    # Payments
-    path('payments/request-upi/', SendUPIPaymentRequestView.as_view(), name='request-upi-payment'),
-    path('payments/<int:pk>/', PaymentDetailView.as_view(), name='payment-detail'),
+    # CLEANED: Payments
+    path('payments/request-upi/', RequestPaymentView.as_view(), name='request-payment'),
+    path('payments/<int:pk>/', PaymentDetailView.as_view(), name='payment-detail'), # For advocates
+    path('payments/public/<int:pk>/', PublicPaymentDetailView.as_view(), name='public-payment-detail'), # For clients (Notice the /public/ path)
+    path('payments/create-order/', CreateRazorpayOrderView.as_view(), name='create-razorpay-order'),
+    path('payments/verify/', VerifyRazorpayPaymentView.as_view(), name='verify-razorpay-payment'),
 ]

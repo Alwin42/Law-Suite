@@ -1,16 +1,27 @@
+import os
 import urllib.parse
+import razorpay
+from django.core.mail import send_mail
+from django.conf import settings
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework import generics
 
-# Import our new Brevo utility function 
-from api.utils import send_brevo_otp_email 
-
-from ..models import Client, Payment
+# Import your models and serializers
+from api.models import Client, Payment
 from api.serializers import PaymentSerializer
 
-class SendUPIPaymentRequestView(APIView):
+# Initialize Razorpay Client using environment variables
+razorpay_client = razorpay.Client(
+    auth=(os.environ.get('RAZORPAY_KEY_ID'), os.environ.get('RAZORPAY_KEY_SECRET'))
+)
+
+class RequestPaymentView(APIView):
+    """
+    Called by the Advocate Dashboard. Creates the invoice in the DB and emails the client 
+    with BOTH a UPI QR Code and a secure Razorpay checkout link.
+    """
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
@@ -26,85 +37,182 @@ class SendUPIPaymentRequestView(APIView):
         try:
             client = Client.objects.get(id=client_id, created_by=request.user)
             
-            # 1. Save the pending payment to your database
+            # 1. Create the database record
             payment = Payment.objects.create(
+                advocate=request.user,
                 client=client,
+                title=title,
                 amount=amount,
-                payment_date=due_date, # Reusing payment_date as the due date for now
-                payment_mode='UPI',
+                due_date=due_date, 
+                upi_id=upi_id,
+                payment_mode='UPI', # Default, updates if paid via Razorpay
                 status='Pending',
             )
 
-            # 2. Construct the exact UPI URI scheme
-            # We must URL-encode the name and title to handle spaces securely
+            # 2. Generate the UPI QR Code
             advocate_name = urllib.parse.quote(request.user.full_name or request.user.username)
             encoded_title = urllib.parse.quote(f"{title} - Invoice #{payment.id}")
-            
             upi_string = f"upi://pay?pa={upi_id}&pn={advocate_name}&am={amount}&cu=INR&tn={encoded_title}"
-            
-            # 3. Double encode the entire string to pass it to the Google QR generator
             final_qr_payload = urllib.parse.quote(upi_string)
-
-            # Using QuickChart (Highly reliable and works perfectly with Gmail)
             qr_image_url = f"https://quickchart.io/qr?size=250&text={final_qr_payload}"
+
+            # 3. Generate the Razorpay Web Portal Link
+            payment_link = f"https://law-suite-niov.onrender.com/pay/{payment.id}"
 
             # 4. Build the HTML Email
             html_message = f"""
-            <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f5; padding: 40px 20px; color: #18181b;">
-                <div style="max-width: 500px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #e4e4e7;">
+            <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f9f9f9;">
+                <div style="max-width: 600px; margin: auto; background-color: white; padding: 30px; border-radius: 8px; border: 1px solid #eee;">
+                    <h2 style="color: #333; text-align: center;">Payment Request from {request.user.full_name.upper()}</h2>
+                    <p>Hello <strong>{client.full_name}</strong>,</p>
+                    <p>A new payment request has been issued for your case.</p>
                     
-                    <div style="background-color: #000000; padding: 24px; text-align: center;">
-                        <h1 style="color: #ffffff; margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;">Payment Request</h1>
-                        <p style="color: #a1a1aa; margin: 5px 0 0 0; font-size: 12px;">FROM: {request.user.full_name.upper()}</p>
+                    <div style="background-color: #f0f4f8; padding: 20px; border-radius: 6px; text-align: center; margin: 20px 0;">
+                        <h3 style="margin: 0; color: #1a202c;">{title}</h3>
+                        <h1 style="margin: 10px 0; color: #1a202c;">₹{amount}</h1>
+                        <p style="color: #e53e3e; margin: 0; font-weight: bold;">Due by: {due_date}</p>
                     </div>
-                    
-                    <div style="padding: 32px; text-align: center;">
-                        <p style="font-size: 16px; margin-top: 0; text-align: left;">Hello <strong>{client.full_name}</strong>,</p>
-                        <p style="font-size: 14px; color: #52525b; text-align: left; line-height: 1.6;">A new payment request has been issued for your case. Scan the QR code below using GPay, PhonePe, or Paytm to pay instantly.</p>
-                        
-                        <div style="background-color: #fafafa; border: 1px solid #e4e4e7; border-radius: 8px; padding: 20px; margin: 30px 0;">
-                            <p style="font-size: 12px; font-weight: bold; color: #71717a; text-transform: uppercase; margin: 0 0 10px 0;">{title}</p>
-                            <h2 style="font-size: 36px; font-weight: 900; margin: 0; color: #000000;">₹{amount}</h2>
-                            <p style="font-size: 12px; color: #ef4444; font-weight: bold; margin: 5px 0 20px 0;">Due by: {due_date}</p>
-                            
-                            <img src="{qr_image_url}" alt="UPI QR Code" style="border: 2px solid #e4e4e7; border-radius: 8px; padding: 5px; background: white;" />
-                        </div>
-                        
-                        <p style="font-size: 12px; color: #71717a;">
-                            Or pay manually to UPI ID:<br>
-                            <strong>{upi_id}</strong>
-                        </p>
+
+                    <h3 style="text-align: center;">Option 1: Pay Securely via Card/NetBanking</h3>
+                    <div style="text-align: center; margin: 20px 0;">
+                        <a href="{payment_link}" style="background-color: #1a202c; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">
+                            Go to Payment Portal
+                        </a>
+                    </div>
+
+                    <h3 style="text-align: center; margin-top: 30px;">Option 2: Scan & Pay via UPI</h3>
+                    <div style="text-align: center;">
+                        <img src="{qr_image_url}" alt="UPI QR Code" style="border: 1px solid #ddd; border-radius: 4px; padding: 5px; width: 200px; height: 200px;" />
+                        <p style="font-size: 12px; color: #666; margin-top: 10px;">Or pay manually to UPI ID: <strong>{upi_id}</strong></p>
                     </div>
                 </div>
             </div>
             """
 
-            # 5. Send the email using Brevo
-            subject = f'Payment Request: {title}'
-            plain_message = f'Please pay Rs. {amount} by {due_date}. UPI ID: {upi_id}'
-            
-            success = send_brevo_otp_email(
-                subject=subject,
-                plain_message=plain_message,
+            # 5. Send Email via Django's SMTP (Gmail)
+            send_mail(
+                subject=f"Payment Request: {title}",
+                message=f"Please pay Rs. {amount} by {due_date}. Pay via portal: {payment_link} or use UPI ID: {upi_id}",
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[client.email],
                 html_message=html_message,
-                recipient_email=client.email
+                fail_silently=False,
             )
 
-            if success:
-                return Response({"message": "Payment request sent successfully!"}, status=200)
-            else:
-                return Response({"error": "Failed to send payment request email."}, status=500)
+            return Response({"message": "Payment requested and email sent successfully!"}, status=201)
 
         except Client.DoesNotExist:
             return Response({"error": "Client not found."}, status=404)
         except Exception as e:
             return Response({"error": str(e)}, status=500)
-        
+
+
 class PaymentDetailView(generics.RetrieveUpdateDestroyAPIView):
-    """ Allows updating the status or deleting an existing payment """
+    """ Allows an advocate to update the status or delete an existing payment """
     serializer_class = PaymentSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         # Advocates can only modify payments attached to their own clients
         return Payment.objects.filter(client__created_by=self.request.user)
+
+
+class PublicPaymentDetailView(APIView):
+    """
+    Called by the Client Payment Portal to fetch invoice details. 
+    Requires AllowAny because the client is not a logged-in advocate.
+    """
+    permission_classes = [AllowAny]
+
+    def get(self, request, pk):
+        try:
+            payment = Payment.objects.get(pk=pk)
+            return Response({
+                "id": payment.id,
+                "title": payment.title,
+                "amount": payment.amount,
+                "due_date": payment.due_date,
+                "status": payment.status,
+                "upi_id": payment.upi_id
+            }, status=200)
+        except Payment.DoesNotExist:
+            return Response({"error": "Invoice not found"}, status=404)
+
+
+class CreateRazorpayOrderView(APIView):
+    """
+    Called by the Client Payment Portal right before opening the checkout modal.
+    """
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        amount = request.data.get('amount')
+        payment_record_id = request.data.get('payment_record_id')
+
+        if not amount or not payment_record_id:
+            return Response({"error": "Amount and payment record ID are required"}, status=400)
+
+        # Razorpay expects the amount in paise (multiply by 100)
+        razorpay_amount = int(float(amount)) * 100 
+        
+        data = {
+            "amount": razorpay_amount, 
+            "currency": "INR",
+            "receipt": f"receipt_{payment_record_id}",
+            "payment_capture": 1 # Auto-capture
+        }
+
+        try:
+            # Generate the order on Razorpay's servers
+            razorpay_order = razorpay_client.order.create(data=data)
+            
+            # Save the generated order ID to your database
+            payment = Payment.objects.get(id=payment_record_id)
+            payment.razorpay_order_id = razorpay_order['id']
+            payment.save()
+
+            return Response(razorpay_order, status=200)
+        except Payment.DoesNotExist:
+            return Response({"error": "Payment record not found."}, status=404)
+        except Exception as e:
+            return Response({"error": str(e)}, status=500)
+
+
+class VerifyRazorpayPaymentView(APIView):
+    """
+    Called by the Client Payment Portal after a successful transaction.
+    """
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        razorpay_payment_id = request.data.get('razorpay_payment_id')
+        razorpay_order_id = request.data.get('razorpay_order_id')
+        razorpay_signature = request.data.get('razorpay_signature')
+        payment_record_id = request.data.get('payment_record_id')
+
+        params_dict = {
+            'razorpay_order_id': razorpay_order_id,
+            'razorpay_payment_id': razorpay_payment_id,
+            'razorpay_signature': razorpay_signature
+        }
+
+        try:
+            # Cryptographically verify the signature
+            razorpay_client.utility.verify_payment_signature(params_dict)
+            
+            # If verification passes, update the database
+            payment = Payment.objects.get(id=payment_record_id)
+            payment.razorpay_payment_id = razorpay_payment_id
+            payment.razorpay_signature = razorpay_signature
+            payment.status = 'Completed'
+            payment.payment_mode = 'Razorpay' # Update mode since they didn't use the UPI QR
+            payment.save()
+            
+            return Response({"message": "Payment verified securely"}, status=200)
+        
+        except razorpay.errors.SignatureVerificationError:
+            return Response({"error": "Payment signature verification failed. Potential tampering."}, status=400)
+        except Payment.DoesNotExist:
+             return Response({"error": "Payment record not found."}, status=404)
+        except Exception as e:
+            return Response({"error": str(e)}, status=500)

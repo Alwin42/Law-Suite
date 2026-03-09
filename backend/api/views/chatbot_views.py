@@ -3,7 +3,7 @@ from groq import Groq
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from api.models import Case, Clients  # Importing both models
+from api.models import Case, Client  
 
 class GroqRAGChatbotView(APIView):
     permission_classes = [IsAuthenticated]
@@ -16,7 +16,7 @@ class GroqRAGChatbotView(APIView):
 
         # 1. RETRIEVAL: Fetch Context for both Cases and Clients
         advocate_cases = Case.objects.filter(created_by=request.user) 
-        advocate_clients = Clients.objects.filter(created_by=request.user)
+        advocate_clients = Client.objects.filter(created_by=request.user)
 
         # Build Context for Cases
         context_text = "### ADVOCATE'S CASE RECORDS:\n"
