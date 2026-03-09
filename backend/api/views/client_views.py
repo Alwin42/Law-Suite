@@ -127,6 +127,7 @@ class ClientPaymentListView(views.APIView):
             "description": p.title,
             "title": p.title,  
             "due_date": p.due_date,
+            "status": p.status,
             "date": str(p.payment_date),
             "amount": str(p.amount)
         } for p in payments]
