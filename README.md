@@ -1,5 +1,6 @@
-📘 Automated Digital Workspace for Advocates
+# Automated Digital Workspace for Advocates
 This repository contains the engineering mini project **Automated Digital Workspace for Advocates**, developed by Team 10 (Alwin Emmanuel, Jeevan P Joju, Chrismilin Antony, Liz Joy) at AISAT, Kalamassery.  
+
 The project modernizes legal practice management by providing a secure, web‑based workspace for advocates and small law firms.
 
 ---
