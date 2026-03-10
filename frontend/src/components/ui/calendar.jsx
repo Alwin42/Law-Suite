@@ -25,7 +25,8 @@ function Calendar({
     <DayPicker
       showOutsideDays={showOutsideDays}
       className={cn(
-        "bg-background group/calendar p-4 max-w-sm w-full [[data-slot=card-content]_&]:bg-transparent [[data-slot=popover-content]_&]:bg-transparent",
+        // --- FIXED: Added 'relative' here to trap the absolute arrows ---
+        "relative bg-background group/calendar p-4 max-w-sm w-full [[data-slot=card-content]_&]:bg-transparent [[data-slot=popover-content]_&]:bg-transparent",
         String.raw`rtl:**:[.rdp-button\_next>svg]:rotate-180`,
         String.raw`rtl:**:[.rdp-button\_previous>svg]:rotate-180`,
         className
@@ -41,14 +42,14 @@ function Calendar({
         months: cn("relative flex flex-col gap-9 md:flex-row w-full", defaultClassNames.months),
         month: cn("flex w-full flex-col gap-4", defaultClassNames.month),
         
-        // --- FIXED HEADER ALIGNMENT ---
+        // Because of the 'relative' added above, this 'absolute' now stays inside the calendar
         nav: cn(
-          "absolute inset-x-0 top-0 p-0   flex w-full items-center justify-between px-1",
+          "absolute inset-x-0 top-0 p-0 flex w-full items-center justify-between px-1",
           defaultClassNames.nav
         ),
         button_previous: cn(
           buttonVariants({ variant: buttonVariant }),
-          "h-8 w-8 select-none p-0 mr-2  aria-disabled:opacity-50",
+          "h-8 w-8 select-none p-0 mr-2 aria-disabled:opacity-50",
           defaultClassNames.button_previous
         ),
         button_next: cn(
@@ -72,7 +73,6 @@ function Calendar({
         caption_label: cn("select-none font-medium text-sm", defaultClassNames.caption_label),
         table: "w-full border-collapse",
         
-        // --- FIXED HORIZONTAL SQUISHING & GAPS ---
         weekdays: cn("flex w-full justify-between gap-1", defaultClassNames.weekdays),
         weekday: cn(
           "text-muted-foreground w-full flex-1 select-none rounded-md text-[0.8rem] font-medium text-center",
@@ -165,7 +165,6 @@ function CalendarDayButton({
       data-range-end={modifiers.range_end}
       data-range-middle={modifiers.range_middle}
       className={cn(
-        // --- FIXED BUTTON PADDING AND HOVER EFFECTS ---
         "data-[selected-single=true]:bg-slate-900 data-[selected-single=true]:text-white data-[range-middle=true]:bg-accent data-[range-middle=true]:text-accent-foreground data-[range-start=true]:bg-slate-900 data-[range-start=true]:text-white data-[range-end=true]:bg-slate-900 data-[range-end=true]:text-white group-data-[focused=true]/day:border-ring group-data-[focused=true]/day:ring-ring/50 flex aspect-square h-auto w-full flex-col items-center justify-center gap-1 font-normal leading-none data-[range-end=true]:rounded-md data-[range-middle=true]:rounded-none data-[range-start=true]:rounded-md group-data-[focused=true]/day:relative group-data-[focused=true]/day:z-10 group-data-[focused=true]/day:ring-[3px] [&>span]:text-xs [&>span]:opacity-70 hover:bg-slate-100 transition-colors rounded-lg",
         defaultClassNames.day,
         className

@@ -58,51 +58,55 @@ const Navbar = () => {
     navigate('/login');
   };
 
-
   return (
-    <motion.nav
-      initial={{ y: -100, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.5 }}
-      className={`fixed top-0 mb-9 left-0 right-0 z-50 flex items-center justify-between px-8 py-4 transition-all duration-300 ease-in-out ${
-        scrolled ? "bg-background/95 backdrop-blur-sm shadow-sm py-3" : "bg-transparent"
-      }`}
-    >
-      {/* Left: Logo */}
-      <Link to="/home">
-        <div className="text-xl font-bold tracking-[0.2em] text-primary uppercase">
-          Law Suite
-        </div>
-      </Link>
-      
-      {/* Right: Navigation */}
-      <div className="hidden md:flex items-center space-x-8">
-        {currentLinks.map((link) => (
-          <Link
-            key={link.name}
-            to={link.path}
-            className="group relative text-md font-medium text-primary/80 hover:text-primary transition-colors"
-          >
-            {link.name}
-            {/* Hover Underline Animation */}
-            <span className="absolute -bottom-1 left-0 w-0 h-[2px] bg-primary transition-all duration-300 group-hover:w-full" />
-          </Link>
-        ))}
+    
+    <div className="fixed top-0 left-0 right-0 z-50 flex justify-center w-full px-4 pt-4 md:pt-6 pointer-events-none">
+      <motion.nav
+        initial={{ y: -10, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 100, damping: 35 }} // Bouncy, organic drop-in
+        className={`pointer-events-auto flex items-center justify-between px-6 py-3 md:px-8 md:py-3.5 w-full max-w-5xl rounded-full transition-all duration-300 ease-in-out border ${
+          scrolled
+            ? "bg-white/70 backdrop-blur-xl shadow-lg border-white/50" // Frosted glass when scrolling
+            : "bg-white/40 backdrop-blur-md shadow-sm border-white/20" // Softer glass at the top
+        }`}
+      >
+        {/* Left: Logo */}
+        <Link to="/home">
+          <div className="text-xl font-extrabold tracking-[0.15em] text-slate-900 uppercase">
+            Law Suite
+          </div>
+        </Link>
+        
+        {/* Right: Navigation */}
+        <div className="hidden md:flex items-center space-x-8">
+          {currentLinks.map((link) => (
+            <Link
+              key={link.name}
+              to={link.path}
+              className="group relative text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors"
+            >
+              {link.name}
+              {/* Hover Underline Animation */}
+              <span className="absolute -bottom-1 left-1/2 w-0 h-[2px] bg-slate-900 transition-all duration-300 group-hover:w-full group-hover:left-0 rounded-full" />
+            </Link>
+          ))}
 
-        {/* Dynamic Logout Button (Matches your link styling) */}
-        {token && (
-           <button
-             onClick={handleLogout}
-             className="group relative text-md font-medium text-red-500/80 hover:text-red-500 transition-colors cursor-pointer"
-           >
-             Logout
-             
-           </button>
-        )}
-      </div>
-      
-      {/* Mobile Menu Icon would go here (omitted for brevity) */}
-    </motion.nav>
+          {/* Dynamic Logout Button */}
+          {token && (
+             <button
+               onClick={handleLogout}
+               className="group relative text-sm font-semibold text-red-500 hover:text-red-600 transition-colors cursor-pointer"
+             >
+               Logout
+               <span className="absolute -bottom-1 left-1/2 w-0 h-[2px] bg-red-500 transition-all duration-300 group-hover:w-full group-hover:left-0 rounded-full" />
+             </button>
+          )}
+        </div>
+        
+        {/* Mobile Menu Icon would go here */}
+      </motion.nav>
+    </div>
   );
 };
 
