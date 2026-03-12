@@ -2,8 +2,8 @@ import * as React from "react";
 import { format } from "date-fns";
 import { 
     Calendar as CalendarIcon, 
-    User, Phone, Mail, MapPin, CheckCircle2, Clock, FileText,ArrowLeft,
-    AlertCircle // <-- Added for error alert icon
+    CheckCircle2, Clock, FileText, ArrowLeft,
+    AlertCircle 
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -30,7 +30,7 @@ export default function BookAppointment() {
   const [selectedAdvocate, setSelectedAdvocate] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   
-  // --- NEW: Alert State ---
+  // --- Alert State ---
   const [alertInfo, setAlertInfo] = useState(null);
   const navigate = useNavigate();
 
@@ -71,11 +71,8 @@ export default function BookAppointment() {
     setIsLoading(true);
     const formData = new FormData(e.target);
     
+    // streamlined booking data (no manual client details needed!)
     const bookingData = {
-        client_name: formData.get("full_name"),
-        client_email: formData.get("email"),
-        client_contact: formData.get("contact"),
-        client_address: formData.get("address"),
         advocate_id: selectedAdvocate,
         appointment_date: format(date, "yyyy-MM-dd"),
         appointment_time: formData.get("appointment_time"), 
@@ -86,7 +83,7 @@ export default function BookAppointment() {
     try {
         await bookAppointment(bookingData); 
         
-        // --- NEW: Show success alert and delay navigation so user can see it ---
+        // Show success alert and delay navigation so user can see it
         setAlertInfo({
             variant: "default",
             title: "Success!",
@@ -99,7 +96,6 @@ export default function BookAppointment() {
 
     } catch (error) {
         console.error("Booking failed", error);
-        // --- NEW: Show error alert ---
         setAlertInfo({
             variant: "destructive",
             title: "Booking Failed",
@@ -128,7 +124,7 @@ export default function BookAppointment() {
         
         <CardContent className="pt-8">
           
-          {/* --- NEW: ALERT RENDERER --- */}
+          {/* ALERT RENDERER */}
           {alertInfo && (
             <Alert 
               variant={alertInfo.variant} 
@@ -205,21 +201,6 @@ export default function BookAppointment() {
 
                 <div className="mt-6">
                      <InputGroup icon={FileText} label="Purpose of Meeting" name="purpose" placeholder="Briefly describe your legal issue..." required />
-                </div>
-            </div>
-
-            <div className="border-t border-slate-100 my-4"></div>
-
-            {/* SECTION 2: CLIENT DETAILS */}
-            <div className="space-y-6">
-                <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider">Client Information</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <InputGroup icon={User} label="Full Name" name="full_name" placeholder="Ex: John Doe" required />
-                    <InputGroup icon={Phone} label="Contact Number" name="contact" type="tel" placeholder="+91 98765 43210" required />
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <InputGroup icon={Mail} label="Email Address" name="email" type="email" placeholder="john@example.com" required />
-                    <InputGroup icon={MapPin} label="Address" name="address" placeholder="House No, Street, City" required />
                 </div>
             </div>
 

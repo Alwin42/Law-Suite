@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 
-const API_URL = 'https://law-suite-niov.onrender.com/api/';
+const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api/';
 
 const api = axios.create({
     baseURL: API_URL,
@@ -10,6 +10,7 @@ const api = axios.create({
     },
 });
 
+// 2. The Interceptor: Automatically attach the token to EVERY request
 api.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem('access_token');
@@ -57,7 +58,7 @@ export const getAdvocateClientCases = (id) => api.get(`clients/${id}/cases/`);
 export const getClientPayments = (id) => api.get(`clients/${id}/payments/`);
 export const addClientPayment = (id, data) => api.post(`clients/${id}/payments/`, data);
 
-// --- Client Portal (For later) ---
+// --- Client Portal ---
 export const getClientCases = () => api.get('client/cases/');
 export const getClientHearings = () => api.get('client/hearings/');
 export const getClientFullCases = () => api.get('client/my-cases/');

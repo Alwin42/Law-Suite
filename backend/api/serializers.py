@@ -2,8 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.utils.crypto import get_random_string
-from rest_framework import serializers
-from .models import Appointment, Case, Client, Document, Payment , Template , AdvocateFile
+from .models import Appointment, Case, Client, Document, Payment, Template, AdvocateFile
 
 User = get_user_model()
 
@@ -54,10 +53,6 @@ class ClientRegistrationSerializer(serializers.ModelSerializer):
         fields = ('username', 'email', 'full_name', 'contact_number', 'address', 'notes')
 
     def create(self, validated_data):
-        # --- 2. CHANGE THIS LINE ---
-        # OLD (Broken): random_password = User.objects.make_random_password()
-        
-        # NEW (Fixed):
         random_password = get_random_string(length=16) 
         
         validated_data['password'] = random_password
@@ -98,6 +93,7 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ('id', 'full_name', 'email', 'contact_number', 'role', 'is_active', 'address','upi_id')
         read_only_fields = ('id', 'email', 'role', 'is_active')
+
 class EmailSerializer(serializers.Serializer):
     email = serializers.EmailField()
 
@@ -128,17 +124,65 @@ class CaseSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ['id', 'created_at', 'updated_at', 'created_by']
 
+# --- FIXED UNIFIED APPOINTMENT SERIALIZER ---
 class AppointmentSerializer(serializers.ModelSerializer):
+    # Allow these fields for the 'create' booking process
+    client_name = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    client_email = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    client_contact = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+
     class Meta:
         model = Appointment
         fields = '__all__'
         read_only_fields = ['created_at']
+
+    def create(self, validated_data):
+        c_name = validated_data.pop('client_name', '')
+        c_email = validated_data.pop('client_email', '')
+        c_contact = validated_data.pop('client_contact', '')
+        advocate = validated_data.get('advocate')
+
+        # Auto-link or create the Client profile when booking
+        if not validated_data.get('client') and c_email and advocate:
+            client, created = Client.objects.get_or_create(
+                email=c_email,
+                created_by=advocate,
+                defaults={
+                    'full_name': c_name,
+                    'contact_number': c_contact,
+                }
+            )
+            validated_data['client'] = client
+
+        return super().create(validated_data)
+
+    def to_representation(self, instance):
+        response = super().to_representation(instance)
+        
+        # Inject the full nested Client details for React
+        if instance.client:
+            response['client'] = {
+                'id': instance.client.id,
+                'full_name': instance.client.full_name,
+                'contact_number': instance.client.contact_number, 
+                'email': instance.client.email                    
+            }
+            
+        # Inject the nested Advocate details for React
+        if instance.advocate:
+            response['advocate'] = {
+                'id': instance.advocate.id,
+                'full_name': getattr(instance.advocate, 'full_name', getattr(instance.advocate, 'username', 'Unknown'))
+            }
+            
+        return response
 
 class TemplateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Template
         fields = '__all__'
         read_only_fields = ['id', 'created_at', 'created_by']
+
 class DocumentSerializer(serializers.ModelSerializer):
     # Helps display the case name in the global documents list
     case_name = serializers.CharField(source='case.case_title', read_only=True)
@@ -161,28 +205,3 @@ class AdvocateFileSerializer(serializers.ModelSerializer):
         model = AdvocateFile
         fields = ['id', 'name', 'file_url', 'file_type', 'uploaded_at']
         read_only_fields = ['id', 'uploaded_at']
-
-class AppointmentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Appointment
-        fields = '__all__'
-
-    def to_representation(self, instance):
-        # 1. Get the default representation (which just has IDs)
-        response = super().to_representation(instance)
-        
-        # 2. Inject the nested Client details for React
-        if instance.client:
-            response['client'] = {
-                'id': instance.client.id,
-                'full_name': instance.client.full_name
-            }
-            
-        # 3. Inject the nested Advocate details for React
-        if instance.advocate:
-            response['advocate'] = {
-                'id': instance.advocate.id,
-                'full_name': instance.advocate.full_name  # Ensure User model has full_name
-            }
-            
-        return response

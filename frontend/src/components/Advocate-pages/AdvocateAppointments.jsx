@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { getAdvocateAppointments, updateAppointmentStatus } from '../../api'; 
 import { 
   Calendar, Clock, User, Phone, Mail, FileText, 
-  CheckCircle, XCircle, Eye, Loader2, CheckSquare,ArrowLeft,
+  CheckCircle, XCircle, Eye, Loader2, CheckSquare, ArrowLeft,
   AlertCircle 
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -13,7 +13,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow 
 } from "@/components/ui/table";
 import { 
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription 
 } from "@/components/ui/dialog";
 
 // <-- NEW: Import Alert Components
@@ -109,11 +109,11 @@ export default function AdvocateAppointments() {
 
   return (
     <div className="min-h-screen bg-slate-50 p-8 md:p-12 font-sans text-slate-900">
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-7xl  mt-13  mx-auto">
         
         {/* HEADER */}
-        <div className="mb-6">
-          <Button variant="ghost" className="mb-2 mt-3 text-slate-800 hover:text-slate-900 -ml-4" onClick={() => navigate('/dashboard')}>
+        <div className="mb-6 ">
+          <Button variant="ghost" className="mb-2 text-slate-800 hover:text-slate-900 -ml-4" onClick={() => navigate('/dashboard')}>
               <ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard
           </Button>
           <h1 className="text-3xl font-bold tracking-tight">My Appointments</h1>
@@ -168,10 +168,11 @@ export default function AdvocateAppointments() {
                       </div>
                     </TableCell>
                     
+                    {/* FIXED: Reading from the nested client object */}
                     <TableCell>
                       <div className="flex flex-col">
-                        <span className="font-semibold text-slate-800">{appt.client_name}</span>
-                        <span className="text-xs text-slate-500">{appt.client_contact}</span>
+                        <span className="font-semibold text-slate-800">{appt.client?.full_name || "Unknown Client"}</span>
+                        <span className="text-xs text-slate-500">{appt.client?.contact_number || "No Contact"}</span>
                       </div>
                     </TableCell>
                     
@@ -208,20 +209,25 @@ export default function AdvocateAppointments() {
                   {selectedAppt.status}
                 </Badge>
               </DialogTitle>
+              
+              <DialogDescription className="hidden">
+                View the full details and manage the status of this client consultation.
+              </DialogDescription>
+              
             </DialogHeader>
             
             <div className="space-y-6 py-4">
-              {/* Client Info Card */}
+              {/* FIXED: Reading from the nested client object inside the modal */}
               <div className="bg-slate-50 p-4 rounded-lg border border-slate-100 space-y-3">
                 <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Client Information</h4>
                 <div className="flex items-center gap-3 text-sm text-slate-700">
-                  <User size={16} className="text-slate-400" /> <span className="font-medium">{selectedAppt.client_name}</span>
+                  <User size={16} className="text-slate-400" /> <span className="font-medium">{selectedAppt.client?.full_name || "Unknown Client"}</span>
                 </div>
                 <div className="flex items-center gap-3 text-sm text-slate-700">
-                  <Phone size={16} className="text-slate-400" /> {selectedAppt.client_contact}
+                  <Phone size={16} className="text-slate-400" /> {selectedAppt.client?.contact_number || "No Contact"}
                 </div>
                 <div className="flex items-center gap-3 text-sm text-slate-700">
-                  <Mail size={16} className="text-slate-400" /> {selectedAppt.client_email}
+                  <Mail size={16} className="text-slate-400" /> {selectedAppt.client?.email || "No Email"}
                 </div>
               </div>
 
