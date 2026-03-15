@@ -187,3 +187,15 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
     def get_object(self):
         # Automatically returns the user associated with the provided access token
         return self.request.user
+
+class AdvocatePaymentListView(generics.ListAPIView):
+    """
+    GET: Returns all payments across all clients for the logged-in advocate.
+    Used for populating the global financial ledger on the Dashboard/Home page.
+    """
+    serializer_class = PaymentSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # Fetch all payments linked to clients created by the logged-in advocate
+        return Payment.objects.filter(client__created_by=self.request.user).order_by('-created_at')

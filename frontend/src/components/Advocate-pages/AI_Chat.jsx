@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
+import { Bot, Send, Sparkles, AlertCircle, User } from 'lucide-react';
 
 const AIChat = () => {
     const [messages, setMessages] = useState([]);
@@ -14,11 +15,13 @@ const AIChat = () => {
         }
     }, [messages, loading]);
 
-    const handleSendMessage = async (e) => {
-        e.preventDefault();
-        if (!input.trim()) return;
+    const handleSendMessage = async (e, suggestedText = null) => {
+        if (e) e.preventDefault();
+        
+        const messageText = suggestedText || input;
+        if (!messageText.trim()) return;
 
-        const userMsg = { role: 'user', content: input };
+        const userMsg = { role: 'user', content: messageText };
         setMessages((prev) => [...prev, userMsg]);
         setInput('');
         setLoading(true);
@@ -26,7 +29,7 @@ const AIChat = () => {
         try {
             const token = localStorage.getItem('access_token');
             const response = await axios.post('https://law-suite-niov.onrender.com/api/chatbot/ask/', 
-                { message: input },
+                { message: messageText },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
 
@@ -41,76 +44,129 @@ const AIChat = () => {
     };
 
     return (
-        <div className="mt-17 flex flex-col h-[85vh] max-h-[800px] w-full max-w-3xl mx-auto bg-white sm:border sm:border-gray-200 sm:rounded-xl shadow-sm font-sans overflow-hidden transition-all">
-            {/* Minimalist Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-white">
-                <h2 className="text-lg font-semibold text-primary tracking-tight">Law Suite Assistant</h2>
-                <span className="flex h-3 w-3 relative">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-20"></span>
-                    <span className="relative inline-flex rounded-full h-3 w-3 bg-primary"></span>
-                </span>
+        <div className="flex flex-col h-[calc(100dvh-5rem)] md:h-[80vh] md:max-h-[800px] w-full max-w-4xl mx-auto bg-white md:border border-slate-200 md:rounded-2xl md:shadow-2xl font-sans overflow-hidden mt-16 md:mt-28 transition-all relative">
+            
+            {/* Premium Header */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-white/90 backdrop-blur-md z-10 shadow-sm">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center shadow-md">
+                        <Bot className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                        <h2 className="text-lg font-extrabold text-slate-900 tracking-tight leading-none">Law Suite AI</h2>
+                        <div className="flex items-center gap-1.5 mt-1.5">
+                            <span className="relative flex h-2 w-2">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                            </span>
+                            <span className="text-[11px] font-bold text-emerald-600 uppercase tracking-widest">Assistant Online</span>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            {/* Chat Area using your custom 'background' color */}
-            <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-background flex flex-col gap-5" ref={scrollRef}>
+            {/* Chat Area */}
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-slate-50/50 flex flex-col gap-6" ref={scrollRef}>
+                
+                {/* Empty State */}
                 {messages.length === 0 && (
-                    <div className="flex flex-col items-center justify-center h-full text-accent opacity-80">
-                        <svg className="w-10 h-10 mb-3 text-accent" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                        </svg>
-                        <p className="text-sm font-medium">How can I assist with your cases today?</p>
+                    <div className="flex flex-col items-center justify-center h-full animate-in fade-in zoom-in duration-500">
+                        <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4 text-slate-400 shadow-inner">
+                            <Sparkles className="w-8 h-8" />
+                        </div>
+                        <h3 className="text-xl font-bold text-slate-800 mb-2">How can I help you?</h3>
+                        <p className="text-sm text-slate-500 text-center max-w-sm mb-8">
+                            Ask me about case laws, draft legal documents, or query details about your current clients.
+                        </p>
+                        
+                        <div className="flex flex-col gap-2 w-full max-w-sm">
+                            <button onClick={() => handleSendMessage(null, "Summarize the latest updates on my active cases.")} className="px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm text-slate-600 hover:bg-slate-50 hover:border-slate-300 hover:shadow-sm transition-all text-left">
+                                "Summarize the latest updates on my active cases"
+                            </button>
+                            <button onClick={() => handleSendMessage(null, "Draft an email requesting a hearing adjournment.")} className="px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm text-slate-600 hover:bg-slate-50 hover:border-slate-300 hover:shadow-sm transition-all text-left">
+                                "Draft an email requesting a hearing adjournment"
+                            </button>
+                        </div>
                     </div>
                 )}
                 
+                {/* Messages */}
                 {messages.map((msg, index) => (
-                    <div key={index} className={`flex w-full ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                        <div 
-                            className={`max-w-[85%] sm:max-w-[75%] px-5 py-3 text-sm leading-relaxed break-words shadow-sm transition-all duration-300 animate-[fadeIn_0.3s_ease-out]
-                            ${msg.role === 'user' 
-                                ? 'bg-black text-white rounded-2xl rounded-tr-sm' 
-                                : msg.role === 'error'
-                                    ? 'bg-red-50 text-red-600 border border-red-100 rounded-2xl rounded-tl-sm'
-                                    : 'bg-white text-primary border border-gray-100 rounded-2xl rounded-tl-sm'
-                            }`}
-                        >
-                            {msg.content}
+                    <div key={index} className={`flex w-full ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-in slide-in-from-bottom-2 fade-in duration-300`}>
+                        <div className="flex items-end gap-2 max-w-[85%] sm:max-w-[75%]">
+                            
+                            {/* Bot Icon for AI messages */}
+                            {msg.role !== 'user' && (
+                                <div className="w-6 h-6 rounded-full bg-slate-900 flex items-center justify-center shrink-0 mb-1">
+                                    <Bot className="w-3 h-3 text-white" />
+                                </div>
+                            )}
+
+                            {/* Message Bubble */}
+                            <div 
+                                className={`px-5 py-3.5 text-[15px] leading-relaxed shadow-sm whitespace-pre-wrap
+                                ${msg.role === 'user' 
+                                    ? 'bg-slate-900 text-white rounded-2xl rounded-br-sm' 
+                                    : msg.role === 'error'
+                                        ? 'bg-red-50 text-red-700 border border-red-100 rounded-2xl rounded-bl-sm'
+                                        : 'bg-white text-slate-800 border border-slate-200 rounded-2xl rounded-bl-sm'
+                                }`}
+                            >
+                                {msg.role === 'error' && <AlertCircle className="inline-block w-4 h-4 mr-2 -mt-0.5" />}
+                                {msg.content}
+                            </div>
+
+                            {/* User Icon for User messages */}
+                            {msg.role === 'user' && (
+                                <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center shrink-0 mb-1">
+                                    <User className="w-3 h-3 text-slate-500" />
+                                </div>
+                            )}
                         </div>
                     </div>
                 ))}
 
                 {/* Animated Typing Indicator */}
                 {loading && (
-                    <div className="flex w-full justify-start animate-[fadeIn_0.2s_ease-out]">
-                        <div className="bg-white border border-gray-100 rounded-2xl rounded-tl-sm px-5 py-4 shadow-sm flex items-center gap-1.5">
-                            <span className="w-1.5 h-1.5 bg-accent rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
-                            <span className="w-1.5 h-1.5 bg-accent rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
-                            <span className="w-1.5 h-1.5 bg-accent rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                    <div className="flex w-full justify-start animate-in fade-in duration-200">
+                        <div className="flex items-end gap-2 max-w-[85%]">
+                            <div className="w-6 h-6 rounded-full bg-slate-900 flex items-center justify-center shrink-0 mb-1">
+                                <Bot className="w-3 h-3 text-white" />
+                            </div>
+                            <div className="bg-white border border-slate-200 rounded-2xl rounded-bl-sm px-5 py-4 shadow-sm flex items-center gap-1.5">
+                                <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                                <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                                <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                            </div>
                         </div>
                     </div>
                 )}
             </div>
 
-            {/* Input Area */}
-            <form onSubmit={handleSendMessage} className="flex items-center p-3 sm:p-4 bg-slate-50 border-t border-gray-100 gap-3">
-                <input 
-                    type="text" 
-                    value={input} 
-                    onChange={(e) => setInput(e.target.value)}
-                    placeholder="Ask about a case or client..." 
-                    disabled={loading}
-                    className="flex-1 px-4 py-3 text-sm text-primary bg-gray-100 shadow-md border border-transparent rounded-lg transition-all duration-200 focus:bg-white focus:border-primary focus:ring-1 focus:ring-primary outline-none placeholder:text-accent disabled:opacity-50"
-                />
-                <button 
-                    type="submit" 
-                    disabled={loading || !input.trim()} 
-                    className="flex items-center justify-center w-11 h-11 bg-gray-600 text-white rounded-lg transition-all duration-200 hover:opacity-20 active:scale-95 disabled:bg-gray-600 disabled:text-gray-400 disabled:cursor-not-allowed disabled:transform-none disabled:active:scale-100"
-                >
-                    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <line x1="22" y1="2" x2="11" y2="13"></line>
-                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                    </svg>
-                </button>
-            </form>
+            {/* Input Form Area */}
+            <div className="p-3 sm:p-4 bg-white border-t border-slate-100">
+                <form onSubmit={(e) => handleSendMessage(e)} className="relative flex items-end gap-2 bg-slate-50 border border-slate-200 rounded-2xl p-1.5 focus-within:bg-white focus-within:border-slate-400 focus-within:ring-4 focus-within:ring-slate-100 transition-all duration-300">
+                    <input 
+                        type="text" 
+                        value={input} 
+                        onChange={(e) => setInput(e.target.value)}
+                        placeholder="Message Law Suite AI..." 
+                        disabled={loading}
+                        className="flex-1 max-h-32 px-4 py-3 bg-transparent text-sm sm:text-base text-slate-900 placeholder:text-slate-400 outline-none disabled:opacity-50"
+                        autoComplete="off"
+                    />
+                    <button 
+                        type="submit" 
+                        disabled={loading || !input.trim()} 
+                        className="flex items-center justify-center w-10 h-10 shrink-0 bg-slate-900 text-white rounded-xl transition-all duration-200 hover:bg-slate-800 active:scale-90 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed m-1"
+                    >
+                        <Send className="w-4 h-4 ml-0.5" />
+                    </button>
+                </form>
+                <div className="text-center mt-2">
+                    <span className="text-[10px] text-slate-400 font-medium">AI can make mistakes. Consider verifying important legal information.</span>
+                </div>
+            </div>
         </div>
     );
 };

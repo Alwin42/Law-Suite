@@ -129,7 +129,7 @@ const CloudPage = () => {
 
   return (
     /* FIXED: Adjusted outer padding to scale from mobile (p-4) to desktop (md:p-12) */
-    <div className="min-h-screen bg-white p-4 sm:p-8 md:p-12 pt-20 font-sans text-zinc-900">
+    <div className="min-h-screen bg-white p-4 sm:p-8 md:p-12 mt-19  pt-20 font-sans text-zinc-900">
       <div className="max-w-6xl mx-auto">
         
         {/* FIXED: Responsive Back Button */}

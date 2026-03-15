@@ -113,9 +113,7 @@ export default function BookAppointment() {
           <div className="mx-auto w-12 h-12 bg-slate-900 rounded-full flex items-center justify-center mb-4 text-white shadow-lg">
             <CheckCircle2 size={24} />
           </div>
-          <Button variant="ghost" className="mb-4 text-slate-800 hover:text-slate-900 -ml-4" onClick={() => navigate('/dashboard')}>
-              <ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard
-          </Button>
+          
           <CardTitle className="text-2xl font-bold text-slate-900">Book an Appointment</CardTitle>
           <CardDescription className="text-slate-500">
             Schedule a legal consultation securely.

@@ -168,7 +168,7 @@ const PaymentManage = () => {
 
   return (
     // FIXED: Adjusted padding to scale from mobile to desktop securely
-    <div className="p-4 sm:p-8 md:p-12 pt-20 max-w-7xl mx-auto font-sans bg-zinc-50/30 min-h-screen">
+    <div className="p-4 sm:p-8 md:p-12 mt-19 pt-20 max-w-7xl mx-auto font-sans bg-zinc-50/30 min-h-screen">
       
       {/* --- RESPONSIVE BACK BUTTON --- */}
       <Button 

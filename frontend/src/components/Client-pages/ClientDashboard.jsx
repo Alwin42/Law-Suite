@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { 
   LayoutDashboard, Briefcase, Gavel, CreditCard, FileText, User, 
-  Plus, CalendarDays, Bell, LogOut, ChevronRight, Loader2, Sparkles, Clock
+  Plus, CalendarDays, Bell, LogOut, ChevronRight, Loader2, Sparkles, Clock, Menu, X
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion"; 
@@ -30,6 +30,9 @@ export default function ClientDashboard() {
   const navigate = useNavigate();
   const location = useLocation();
   
+  // Responsive Sidebar State
+  const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth >= 1024);
+  
   // Real Data States
   const [userData, setUserData] = useState({ name: "Client", email: "Loading..." });
   const [cases, setCases] = useState([]);
@@ -41,6 +44,16 @@ export default function ClientDashboard() {
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+
+  // Handle window resize for responsive sidebar
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 1024) setIsSidebarOpen(false);
+      else setIsSidebarOpen(true);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -76,6 +89,11 @@ export default function ClientDashboard() {
     navigate("/login");
   };
 
+  const handleNavClick = (path) => {
+    navigate(path);
+    if (window.innerWidth < 1024) setIsSidebarOpen(false);
+  };
+
   const safeDate = (dateString, type) => {
     if (!dateString) return "TBD";
     const d = new Date(dateString);
@@ -105,21 +123,38 @@ export default function ClientDashboard() {
   }
 
   return (
-    <div className="flex min-h-screen bg-[#FAFAFA] font-sans text-slate-900 pt-16">
+    <div className="flex min-h-screen bg-[#FAFAFA] font-sans text-slate-900 pt-16 overflow-hidden">
       
-      {/* --- SIDEBAR (Minimalist Floating Style) --- */}
-      <aside className="w-72 bg-white/80 backdrop-blur-xl border-r border-slate-100 flex flex-col fixed left-0 top-16 h-[calc(100vh-4rem)] z-10 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
+      {/* --- MOBILE OVERLAY --- */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-slate-900/50 z-40 lg:hidden backdrop-blur-sm transition-opacity" 
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
+      {/* --- SIDEBAR --- */}
+      <aside className={`w-72 bg-white/95 backdrop-blur-xl border-r border-slate-100 flex flex-col fixed left-0 top-16 bottom-0 z-50 shadow-2xl lg:shadow-[4px_0_24px_rgba(0,0,0,0.02)] transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         
-        <div className="p-8 pb-4 flex items-center gap-4">
-          <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-700 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-emerald-500/20 uppercase shrink-0">
-            {userData.name.charAt(0)}
+        <div className="p-6 pb-4 flex items-center justify-between">
+          <div className="flex items-center gap-4 overflow-hidden">
+            <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-700 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-emerald-500/20 uppercase shrink-0">
+              {userData.name.charAt(0)}
+            </div>
+            <div className="overflow-hidden">
+              <h3 className="font-bold text-slate-900 truncate tracking-tight">{userData.name}</h3>
+              <p className="text-xs text-slate-400 truncate" title={userData.email}>
+                {userData.email}
+              </p>
+            </div>
           </div>
-          <div className="overflow-hidden">
-            <h3 className="font-bold text-slate-900 truncate tracking-tight">{userData.name}</h3>
-            <p className="text-xs text-slate-400 truncate" title={userData.email}>
-              {userData.email}
-            </p>
-          </div>
+          {/* Mobile Close Button */}
+          <button 
+            onClick={() => setIsSidebarOpen(false)} 
+            className="lg:hidden p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors shrink-0"
+          >
+            <X size={20} />
+          </button>
         </div>
 
         <nav className="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto">
@@ -127,31 +162,31 @@ export default function ClientDashboard() {
             icon={LayoutDashboard} 
             label="Overview" 
             active={location.pathname === "/client-dashboard"} 
-            onClick={() => navigate("/client-dashboard")} 
+            onClick={() => handleNavClick("/client-dashboard")} 
           />
           <SidebarItem 
             icon={Briefcase} 
             label="My Cases" 
             active={location.pathname.includes("/cases")} 
-            onClick={() => navigate("/client-dashboard/cases")} 
+            onClick={() => handleNavClick("/client-dashboard/cases")} 
           />
           <SidebarItem 
             icon={Gavel} 
             label="Hearings" 
             active={location.pathname.includes("/hearings")} 
-            onClick={() => navigate("/client-dashboard/hearings")} 
+            onClick={() => handleNavClick("/client-dashboard/hearings")} 
           />
           <SidebarItem 
             icon={CreditCard} 
             label="Billing & Payments" 
             active={location.pathname.includes("/payments")} 
-            onClick={() => navigate("/client-dashboard/payments")} 
+            onClick={() => handleNavClick("/client-dashboard/payments")} 
           />
           <SidebarItem 
             icon={FileText} 
             label="Documents" 
             active={location.pathname.includes("/documents")} 
-            onClick={() => navigate("/client-dashboard/documents")} 
+            onClick={() => handleNavClick("/client-dashboard/documents")} 
           />
         </nav>
 
@@ -167,39 +202,50 @@ export default function ClientDashboard() {
       </aside>
 
       {/* --- MAIN CONTENT AREA --- */}
-      <main className="flex-1 ml-72 p-8 lg:p-12 overflow-y-auto h-[calc(100vh-4rem)] relative">
+      <main className={`flex-1 p-4 md:p-8 lg:p-12 overflow-y-auto h-[calc(100vh-4rem)] relative transition-all duration-300 ease-in-out ${isSidebarOpen ? 'lg:ml-72' : 'ml-0'}`}>
         
         <div className="max-w-6xl mx-auto">
-            {/* HEADER (Engaging & Personalized) */}
+            {/* HEADER */}
             <motion.header 
                 initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
-                className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12"
+                className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8 md:mb-12"
             >
-            <div>
-                <p className="text-sm font-semibold text-emerald-600 tracking-wider uppercase mb-1 flex items-center gap-2">
-                    <Sparkles size={14} /> {today}
-                </p>
-                <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight">
-                    {greeting}, {userData.name.split(' ')[0]}
-                </h1>
-                <p className="text-slate-500 mt-2 text-lg">Here is the latest update on your legal matters.</p>
-            </div>
-            <div className="flex items-center gap-3">
-                <Button 
-                    onClick={() => navigate("/book-appointment")} 
-                    className="bg-slate-900 hover:bg-slate-800 text-white rounded-full px-6 shadow-md hover:shadow-xl transition-all hover:-translate-y-0.5"
-                >
-                <CalendarDays className="mr-2 h-4 w-4" /> Schedule Meeting
-                </Button>
-            </div>
+              <div className="flex items-start gap-4">
+                  {/* Hamburger Menu (Mobile Only) */}
+                  <button 
+                      onClick={() => setIsSidebarOpen(!isSidebarOpen)} 
+                      className="lg:hidden mt-1 p-2 bg-white rounded-lg border border-slate-200 shadow-sm text-slate-700 hover:bg-slate-50 transition-colors shrink-0"
+                  >
+                      <Menu size={20} />
+                  </button>
+                  
+                  <div>
+                      <p className="text-sm font-semibold text-emerald-600 tracking-wider uppercase mb-1 flex items-center gap-2">
+                          <Sparkles size={14} /> {today}
+                      </p>
+                      <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight">
+                          {greeting}, {userData.name.split(' ')[0]}
+                      </h1>
+                      <p className="text-slate-500 mt-2 text-base md:text-lg">Here is the latest update on your legal matters.</p>
+                  </div>
+              </div>
+
+              <div className="flex items-center gap-3 self-start md:self-auto w-full md:w-auto">
+                  <Button 
+                      onClick={() => navigate("/book-appointment")} 
+                      className="w-full md:w-auto bg-slate-900 hover:bg-slate-800 text-white rounded-full px-6 shadow-md hover:shadow-xl transition-all hover:-translate-y-0.5"
+                  >
+                  <CalendarDays className="mr-2 h-4 w-4" /> Schedule Meeting
+                  </Button>
+              </div>
             </motion.header>
 
-            {/* WIDGET GRID (Staggered Animation) */}
+            {/* WIDGET GRID */}
             <motion.div 
                 variants={containerVariants}
                 initial="hidden"
                 animate="show"
-                className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8"
+                className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-8"
             >
             
             {/* CASES WIDGET */}
@@ -212,18 +258,18 @@ export default function ClientDashboard() {
                             key={c.id} 
                             onClick={() => navigate(`/client-dashboard/cases/${c.id}`)}
                             whileHover={{ scale: 1.01, x: 4 }}
-                            className="group flex items-center justify-between p-5 bg-white border border-slate-100/50 rounded-2xl shadow-sm hover:shadow-md hover:border-emerald-100 transition-all cursor-pointer"
+                            className="group flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 md:p-5 bg-white border border-slate-100/50 rounded-2xl shadow-sm hover:shadow-md hover:border-emerald-100 transition-all cursor-pointer"
                         >
                         <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-emerald-50 transition-colors">
+                            <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center shrink-0 group-hover:bg-emerald-50 transition-colors">
                                 <Briefcase size={18} className="text-slate-400 group-hover:text-emerald-600" />
                             </div>
                             <div>
-                                <p className="font-bold text-slate-900 text-base">{c.title}</p>
+                                <p className="font-bold text-slate-900 text-base line-clamp-1">{c.title}</p>
                                 <p className="text-xs font-medium text-slate-400 mt-0.5">{c.lawyer_name || "Unassigned"}</p>
                             </div>
                         </div>
-                        <Badge variant="secondary" className="bg-emerald-50/80 text-emerald-700 border-emerald-100/50 px-3 py-1 font-semibold tracking-wide">
+                        <Badge variant="secondary" className="w-fit bg-emerald-50/80 text-emerald-700 border-emerald-100/50 px-3 py-1 font-semibold tracking-wide">
                             {c.status}
                         </Badge>
                         </motion.div>
@@ -247,13 +293,12 @@ export default function ClientDashboard() {
                         {/* Decorative background circle */}
                         <div className="absolute -right-6 -top-6 w-24 h-24 bg-white/5 rounded-full blur-xl"></div>
 
-                        <div className="text-center bg-white/10 backdrop-blur-sm p-3 rounded-xl min-w-[70px] border border-white/10">
+                        <div className="text-center bg-white/10 backdrop-blur-sm p-3 rounded-xl min-w-[70px] border border-white/10 shrink-0">
                             <p className="text-[11px] font-bold text-emerald-400 uppercase tracking-widest">{safeDate(h.date, 'month')}</p>
                             <p className="text-2xl font-black leading-none mt-1">{safeDate(h.date, 'day')}</p>
                         </div>
-                        <div className="relative z-10">
-                            <p className="font-bold text-white text-base leading-tight">{h.court_name}</p>
-                            
+                        <div className="relative z-10 overflow-hidden">
+                            <p className="font-bold text-white text-base leading-tight truncate">{h.court_name}</p>
                         </div>
                         </motion.div>
                     ))}
@@ -268,14 +313,14 @@ export default function ClientDashboard() {
                 {payments.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {payments.map((p) => (
-                        <div key={p.id} className="flex items-center justify-between p-5 bg-white border border-slate-100 rounded-2xl hover:shadow-sm transition-shadow">
-                        <div className="flex flex-col">
-                            <span className="text-sm font-bold text-slate-800 truncate max-w-[200px]" title={p.description}>{p.description}</span>
-                            <span className="text-xs font-medium text-slate-400 mt-1 flex items-center gap-1">
+                        <div key={p.id} className="flex items-center justify-between gap-4 p-5 bg-white border border-slate-100 rounded-2xl hover:shadow-sm transition-shadow">
+                        <div className="flex flex-col overflow-hidden">
+                            <span className="text-sm font-bold text-slate-800 truncate" title={p.description}>{p.description}</span>
+                            <span className="text-xs font-medium text-slate-400 mt-1 flex items-center gap-1 shrink-0">
                                 <CalendarDays size={12}/> {safeDate(p.date, 'full')}
                             </span>
                         </div>
-                        <span className="font-extrabold text-slate-900 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
+                        <span className="font-extrabold text-slate-900 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100 shrink-0">
                             ₹{p.amount}
                         </span>
                         </div>
@@ -340,7 +385,7 @@ function EmptyState({ icon: Icon, message }) {
             <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center mb-4">
                 <Icon className="h-5 w-5 text-slate-300" />
             </div>
-            <p className="text-sm text-slate-400 font-medium">{message}</p>
+            <p className="text-sm text-slate-400 font-medium text-center">{message}</p>
         </div>
     )
 }

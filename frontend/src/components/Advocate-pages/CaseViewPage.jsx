@@ -111,7 +111,7 @@ export default function CaseViewPage() {
   if (!caseData) return null;
 
   return (
-    <div className="min-h-screen bg-slate-50/50 p-6 md:p-18 font-sans text-slate-900">
+    <div className="min-h-screen bg-slate-50/50 p-6 md:p-18 mt-15 font-sans text-slate-900">
       <div className="max-w-5xl mx-auto space-y-8">
         
         {/* --- NEW: ALERT NOTIFICATION BAR --- */}

@@ -111,7 +111,7 @@ export default function Hearings() {
   );
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6 sm:p-8 mt-3 md:p-12 font-sans text-slate-900 pt-20 md:ml-4">
+    <div className="min-h-screen bg-slate-50 p-6 sm:p-8  md:p-12 mt-19 font-sans text-slate-900 pt-20 md:ml-4">
       
       <div className="max-w-7xl mx-auto">
         

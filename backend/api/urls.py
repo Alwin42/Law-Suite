@@ -4,7 +4,7 @@ from .views import (
     AdvocateHearingListView, TemplateDetailView, DocumentListCreateView, 
     CaseDocumentListView, AdvocateRegisterView, CaseListCreateView, ClientRegisterView,
     DashboardStatsView, RequestOTPView, UpdateAppointmentStatusView, VerifyOTPView, 
-    CustomTokenObtainPairView, ActiveAdvocateListView, UserProfileView, 
+    CustomTokenObtainPairView, ActiveAdvocateListView, UserProfileView, AdvocatePaymentListView,
     ClientCaseListView, ClientHearingListView, ClientPaymentListView, TemplateListCreateView,
     CaseDetailView, AdvocateAppointmentListView, ClientListCreateView, BookAppointmentView, ClientDocumentListCreateView,
     ClientDetailView, AdvocateClientCasesView, ClientPaymentListCreateView, ClientFullCaseListView, ClientCaseDetailView
@@ -101,7 +101,8 @@ urlpatterns = [
     # AI Chatbot Endpoint
     path('chatbot/ask/', GroqRAGChatbotView.as_view(), name='chatbot-ask'),
     
-    # CLEANED: Payments
+    #  Payments
+    path('payments/', AdvocatePaymentListView.as_view(), name='advocate-all-payments'),
     path('payments/request-upi/', RequestPaymentView.as_view(), name='request-payment'),
     path('payments/<int:pk>/', PaymentDetailView.as_view(), name='payment-detail'), # For advocates
     path('payments/public/<int:pk>/', PublicPaymentDetailView.as_view(), name='public-payment-detail'), # For clients (Notice the /public/ path)

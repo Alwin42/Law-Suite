@@ -140,7 +140,7 @@ export default function ClientsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-16 font-sans text-slate-800">
+    <div className="min-h-screen bg-gray-50 p-16 mt-9 font-sans text-slate-800">
       
       {alertInfo.show && (
         <div className="max-w-7xl mx-auto mb-6">

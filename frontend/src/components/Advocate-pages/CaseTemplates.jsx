@@ -103,7 +103,7 @@ export default function CaseTemplates() {
   );
 
   return (
-    <div className="min-h-screen bg-slate-50 p-9 md:p-23 font-sans text-slate-900 pt-20 ">
+    <div className="min-h-screen bg-slate-50 p-9 md:p-23 mt-7 font-sans text-slate-900 pt-20 ">
       <div className="max-w-7xl mx-auto">
         
         {/* HEADER */}
