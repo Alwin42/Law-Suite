@@ -23,6 +23,10 @@ import Hearings from "./components/Advocate-pages/Hearings";
 import CaseTemplates from "./components/Advocate-pages/CaseTemplates";
 import Documents from "./components/Advocate-pages/Documents";
 
+// NEW: Smart Reminder & Task Management System
+import Tasks from "./components/Advocate-pages/Tasks";
+import Reminders from "./components/Advocate-pages/Reminders";
+
 // Client Features (Note: Based on your screenshot, BookAppointment is in Advocate-pages)
 import BookAppointment from "./components/Advocate-pages/BookAppointment";
 import ClientCasesPage from "./components/Client-pages/ClientCasesPage";
@@ -33,6 +37,7 @@ import ClientPaymentPortal from './components/Client-pages/ClientPaymentPortal';
 import ClientPaymentsList from './components/Client-pages/ClientPaymentsList'; 
 import CloudPage from "./components/Advocate-pages/Cloud"
 
+// Staff Features
 import StaffClientView from './components/Staff-pages/StaffClientView';
 import StaffAuth from './components/Staff-pages/StaffAuth';
 import StaffDashboard from './components/Staff-pages/StaffDashboard';
@@ -41,6 +46,7 @@ import StaffCaseView from './components/Staff-pages/StaffCaseView';
 import PaymentManage from './components/Advocate-pages/Payment';
 import StaffBillingView from './components/Staff-pages/StaffBillingView';
 
+// AI Assistant
 import AIChat from './components/Advocate-pages/AI_Chat';
 
 function App() {
@@ -71,18 +77,26 @@ function App() {
         <Route path="/templates" element={<CaseTemplates />} />
         <Route path="/documents" element={<Documents />} />
 
+        {/* NEW: Tasks & Reminders Routes */}
+        <Route path="/tasks" element={<Tasks />} />
+        <Route path="/reminders" element={<Reminders />} />
+
         {/* Scheduling */}
         <Route path="/book-appointment" element={<BookAppointment />} />
         <Route path="/advocate/appointments" element={<AdvocateAppointments />} />
         <Route path="/advocate/hearings" element={<Hearings />} /> 
-        {/* CLient path */}
+        
+        {/* Client Portal Paths */}
         <Route path="/client-dashboard/cases" element={<ClientCasesPage />} />
         <Route path="/client-dashboard/cases/:id" element={<ClientCaseView />} />
         <Route path="/client-dashboard/hearings" element={<ClientHearingsPage />} />
         <Route path="/client-dashboard/documents" element={<ClientDocumentsPage />} />
         <Route path="/client-dashboard/payments" element={<ClientPaymentsList />} />
+        <Route path="/pay/:paymentId" element={<ClientPaymentPortal />} />
+
         {/* Cloud */}
         <Route path="/cloud" element={<CloudPage/>} />
+        
         {/* Staff */}
         <Route path="/staff/login" element={<StaffAuth />} />
         <Route path="/staff/dashboard" element={<StaffDashboard />} />
@@ -91,9 +105,9 @@ function App() {
         <Route path="/payments" element={<PaymentManage />} />
         <Route path="/staff/billing" element={<StaffBillingView />} />
         <Route path="/staff/clients" element={<StaffClientView />} />
-        {/* Ai */}
+        
+        {/* AI */}
         <Route path="/ai-assistant" element={<AIChat />} />
-        <Route path="/pay/:paymentId" element={<ClientPaymentPortal />} />
 
         <Route 
             path="*" 

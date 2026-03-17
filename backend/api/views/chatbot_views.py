@@ -31,7 +31,7 @@ class GroqRAGChatbotView(APIView):
         if advocate_clients.exists():
             for cl in advocate_clients:
                 # Adjust these fields (name, email, phone) to match your Clients model fields
-                context_text += f"- Client: {cl.full_name}, Contact: {cl.email} | {cl.phone_number}, Total Cases: {cl.case_count if hasattr(cl, 'case_count') else 'N/A'}\n"
+                context_text += f"- Client: {cl.full_name}, Contact: {cl.email} | {cl.contact_number}, Total Cases: {cl.case_count if hasattr(cl, 'case_count') else 'N/A'}\n"
         else:
             context_text += "No client records found.\n"
 

@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.utils.crypto import get_random_string
 from .models import Appointment, Case, Client, Document, Payment, Template, AdvocateFile
-
+from .models import Task, Reminder
 User = get_user_model()
 
 # --- 1. BASE REGISTRATION SERIALIZER ---
@@ -205,3 +205,15 @@ class AdvocateFileSerializer(serializers.ModelSerializer):
         model = AdvocateFile
         fields = ['id', 'name', 'file_url', 'file_type', 'uploaded_at']
         read_only_fields = ['id', 'uploaded_at']
+    
+class TaskSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Task
+        fields = '__all__'
+        read_only_fields = ('user', 'created_at')
+
+class ReminderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Reminder
+        fields = '__all__'
+        read_only_fields = ('user', 'created_at')

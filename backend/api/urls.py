@@ -24,6 +24,11 @@ from .views.payment_views import (
     VerifyRazorpayPaymentView
 )
 
+from .views.task_views import (
+    TaskListCreateView, TaskDetailView, ReminderListCreateView, ReminderDetailView, 
+    UnifiedCalendarView
+)
+
 urlpatterns = [
     # Auth
     path('register/advocate/', AdvocateRegisterView.as_view(), name='register_advocate'),
@@ -108,4 +113,13 @@ urlpatterns = [
     path('payments/public/<int:pk>/', PublicPaymentDetailView.as_view(), name='public-payment-detail'), # For clients (Notice the /public/ path)
     path('payments/create-order/', CreateRazorpayOrderView.as_view(), name='create-razorpay-order'),
     path('payments/verify/', VerifyRazorpayPaymentView.as_view(), name='verify-razorpay-payment'),
+
+    # --- TASKS & REMINDERS ---
+    path('tasks/', TaskListCreateView.as_view(), name='task-list-create'),
+    path('tasks/<int:pk>/', TaskDetailView.as_view(), name='task-detail'),
+    
+    path('reminders/', ReminderListCreateView.as_view(), name='reminder-list-create'),
+    path('reminders/<int:pk>/', ReminderDetailView.as_view(), name='reminder-detail'),
+    
+    path('calendar-feed/', UnifiedCalendarView.as_view(), name='calendar-feed'),
 ]

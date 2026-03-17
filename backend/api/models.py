@@ -184,3 +184,58 @@ class AdvocateFile(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.user.email})"
+
+class Task(models.Model):
+    PRIORITY_CHOICES = [('High', 'High'), ('Medium', 'Medium'), ('Low', 'Low')]
+    CATEGORY_CHOICES = [
+        ('Court Work', 'Court Work'), ('Documentation', 'Documentation'), 
+        ('Client Call', 'Client Call'), ('Personal', 'Personal'), ('Research', 'Research')
+    ]
+    STATUS_CHOICES = [
+        ('Pending', 'Pending'), ('In Progress', 'In Progress'), 
+        ('Completed', 'Completed'), ('Cancelled', 'Cancelled')
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tasks')
+    
+    # CHANGED: Removed foreign keys, added text fields instead
+    client_name = models.CharField(max_length=255, blank=True, null=True)
+    case_title = models.CharField(max_length=255, blank=True, null=True)
+    
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)
+    due_date = models.DateField()
+    due_time = models.TimeField(null=True, blank=True)
+    
+    priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='Medium')
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='Court Work')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.title} - {self.status}"
+
+class Reminder(models.Model):
+    TYPE_CHOICES = [
+        ('Payment', 'Payment'), ('Appointment', 'Appointment'), 
+        ('Hearing', 'Hearing'), ('Deadline', 'Deadline'), ('Custom', 'Custom')
+    ]
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reminders')
+    title = models.CharField(max_length=255)
+    message = models.TextField(blank=True, null=True)
+    reminder_type = models.CharField(max_length=50, choices=TYPE_CHOICES, default='Custom')
+    
+    trigger_date = models.DateTimeField()
+    is_read = models.BooleanField(default=False)
+    is_resolved = models.BooleanField(default=False)
+    
+    # CHANGED: Removed foreign keys, added text fields instead
+    client_name = models.CharField(max_length=255, blank=True, null=True)
+    case_title = models.CharField(max_length=255, blank=True, null=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"[{self.reminder_type}] {self.title}"
