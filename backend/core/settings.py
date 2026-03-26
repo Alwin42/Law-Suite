@@ -123,6 +123,7 @@ DEFAULT_FROM_EMAIL = 'alwindev1010@gmail.com'
 # ==========================================
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Configures Cloudinary connection
 CLOUDINARY_STORAGE = {
