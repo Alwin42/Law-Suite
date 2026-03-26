@@ -50,7 +50,7 @@ export default function Reminders() {
     setIsLoading(true);
     setErrorMsg(null);
     try {
-      const res = await authFetch("http://localhost:8000/api/reminders/");
+      const res = await authFetch("https://law-suite-wemj.onrender.com/api/reminders/");
       if (!res.ok) throw new Error("Failed to fetch reminders");
       const data = await res.json();
       setReminders(data);
@@ -106,7 +106,7 @@ export default function Reminders() {
         case_title: formData.case_title || null,
       };
 
-      const res = await authFetch("http://localhost:8000/api/reminders/", {
+      const res = await authFetch("https://law-suite-wemj.onrender.com/api/reminders/", {
         method: "POST",
         body: JSON.stringify(payload),
       });
@@ -132,7 +132,7 @@ export default function Reminders() {
     }
 
     try {
-      const url = `http://localhost:8000/api/reminders/${id}/`;
+      const url = `https://law-suite-wemj.onrender.com/api/reminders/${id}/`;
       const res = await authFetch(url, {
         method: isDelete ? "DELETE" : "PATCH",
         body: patchData ? JSON.stringify(patchData) : null,

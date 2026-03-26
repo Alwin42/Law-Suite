@@ -66,7 +66,7 @@ export default function Tasks() {
     setIsLoading(true);
     setErrorMsg(null);
     try {
-      const res = await authFetch("http://localhost:8000/api/tasks/");
+      const res = await authFetch("https://law-suite-wemj.onrender.com/api/tasks/");
       if (!res.ok) throw new Error("Failed to fetch tasks");
       const data = await res.json();
       setTasks(data);
@@ -122,7 +122,7 @@ export default function Tasks() {
         case_title: formData.case_title || null,
       };
 
-      const url = isEdit ? `http://localhost:8000/api/tasks/${editingTask.id}/` : "http://localhost:8000/api/tasks/";
+      const url = isEdit ? `https://law-suite-wemj.onrender.com/api/tasks/${editingTask.id}/` : "https://law-suite-wemj.onrender.com/api/tasks/";
       const method = isEdit ? "PATCH" : "POST";
 
       const res = await authFetch(url, { method, body: JSON.stringify(payload) });
@@ -150,7 +150,7 @@ export default function Tasks() {
     setTasks(tasks.filter(t => t.id !== id));
 
     try {
-      const res = await authFetch(`http://localhost:8000/api/tasks/${id}/`, { method: "DELETE" });
+      const res = await authFetch(`https://law-suite-wemj.onrender.com/api/tasks/${id}/`, { method: "DELETE" });
       if (!res.ok) throw new Error("Failed to delete task");
     } catch (err) {
       setTasks(prevTasks);
@@ -166,7 +166,7 @@ export default function Tasks() {
     setTasks(tasks.map(t => t.id === task.id ? { ...t, status: newStatus } : t));
 
     try {
-      const res = await authFetch(`http://localhost:8000/api/tasks/${task.id}/`, {
+      const res = await authFetch(`https://law-suite-wemj.onrender.com/api/tasks/${task.id}/`, {
         method: "PATCH",
         body: JSON.stringify({ status: newStatus })
       });
