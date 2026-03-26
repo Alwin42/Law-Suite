@@ -1,10 +1,8 @@
 import os
 from pathlib import Path
 from dotenv import load_dotenv
-import cloudinary
 import dj_database_url
 from django.core.management.utils import get_random_secret_key
-
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -22,12 +20,18 @@ ALLOWED_HOSTS = ['*']
 
 # Application definition
 INSTALLED_APPS = [
+    # CHANGED: Added Cloudinary storage here at the top
+    'cloudinary_storage', 
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    
+    # CHANGED: Added cloudinary app
+    'cloudinary',
+    
     'rest_framework',
     'corsheaders',
     'api',
@@ -114,13 +118,18 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 BREVO_API_KEY = os.environ.get('LawSuiteAPI')
 DEFAULT_FROM_EMAIL = 'alwindev1010@gmail.com'
 
-# Cloudinary Settings
-cloudinary.config(
-    cloud_name = os.environ.get('CLOUDINARY_CLOUD_NAME'),
-    api_key    = os.environ.get('CLOUDINARY_API_KEY'),
-    api_secret = os.environ.get('CLOUDINARY_API_SECRET'),
-    secure     = True
-)
-
+# ==========================================
+# MEDIA & CLOUDINARY SETTINGS
+# ==========================================
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# Configures Cloudinary connection
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME'),
+    'API_KEY': os.environ.get('CLOUDINARY_API_KEY'),
+    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET'),
+}
+
+# Forces Django to route file uploads directly to Cloudinary instead of the local Render disk
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
