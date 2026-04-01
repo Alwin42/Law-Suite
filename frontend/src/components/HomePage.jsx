@@ -213,16 +213,22 @@ export default function HomePage() {
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+useEffect(() => {
     const fetchData = async () => {
       try {
-        const casesRes = await api.get('/cases/');
+        // 1. FIRE ALL REQUESTS AT THE SAME TIME
+        const [casesRes, profileRes, paymentsRes] = await Promise.all([
+          api.get('/cases/'),
+          api.get('/dashboard/'),
+          // If payments fail, catch it here so it doesn't break the whole dashboard
+          api.get('/payments/').catch(err => {
+              console.error("Failed to load payments:", err);
+              return { data: [] }; 
+          })
+        ]);
+
+        // 2. PROCESS CASES & REMINDERS
         setCases(casesRes.data);
-        
-        const profileRes = await api.get('/dashboard/');
-        setAdvocateName(profileRes.data.user_profile?.name || "ADVOCATE");
-        
-        // Setup Reminders
         const today = new Date();
         const upcoming = casesRes.data
           .filter(c => c.next_hearing && new Date(c.next_hearing) >= today)
@@ -236,7 +242,8 @@ export default function HomePage() {
           }));
         setReminders(upcoming);
         
-        // Extract Real Data for the Live Activity Feed
+        // 3. PROCESS PROFILE & LIVE ACTIVITIES
+        setAdvocateName(profileRes.data.user_profile?.name || "ADVOCATE");
         const activities = [];
         if (profileRes.data.recent_cases) {
             activities.push(...profileRes.data.recent_cases.map(c => ({
@@ -256,39 +263,31 @@ export default function HomePage() {
         }
         setLiveActivities(activities);
         
-        // Fetch Real Payments & Safely Map the Data
-        try {
-            const paymentsRes = await api.get('/payments/');
-            
-            // Sort: Pending first, then by date descending
-            const sortedPayments = paymentsRes.data.sort((a, b) => {
-                if (a.status === 'Pending' && b.status !== 'Pending') return -1;
-                if (a.status !== 'Pending' && b.status === 'Pending') return 1;
-                return new Date(b.due_date || b.created_at) - new Date(a.due_date || a.created_at);
-            });
+        // 4. PROCESS PAYMENTS
+        const sortedPayments = paymentsRes.data.sort((a, b) => {
+            if (a.status === 'Pending' && b.status !== 'Pending') return -1;
+            if (a.status !== 'Pending' && b.status === 'Pending') return 1;
+            return new Date(b.due_date || b.created_at) - new Date(a.due_date || a.created_at);
+        });
 
-            // Map API fields to UI fields so dates and names are never blank
-            const mappedPayments = sortedPayments.map(p => ({
-                id: p.id,
-                client_name: p.client_name || (p.client && p.client.full_name) || "Unknown Client",
-                title: p.title || p.description || "Legal Services",
-                amount: parseFloat(p.amount || 0),
-                status: p.status || "Pending",
-                date: new Date(p.due_date || p.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
-            }));
-
-            setPayments(mappedPayments);
-        } catch (paymentErr) {
-            console.error("Failed to load payments:", paymentErr);
-            setPayments([]);
-        }
+        const mappedPayments = sortedPayments.map(p => ({
+            id: p.id,
+            client_name: p.client_name || (p.client && p.client.full_name) || "Unknown Client",
+            title: p.title || p.description || "Legal Services",
+            amount: parseFloat(p.amount || 0),
+            status: p.status || "Pending",
+            date: new Date(p.due_date || p.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+        }));
+        setPayments(mappedPayments);
 
       } catch (error) {
         console.error("Failed to load workspace data", error);
       } finally {
+        // Hide loading screen instantly once everything is processed
         setLoading(false);
       }
     };
+    
     fetchData();
   }, []);
 

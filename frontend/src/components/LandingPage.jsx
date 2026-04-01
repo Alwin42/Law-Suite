@@ -1,6 +1,7 @@
+import React, { useState } from "react";
 import { Button } from "./ui/button";
 import { Link } from "react-router-dom";
-import { ArrowRight, CheckCircle2, TrendingUp, CalendarPlus } from "lucide-react";
+import { ArrowRight, CheckCircle2, TrendingUp, CalendarPlus, Loader2 } from "lucide-react";
 import { motion, useScroll, useTransform } from "framer-motion";
 
 const LandingPage = () => {
@@ -10,6 +11,9 @@ const LandingPage = () => {
   // Transform scroll position into opacity/movement values
   const heroOpacity = useTransform(scrollY, [0, 300], [1, 0]);
   const heroY = useTransform(scrollY, [0, 300], [0, -50]); 
+
+  // NEW: State to track when the heavy image finishes downloading
+  const [isImageLoaded, setIsImageLoaded] = useState(false);
 
   return (
     <div className="relative w-full bg-background overflow-x-hidden">
@@ -60,11 +64,24 @@ const LandingPage = () => {
             transition={{ duration: 0.8 }}
             className="relative flex items-center justify-center h-[60vh] md:h-[80vh]"
           >
-             <div className="relative h-full w-auto flex items-center justify-center">
+             <div className="relative h-full w-full flex items-center justify-center">
+               
+               {/* NEW: The Skeleton Loader that shows while the image is downloading */}
+               {!isImageLoaded && (
+                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-50/50 rounded-[3rem] animate-pulse border border-slate-100">
+                    <Loader2 className="w-8 h-8 text-slate-300 animate-spin mb-4" />
+                    <span className="text-xs font-mono uppercase tracking-widest text-slate-400">Loading Asset</span>
+                 </div>
+               )}
+
+               {/* MODIFIED: The Actual Image. It stays completely invisible (opacity-0) until onLoad fires */}
                <img 
                   src="/lady-justice.png" 
                   alt="Statue of Lady Justice" 
-                  className="object-contain h-full w-auto drop-shadow-2xl grayscale-[20%] contrast-110"
+                  onLoad={() => setIsImageLoaded(true)}
+                  className={`object-contain h-full w-auto drop-shadow-2xl grayscale-[20%] contrast-110 transition-opacity duration-1000 ease-in-out ${
+                    isImageLoaded ? "opacity-100" : "opacity-0"
+                  }`}
                />
              </div>
           </motion.div>
@@ -74,7 +91,7 @@ const LandingPage = () => {
 
       {/* ================= SECTION 2: ABOUT ================= */}
       
-      <section id="about" className="relative  py-24 z-10 bg-background/50 border-t border-slate-100/50">
+      <section id="about" className="relative py-24 z-10 bg-background/50 border-t border-slate-100/50">
         <div className="container mx-auto px-6 max-w-7xl">
           <div className="grid lg:grid-cols-12 gap-16 items-start">
             
@@ -84,7 +101,7 @@ const LandingPage = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-100px" }}
               transition={{ duration: 0.8 }}
-              className="lg:col-span-5 lg:sticky lg:top-32" // Sticky positioning for premium scroll effect
+              className="lg:col-span-5 lg:sticky lg:top-32" 
             >
               <span className="text-sm mt-9 p-7 font-bold tracking-widest text-emerald-600 uppercase mb-5 flex items-center gap-3">
                 <span className="w-8 h-px bg-emerald-600"></span> About Law Suite
@@ -100,7 +117,6 @@ const LandingPage = () => {
                   <TrendingUp size={120} />
                 </div>
                 <div className="relative z-10">
-                  
                   <div className="text-lg font-medium text-slate-300">
                     Faster Case Filing & Resolution
                   </div>
