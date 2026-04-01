@@ -28,7 +28,7 @@ const AIChat = () => {
 
         try {
             const token = localStorage.getItem('access_token');
-            const response = await axios.post('https://law-suite-niov.onrender.com/api/chatbot/ask/', 
+            const response = await axios.post('https://law-suite-wemj.onrender.com/api/chatbot/ask/', 
                 { message: messageText },
                 { headers: { Authorization: `Bearer ${token}` } }
             );

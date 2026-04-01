@@ -108,8 +108,13 @@ USE_TZ = True
 
 # CORS and CSRF Settings
 CORS_ALLOW_ALL_ORIGINS = True
-CSRF_TRUSTED_ORIGINS = ['https://law-suite-wemj.onrender.com/', 'https://law-suite.onrender.com']
+CSRF_TRUSTED_ORIGINS = [
+    'https://law-suite-mu.vercel.app',    
+    'https://law-suite-wemj.onrender.com',
+]
 
+# Allow credentials for authenticated chatbot requests
+CORS_ALLOW_CREDENTIALS = True
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
