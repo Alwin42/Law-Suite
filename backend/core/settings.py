@@ -108,7 +108,7 @@ USE_TZ = True
 
 # CORS and CSRF Settings
 CORS_ALLOW_ALL_ORIGINS = True
-CSRF_TRUSTED_ORIGINS = ['https://law-suite-niov.onrender.com', 'https://law-suite.onrender.com']
+CSRF_TRUSTED_ORIGINS = ['https://law-suite-wemj.onrender.com/', 'https://law-suite.onrender.com']
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = 'static/'
