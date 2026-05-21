@@ -437,7 +437,7 @@ export default function Tasks() {
                 <Label className="text-xs text-slate-500 font-semibold uppercase">Priority</Label>
                 <Select value={formData.priority} onValueChange={v => setFormData({...formData, priority: v})}>
                   <SelectTrigger className="h-9 text-sm bg-white border-slate-200 shadow-sm"><SelectValue /></SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-white">
                     <SelectItem value="High">High</SelectItem>
                     <SelectItem value="Medium">Medium</SelectItem>
                     <SelectItem value="Low">Low</SelectItem>
@@ -448,7 +448,7 @@ export default function Tasks() {
                 <Label className="text-xs text-slate-500 font-semibold uppercase">Category</Label>
                 <Select value={formData.category} onValueChange={v => setFormData({...formData, category: v})}>
                   <SelectTrigger className="h-9 text-sm bg-white border-slate-200 shadow-sm"><SelectValue /></SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-white">
                     <SelectItem value="Court Work">Court Work</SelectItem>
                     <SelectItem value="Documentation">Documentation</SelectItem>
                     <SelectItem value="Client Call">Client Call</SelectItem>
@@ -461,7 +461,7 @@ export default function Tasks() {
                 <Label className="text-xs text-slate-500 font-semibold uppercase">Status</Label>
                 <Select value={formData.status} onValueChange={v => setFormData({...formData, status: v})}>
                   <SelectTrigger className="h-9 text-sm bg-white border-slate-200 shadow-sm"><SelectValue /></SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-white">
                     <SelectItem value="Pending">Pending</SelectItem>
                     <SelectItem value="In Progress">In Progress</SelectItem>
                     <SelectItem value="Completed">Completed</SelectItem>
