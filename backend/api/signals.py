@@ -19,8 +19,8 @@ def create_hearing_reminder(sender, instance, created, **kwargs):
             reminder_type='Hearing',
             trigger_date=trigger_dt,
             defaults={
-                'title': f"Hearing Tomorrow: {instance.case_title}",
-                'message': f"You have a hearing scheduled tomorrow at {instance.court_name} for case {instance.case_number}.",
+                'title': f"{instance.case_title}",
+                'message': f"You have a hearing scheduled on {instance.next_hearing} at {instance.court_name} for case {instance.case_number}.",
                 'client_name': instance.client.full_name if instance.client else None,
             }
         )

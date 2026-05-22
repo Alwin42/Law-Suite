@@ -32,8 +32,8 @@ const authFetch = (url, options = {}) =>
   });
 
 export default function Reminders() {
-  const navigate = useNavigate(); // <-- NEW
-  const location = useLocation(); // <-- NEW
+  const navigate = useNavigate(); 
+  const location = useLocation(); 
 
   const [reminders, setReminders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -83,7 +83,7 @@ export default function Reminders() {
     if (diffDays < 0) return { text: "Overdue", color: "text-red-500 font-bold" };
     if (diffDays === 0) return { text: "Today", color: "text-red-500 font-bold animate-pulse" };
     if (diffDays === 1) return { text: "Tomorrow", color: "text-amber-500 font-medium" };
-    if (diffDays <= 3) return { text: `in ${diffDays}d`, color: "text-amber-500" };
+    if (diffDays <= 2) return { text: `in ${diffDays}d`, color: "text-amber-500" };
     return { text: `in ${diffDays}d`, color: "text-slate-500" };
   };
 
@@ -379,7 +379,7 @@ export default function Reminders() {
                   <SelectTrigger className="h-9 text-sm border-slate-200 shadow-sm">
                     <SelectValue placeholder="Select type" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-white">
                     <SelectItem value="Payment">Payment</SelectItem>
                     <SelectItem value="Appointment">Appointment</SelectItem>
                     <SelectItem value="Hearing">Hearing</SelectItem>
