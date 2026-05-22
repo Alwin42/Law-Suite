@@ -35,7 +35,7 @@ const Dashboard = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   
   // State
-  const [stats, setStats] = useState({ active_cases: 0, pending_hearings: 0, total_clients: 0 , appointments_count: 0 });
+  const [stats, setStats] = useState({ active_cases: 0, hearings: 0, total_clients: 0 , appointments_count: 0 });
   const [recentCases, setRecentCases] = useState([]);
   const [upcomingHearings, setUpcomingHearings] = useState([]);
   const [recentAppointments, setRecentAppointments] = useState([]);
@@ -311,7 +311,7 @@ const Dashboard = () => {
               </div>
 
               {/* TODAY'S TASKS */}
-              <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 md:p-6 flex flex-col h-[400px] lg:h-auto">
+              <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 md:p-6 flex flex-col h-100 lg:h-auto">
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="font-semibold text-slate-800">Today's Tasks</h3>
                     <button onClick={() => navigate('/tasks')} className="text-sm text-blue-600 hover:underline flex items-center">
@@ -338,12 +338,12 @@ const Dashboard = () => {
               </div>
 
               {/* UPCOMING HEARINGS */}
-              <div className="bg-blue-100/50 rounded-xl border border-blue-200 shadow-sm p-4 md:p-5 flex flex-col h-[400px] lg:h-auto">
-                <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2"><Gavel size={18} className="text-blue-600"/> Urgent Hearings</h3>
+              <div className="bg-blue-100/50 rounded-xl border border-blue-200 shadow-sm p-4 md:p-5 flex flex-col h-100 lg:h-auto">
+                <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2"><Gavel size={18} className="text-blue-600"/> Upcoming Hearings</h3>
                 <div className="space-y-4 flex-1 overflow-y-auto pr-2 custom-scrollbar">
                   {upcomingHearings.map((h) => (
                      <div key={h.id} className="flex gap-3 items-start bg-white p-3 rounded-xl border border-blue-100 shadow-sm">
-                        <div className="flex-shrink-0 w-12 text-center bg-blue-50 rounded-lg p-1.5 border border-blue-100">
+                        <div className="shrink-0 w-12 text-center bg-blue-50 rounded-lg p-1.5 border border-blue-100">
                            <span className="block text-sm font-bold text-blue-700">{new Date(h.next_hearing).getDate()}</span>
                            <span className="block text-[9px] text-blue-600 uppercase font-bold tracking-widest mt-0.5">{new Date(h.next_hearing).toLocaleDateString('en-US',{month:'short'})}</span>
                         </div>

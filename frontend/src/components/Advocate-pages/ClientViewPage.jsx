@@ -147,6 +147,8 @@ export default function ClientViewPage() {
               <span className="flex items-center gap-2"><Phone size={16} className="text-slate-400"/> {client.contact_number}</span>
               <span className="flex items-center gap-2"><Mail size={16} className="text-slate-400"/> {client.email}</span>
               <span className="flex items-center gap-2 md:col-span-2"><MapPin size={16} className="text-slate-400"/> {client.address}</span>
+              <span className="flex items-center gap-2 md:col-span-2"><FileText size={16} className="text-slate-400"/> {client.notes}</span>
+
             </div>
           </div>
         </div>
@@ -189,7 +191,7 @@ export default function ClientViewPage() {
 
           {/* RIGHT: PAYMENT HISTORY CARD */}
           <div className="space-y-6">
-            <Card className="shadow-sm bg-white border-slate-200 flex flex-col h-full max-h-[600px]">
+            <Card className="shadow-sm bg-white border-slate-200 flex flex-col h-full max-h-150">
               <CardHeader className="flex flex-row items-center justify-between pb-2 border-b border-slate-100">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <CreditCard className="h-5 w-5 text-gray-800" />
@@ -202,7 +204,7 @@ export default function ClientViewPage() {
                       <Plus size={14} className="mr-1" /> Add
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="bg-white sm:max-w-[425px]">
+                  <DialogContent className="bg-white sm:max-w-106">
                     <DialogHeader><DialogTitle>Record Payment</DialogTitle></DialogHeader>
                     <form onSubmit={handleRecordPayment} className="space-y-4 py-2">
                       
@@ -284,7 +286,7 @@ export default function ClientViewPage() {
                               <Badge variant="outline" className={`text-[10px] ${getStatusColor(payment.status)}`}>{payment.status}</Badge>
                            </div>
                            {payment.case_title && (
-                             <span className="text-xs text-slate-400 truncate max-w-[120px]" title={payment.case_title}>
+                             <span className="text-xs text-slate-400 truncate max-w-30" title={payment.case_title}>
                                {payment.case_title}
                              </span>
                            )}
