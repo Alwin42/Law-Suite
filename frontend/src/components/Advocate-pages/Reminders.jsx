@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom"; // <-- NEW: Added router imports
 import { 
   Bell, Check, Eye, Trash2, Plus, AlertCircle, RefreshCw, 
   Calendar, Briefcase, User 
@@ -31,6 +32,9 @@ const authFetch = (url, options = {}) =>
   });
 
 export default function Reminders() {
+  const navigate = useNavigate(); // <-- NEW
+  const location = useLocation(); // <-- NEW
+
   const [reminders, setReminders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState(null);
@@ -160,6 +164,22 @@ export default function Reminders() {
   return (
     <div className="min-h-screen bg-slate-50 p-8 font-sans mt-19 text-slate-900">
       <div className="max-w-5xl mx-auto space-y-6">
+
+        {/* --- NEW: TAB NAVIGATION SWITCHER --- */}
+        <div className="flex items-center gap-1 bg-slate-200/60 p-1 rounded-lg w-max mb-4 border border-slate-200 shadow-sm">
+          <button 
+            onClick={() => navigate('/tasks')}
+            className={`px-5 py-1.5 text-sm font-bold rounded-md transition-all duration-200 ${location.pathname === '/tasks' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+          >
+            Tasks
+          </button>
+          <button 
+            onClick={() => navigate('/reminders')}
+            className={`px-5 py-1.5 text-sm font-bold rounded-md transition-all duration-200 ${location.pathname === '/reminders' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+          >
+            Reminders
+          </button>
+        </div>
         
         <div className="flex justify-between items-center">
           <div>
@@ -199,7 +219,7 @@ export default function Reminders() {
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-4 bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 bg-white p-1 rounded">
             {["All", "Payment", "Appointment", "Hearing", "Deadline", "Custom"].map(type => (
               <Button
                 key={type}
@@ -282,7 +302,7 @@ export default function Reminders() {
                         </div>
                       </div>
 
-                      <div className="flex flex-col items-end justify-between h-full min-h-[70px] ml-4">
+                      <div className="flex flex-col items-end justify-between h-full min-h-17.5 ml-4">
                         {!reminder.is_read && !reminder.is_resolved ? (
                           <div className="h-2 w-2 rounded-full bg-blue-500 mb-2"></div>
                         ) : <div className="h-2 w-2 mb-2"></div>}
@@ -331,7 +351,7 @@ export default function Reminders() {
       </div>
 
       <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
-        <DialogContent className="sm:max-w-[425px] bg-white border-slate-200 shadow-lg">
+        <DialogContent className="sm:max-w-106.25 bg-white border-slate-200 shadow-lg">
           <DialogHeader>
             <DialogTitle className="text-lg font-semibold text-slate-900">Add Reminder</DialogTitle>
             <DialogDescription className="sr-only">

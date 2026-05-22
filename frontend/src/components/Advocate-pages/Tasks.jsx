@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { 
   Check, Trash2, Edit2, Plus, Clock, Briefcase, User, 
   Calendar as CalendarIcon, AlertCircle, RefreshCw 
@@ -43,6 +44,9 @@ const getLocalDateString = (dateObj) => {
 };
 
 export default function Tasks() {
+  const navigate = useNavigate(); 
+  const location = useLocation(); 
+
   const [tasks, setTasks] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState(null);
@@ -218,6 +222,22 @@ export default function Tasks() {
   return (
     <div className="min-h-screen bg-slate-50 p-8 font-sans mt-19 text-slate-900">
       <div className="max-w-4xl mx-auto space-y-6">
+
+        {/* --- TAB NAVIGATION SWITCHER --- */}
+        <div className="flex items-center gap-1 bg-slate-200/60 p-1 rounded-lg w-max mb-4 border border-slate-200 shadow-sm">
+          <button 
+            onClick={() => navigate('/tasks')}
+            className={`px-5 py-1.5 text-sm font-bold rounded-md transition-all duration-200 ${location.pathname === '/tasks' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+          >
+            Tasks
+          </button>
+          <button 
+            onClick={() => navigate('/reminders')}
+            className={`px-5 py-1.5 text-sm font-bold rounded-md transition-all duration-200 ${location.pathname === '/reminders' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+          >
+            Reminders
+          </button>
+        </div>
         
         <div className="flex justify-between items-center">
           <div>
@@ -235,7 +255,8 @@ export default function Tasks() {
               <div 
                 key={day.dateStr}
                 onClick={() => setSelectedDate(day.dateStr)}
-                className={`flex flex-col items-center justify-center p-2 rounded-xl cursor-pointer transition-colors duration-200 min-w-[40px] sm:min-w-[60px]
+                // FIXED: Replaced arbitrary bracket width values with Tailwind canonical classes
+                className={`flex flex-col items-center justify-center p-2 rounded-xl cursor-pointer transition-colors duration-200 min-w-10 sm:min-w-15
                   ${selectedDate === day.dateStr ? "bg-slate-900 text-white shadow-md" : "hover:bg-slate-100 text-slate-600"}
                 `}
               >
@@ -340,7 +361,8 @@ export default function Tasks() {
                         </div>
                       </div>
 
-                      <div className="flex flex-col items-end justify-between shrink-0 ml-4 h-full min-h-[50px]">
+                      {/* FIXED: Replaced arbitrary bracket height value with Tailwind canonical class */}
+                      <div className="flex flex-col items-end justify-between shrink-0 ml-4 h-full min-h-12.5">
                         <span className={`text-[10px] font-bold uppercase tracking-wider ${isDone ? 'text-slate-400' : 'text-slate-500'}`}>
                           {task.status}
                         </span>
@@ -366,7 +388,8 @@ export default function Tasks() {
                               </TooltipTrigger>
                               <TooltipContent><p className="text-xs">Delete</p></TooltipContent>
                             </Tooltip>
-                            <AlertDialogContent className="sm:max-w-[400px] bg-white border-slate-200">
+                            {/* FIXED: Replaced arbitrary bracket width value with Tailwind canonical class */}
+                            <AlertDialogContent className="sm:max-w-100 bg-white border-slate-200">
                               <AlertDialogHeader>
                                 <AlertDialogTitle className="text-slate-900">Delete Task</AlertDialogTitle>
                                 <AlertDialogDescription className="text-slate-500 text-sm">
@@ -398,7 +421,8 @@ export default function Tasks() {
           setEditingTask(null);
         }
       }}>
-        <DialogContent className="sm:max-w-[500px] bg-white border-slate-200 shadow-lg">
+        {/* FIXED: Replaced arbitrary bracket width value with Tailwind canonical class */}
+        <DialogContent className="sm:max-w-125 bg-white border-slate-200 shadow-lg">
           <DialogHeader>
             <DialogTitle className="text-lg font-semibold text-slate-900">
               {isEditOpen ? "Edit Task" : "Add Task"}
