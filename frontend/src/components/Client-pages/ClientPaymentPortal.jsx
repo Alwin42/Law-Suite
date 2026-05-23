@@ -113,11 +113,13 @@ const ClientPaymentPortal = () => {
   const qrImageUrl = generateQrUrl();
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4 font-sans py-8 md:py-10">
+    /* FIXED: Added pt-24 md:pt-32 to push it safely below your fixed navbar */
+    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4 font-sans pt-24 md:pt-32 pb-10">
       
       {/* Top Back Button (Hidden during printing) */}
       <div className="w-full max-w-2xl mb-4 print:hidden">
-         <button onClick={() => navigate(-1)} className="flex items-center text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors">
+         {/* FIXED: Added safe fallback routing in case browser history is empty */}
+         <button onClick={() => window.history.length > 2 ? navigate(-1) : navigate('/dashboard')} className="flex items-center text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors">
             <ArrowLeft className="w-4 h-4 mr-2" /> Go Back
          </button>
       </div>
@@ -151,7 +153,8 @@ const ClientPaymentPortal = () => {
                     Download Receipt
                   </button>
                   <button 
-                    onClick={() => navigate('/client/payments')} 
+                    // FIXED: Fallback routing for safe return
+                    onClick={() => window.history.length > 2 ? navigate(-1) : navigate('/dashboard')}
                     className="w-full sm:w-auto bg-white border border-slate-200 text-slate-700 px-6 py-2.5 rounded-lg text-sm font-semibold hover:bg-slate-50 transition-colors shadow-sm"
                   >
                     Return to Dashboard
@@ -183,7 +186,7 @@ const ClientPaymentPortal = () => {
                   
                   <div className="flex justify-between items-center text-sm">
                     <span className="text-slate-500 font-medium">Description:</span>
-                    {/* FIXED: Removed max-w-[200px] and used canonical max-w-50 */}
+                    {/* FIXED: Removed arbitrary bracket [200px] to max-w-50 */}
                     <span className="font-semibold text-slate-900 text-right max-w-50 truncate">
                       {invoice.title || "Legal Consultation & Services"}
                     </span>
@@ -234,7 +237,8 @@ const ClientPaymentPortal = () => {
                   Try Again
                 </button>
                 <button 
-                  onClick={() => navigate(-1)} 
+                  // FIXED: Added safe fallback routing in case browser history is empty
+                  onClick={() => window.history.length > 2 ? navigate(-1) : navigate('/dashboard')} 
                   className="w-full sm:w-auto bg-white border border-slate-200 text-slate-700 px-6 py-2.5 rounded-lg text-sm font-semibold hover:bg-slate-50 transition-colors shadow-sm"
                 >
                   Go Back

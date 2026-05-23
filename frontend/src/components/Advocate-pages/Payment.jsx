@@ -228,7 +228,7 @@ const PaymentManage = () => {
 
       {/* CLIENT LIST TABLE */}
       <div className="bg-white border border-zinc-200 rounded-2xl shadow-sm overflow-x-auto">
-        <table className="w-full text-left text-sm whitespace-nowrap min-w-[600px] sm:min-w-full">
+        <table className="w-full text-left text-sm whitespace-nowrap min-w-150 not-last:sm:min-w-full">
           <thead className="bg-zinc-50/80 border-b border-zinc-200 text-zinc-500 font-bold uppercase tracking-wider text-xs">
             <tr>
               <th className="p-4 sm:p-5">Client Name</th>
@@ -242,7 +242,7 @@ const PaymentManage = () => {
                 <td className="p-4 sm:p-5 font-bold text-zinc-900 text-sm sm:text-base">{client.full_name}</td>
                 <td className="p-4 sm:p-5">
                   <div className="text-zinc-800 font-medium">{client.contact_number}</div>
-                  <div className="text-zinc-500 text-xs mt-1 truncate max-w-[150px] sm:max-w-xs">{client.email}</div>
+                  <div className="text-zinc-500 text-xs mt-1 truncate max-w-37.5 sm:max-w-xs">{client.email}</div>
                 </td>
                 <td className="p-4 sm:p-5 text-right">
                   <div className="flex justify-end gap-2 sm:gap-3">
@@ -297,7 +297,7 @@ const PaymentManage = () => {
                 </div>
               </div>
               <div className="flex gap-3 pt-4 border-t border-zinc-100 mt-6">
-                <button type="button" onClick={() => setIsAddModalOpen(false)} className="flex-1 py-3 bg-zinc-100 rounded-xl font-bold text-zinc-600 hover:bg-zinc-200">Cancel</button>
+                <button type="button" onClick={() => setIsAddModalOpen(false)} className="flex-1 py-3 bg-zinc-100 rounded-xl font-bold text-red-600 hover:bg-zinc-200">Close</button>
                 <button type="submit" disabled={processingId === 'sending'} className="flex-1 py-3 bg-black text-white rounded-xl font-bold flex justify-center items-center gap-2 shadow-lg shadow-black/10 hover:bg-zinc-800">
                   {processingId === 'sending' ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Mail className="w-4 h-4" /> Send Invoice</>}
                 </button>
