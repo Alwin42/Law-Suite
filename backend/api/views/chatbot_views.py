@@ -57,7 +57,7 @@ class GroqRAGChatbotView(APIView):
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_message}
                 ],
-                model="llama-3.3-70b-versatile", # Updated to the latest stable model
+                model="openai/gpt-oss-20b", 
                 max_tokens=1000,
             )
 
